@@ -1,5 +1,4 @@
 import Fastify, { type FastifyInstance, type RouteShorthandOptions } from 'fastify';
-import { Server, IncomingMessage, ServerResponse } from 'http'; // TODO: Change to https once viable
 
 const server : FastifyInstance = Fastify({
 	logger: true
@@ -35,10 +34,6 @@ server.get('/', opts, async (request, response) => {
 const start = async () => {
 	try {
 		await server.listen({ port: 6000, host: '127.0.0.1' });
-
-		const address = server.server.address();
-		const port = typeof address === 'string' ? address : address?.port
-
 	} catch (error) {
 		server.log.error(error);
 		process.exit(1);
