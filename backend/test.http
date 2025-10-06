@@ -1,0 +1,8 @@
+# Example POST request to the backend
+POST https://127.0.0.1:6000/ HTTP/1.1
+content-type: application/json
+
+{
+    "name": "sample",
+    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+}
