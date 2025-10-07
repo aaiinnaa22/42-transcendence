@@ -1,15 +1,15 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import './index.css'
+import {NavBar} from "./components/NavBar";
+import {PlayButton} from "./components/PlayButton";
 
 function App() {
   return (
-    <>
-      <h1>Yoooo let's start our frontend here!</h1>
-      <h3 className="text-3xl font-bold text-blue-600">Tailwind is working!</h3>
-    </>
+   <div className="bg-transcendence-black h-screen w-screen flex flex-col gap-70">
+		<NavBar></NavBar>
+		<PlayButton></PlayButton>
+	</div>
   )
 }
 
