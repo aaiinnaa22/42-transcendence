@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Development database
+backend/prisma/migrations
+backend/prisma/dev.db
+
+# Environmental variable file
+.env
