@@ -1,44 +1,22 @@
-import Fastify, { type FastifyInstance, type RouteShorthandOptions } from 'fastify';
+import Fastify, { type FastifyInstance } from 'fastify';
 import prismaPlugin from './plugins/prisma.ts';
 
 const server : FastifyInstance = Fastify({
 	logger: true
 });
 
-// ===================== TESTING =========================
-const opts : RouteShorthandOptions = {
-	schema: {
-		response: {
-			200: {
-				type: 'object',
-				properties: {
-					message: {
-						type: 'string'
-					}
-				}
-			}
-		}
-	}
-};
-
-server.get('/', opts, async (request, response) => {
-	const address : string = request.ip;
-	if ( address === '127.0.0.1' )
-	{
-		response.code(200).send({ message: 'successful response' });
-	}
-	else
-	{
-		response.code(403).send({ message: 'forbidden access'});
-	}
-});
-// ========================================================
-
-
 // Main of the backend server
 const start = async () => {
 	try {
 		await server.register(prismaPlugin);
+
+		// NOTE: Testing database
+		if (process.env.NODE_ENV === 'development') {
+			await server.register(import('./routes/test.route.ts'));
+		}
+
+		// Register routes
+		await server.register(import('./routes/healthcheck.route.ts'));
 
 		// Grab the configuration from env
 		const host = process.env.HOSTNAME || '127.0.0.1';

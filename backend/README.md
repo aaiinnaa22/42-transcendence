@@ -66,7 +66,7 @@ model User {
     id              String      @id @default(uuid())
     googleId        String      @unique
     email           String      @unique
-    userName        String?
+    username        String?
     avatarUrl       String?
     createdAt       DateTime    @default(now())
     updatedAt       DateTime    @updatedAt
@@ -95,3 +95,5 @@ model PlayerStats {
 - Utilize oauth2 for authentication in order to avoid salting + hashing passwords in the database ourselves.
 - Make the game server-authoritative by moving game logic to the backend.
 - Switch to secure connections (https).
+- Switch request schema with JWT for session management and authentication.
+- Implement schemas for game data streaming.

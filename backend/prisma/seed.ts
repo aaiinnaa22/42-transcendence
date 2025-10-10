@@ -10,7 +10,7 @@ const seedDev = async () => {
 		create: {
 			email: 'trashman@hive.fi',
 			googleId: 'frank-reynolds-google-id',
-			userName: 'TrashMan',
+			username: 'TrashMan',
 			avatarUrl: null,
 			lastLogin: new Date(),
 			playerStats: {
@@ -24,7 +24,7 @@ const seedDev = async () => {
 		create: {
 			email: 'wildcard@hive.fi',
 			googleId: 'charlie-kelly-google-id',
-			userName: 'The Wildcard',
+			username: 'The Wildcard',
 			avatarUrl: null,
 			lastLogin: new Date(),
 			playerStats: {
