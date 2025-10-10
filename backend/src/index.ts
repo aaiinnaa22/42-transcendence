@@ -39,7 +39,12 @@ server.get('/', opts, async (request, response) => {
 const start = async () => {
 	try {
 		await server.register(prismaPlugin);
-		await server.listen({ port: 6000, host: '127.0.0.1' });
+
+		// Grab the configuration from env
+		const host = process.env.HOSTNAME || '127.0.0.1';
+		const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 6000;
+
+		await server.listen({ port, host });
 	} catch (error) {
 		server.log.error(error);
 		process.exit(1);
