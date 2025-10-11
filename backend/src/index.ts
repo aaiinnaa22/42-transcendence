@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import Fastify, { type FastifyInstance, type RouteShorthandOptions } from 'fastify';
 import { Server, IncomingMessage, ServerResponse } from 'http'; // TODO: Change to https once viable
 
@@ -34,10 +37,13 @@ server.get('/', opts, async (request, response) => {
 
 const start = async () => {
 	try {
-		await server.listen({ port: 6000, host: '127.0.0.1' });
+		const PORT = Number(process.env.PORT) || 4241;
+		const HOST = process.env.HOST || '127.0.0.1';
+		await server.listen({ port: PORT, host: HOST });
 
 		const address = server.server.address();
 		const port = typeof address === 'string' ? address : address?.port
+		server.log.info(`Server running at http://${HOST}:${PORT}`);
 
 	} catch (error) {
 		server.log.error(error);
