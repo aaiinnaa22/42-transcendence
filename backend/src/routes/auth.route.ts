@@ -1,60 +1,43 @@
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
-import { PrismaClient } from '@prisma/client';
-import fastifyOauth2 from '@fastify/oauth2';
-import * as jwtDecode from 'jwt-decode';
+import fastifyOauth2 from "@fastify/oauth2";
 
 const authRoutes = async (server: FastifyInstance) => {
-	// Register Google OAuth2 plugin
-	server.register(fastifyOauth2, {
-    name: 'googleOAuth2',
-	scope: ['openid', 'email', 'profile'],
+  // Register Google OAuth2 plugin
+  server.register(fastifyOauth2, {
+    name: "googleOAuth2", // This adds server.googleOAuth2
+    scope: ["openid", "email", "profile"],
     credentials: {
-		client: {
+      client: {
         id: process.env.GOOGLE_CLIENT_ID!,
         secret: process.env.GOOGLE_CLIENT_SECRET!,
-    	},
-      	auth: fastifyOauth2.GOOGLE_CONFIGURATION,
+      },
+      auth: {
+        authorizeHost: "https://accounts.google.com",
+        authorizePath: "/o/oauth2/v2/auth",
+        tokenHost: "https://oauth2.googleapis.com",
+        tokenPath: "/token",
+      },
     },
-    startRedirectPath: '/auth/google',
-    callbackUri: 'http://localhost:4241/auth/google/callback',
-	generateStateFunction: (_request) => 'dummy_state',
-	checkStateFunction: (_request, _state) => true 
+    startRedirectPath: "/auth/google",
+    callbackUri: process.env.GOOGLE_CALLBACK_URL || "http://localhost:4241/auth/google/callback",
   });
 
   // Callback route
-  server.get('/auth/google/callback', async (request: FastifyRequest, reply: FastifyReply) => {
+  server.get("/auth/google/callback", async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-		server.log.info('➡️  Google callback hit');
-		const tokenResponse = await server.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
-		const idToken = tokenResponse.token.id_token;
-		server.log.info('🧾 ID token:', idToken);
+      server.log.info("➡️ Google callback hit");
 
-		const decoded = jwtDecode(idToken) as any; // contains email, sub (Google ID), name, picture
-		server.log.info('👤 Decoded profile:', decoded);
+      // Use the plugin to exchange the code for tokens
+      const tokenResponse = await server.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
 
-		// Now you can upsert to Prisma
-		const user = await server.prisma.user.upsert({
-			where: { email: decoded.email },
-			update: { lastLogin: new Date() },
-			create: {
-    			email: decoded.email,
-    			userName: decoded.name,
-    			googleId: decoded.sub,
-    			avatarUrl: decoded.picture || null,
-    			lastLogin: new Date(),
-    			playerStats: { create: {} },
-  			},
-		});
+      // Log the full response for debugging
+      server.log.info("🔑 Full token response:", tokenResponse);
 
-      	// Sign JWT
-    	const jwt = server.jwt.sign({ userId: user.id });
-
-      	// Send response
-      	reply.send({ token: jwt, user });
-    } 
-	catch (err) {
-    	server.log.error(err);
-    	reply.code(500).send({ error: 'Google OAuth failed' });
+      // For now, just return the tokens directly to the browser
+      reply.send(tokenResponse);
+    } catch (err) {
+      server.log.error("❌ Google OAuth failed:", err);
+      reply.code(500).send({ error: "Google OAuth failed" });
     }
   });
 };
