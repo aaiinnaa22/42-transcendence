@@ -5,10 +5,14 @@ import {NavBar} from "./components/NavBar";
 import {PlayButton} from "./components/PlayButton";
 
 function App() {
-  return (
-   <div className="bg-transcendence-black min-h-screen w-full flex flex-col">
+	const [isGameOn, setGameOn] = useState(false);
+	return (
+	<div className="bg-transcendence-black min-h-screen w-full flex flex-col">
 		<NavBar></NavBar>
-		<PlayButton></PlayButton>
+		{!isGameOn ?
+			(<PlayButton startGame={() => setGameOn(true)}></PlayButton>) :
+			(<GameComponent exitGame={() => setGameOn(false)}></GameComponent>)
+		}
 	</div>
   )
 }
