@@ -1,8 +1,12 @@
-# Example POST request to the backend
-POST https://127.0.0.1:6000/ HTTP/1.1
-content-type: application/json
+### Example POST request to the backend
+GET http://127.0.0.1:6000/ HTTP/1.1
 
-{
-    "name": "sample",
-    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
-}
+
+### Test if the backend and database are healthy
+GET http://127.0.0.1:6000/healthcheck HTTP/1.1
+Accept: application/json
+
+### Test seeded users in database. Check console for UUID.
+GET http://127.0.0.1:6000/test/<UUID> HTTP/1.1
+Accept: application/json
+

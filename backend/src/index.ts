@@ -1,54 +1,50 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import Fastify, { type FastifyInstance, type RouteShorthandOptions } from 'fastify';
+import Fastify, { type FastifyInstance } from 'fastify';
 import { Server, IncomingMessage, ServerResponse } from 'http'; // TODO: Change to https once viable
+import prismaPlugin from './plugins/prisma.ts';
 
 const server : FastifyInstance = Fastify({
 	logger: true
 });
 
-const opts : RouteShorthandOptions = {
-	schema: {
-		response: {
-			200: {
-				type: 'object',
-				properties: {
-					message: {
-						type: 'string'
-					}
-				}
-			}
-		}
-	}
-};
-
-server.get('/', opts, async (request, response) => {
-	const address : string = request.ip;
-	if ( address === '127.0.0.1' )
-	{
-		response.code(200).send({ message: 'successful response' });
-	}
-	else
-	{
-		response.code(403).send({ message: 'forbidden access'});
-	}
-});
-
+// Main of the backend server
 const start = async () => {
 	try {
-		const PORT = Number(process.env.PORT) || 4241;
-		const HOST = process.env.HOST || '127.0.0.1';
-		await server.listen({ port: PORT, host: HOST });
+		await server.register(prismaPlugin);
 
-		const address = server.server.address();
-		const port = typeof address === 'string' ? address : address?.port
-		server.log.info(`Server running at http://${HOST}:${PORT}`);
+		// NOTE: Testing database
+		if (process.env.NODE_ENV === 'development') {
+			await server.register(import('./routes/test.route.ts'));
+		}
 
+		// Register routes
+		await server.register(import('./routes/healthcheck.route.ts'));
+
+		// Grab the configuration from env
+		const host = process.env.HOST || process.env.HOSTNAME || '127.0.0.1';
+		const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 6000;
+
+		await server.listen({ port, host });
 	} catch (error) {
 		server.log.error(error);
 		process.exit(1);
 	}
 }
+
+// Handler to shut down prisma properly on being signaled
+const stop = async () => {
+	try {
+		await server.close();
+	} catch (error) {
+		server.log.error(error);
+	} finally {
+		process.exit(0);
+	}
+}
+
+process.on('SIGINT', stop);
+process.on('SIGTERM', stop);
 
 start();
