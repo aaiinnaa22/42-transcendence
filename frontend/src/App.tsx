@@ -6,7 +6,7 @@ import {PlayButton} from "./components/PlayButton";
 
 function App() {
   return (
-   <div className="bg-transcendence-black h-screen w-screen flex flex-col gap-70">
+   <div className="bg-transcendence-black min-h-screen w-full flex flex-col">
 		<NavBar></NavBar>
 		<PlayButton></PlayButton>
 	</div>
