@@ -14,6 +14,7 @@ const server : FastifyInstance = Fastify({
 const start = async () => {
 	try {
 		await server.register(prismaPlugin);
+		await server.register(jwtPlugin);
 
 		// NOTE: Testing database
 		if (process.env.NODE_ENV === 'development') {
