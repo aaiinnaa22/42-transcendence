@@ -20,6 +20,19 @@ When testing with the database create it first:
 npm run dev-db-build
 ```
 
+### Environmental Variables
+To test the backend locally, create a `.env` file within the backend directory with the following variables:
+| Variable				| Example										|
+|-----------------------|-----------------------------------------------|
+| DATABASE_URL			| file:./dev.db									|
+| HOSTNAME				| 127.0.0.1 or 0.0.0.0							|
+| PORT					| 4241											|
+| NODE_ENV				| development									|
+| JWT_SECRET			|												|
+| GOOGLE_CLIENT_ID		| Create in Google Cloud Console				|
+| GOOGLE_CLIENT_SECRET	| Create in Google Cloud Console				|
+| GOOGLE_CALLBACK_URL	| http://localhost:4241/auth/google/callback	|
+
 ### Backend Languages
 - Javascript
 - Typescript

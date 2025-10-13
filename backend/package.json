@@ -5,15 +5,23 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "HOSTNAME=127.0.0.1 PORT=6000 NODE_ENV=development nodemon --watch src --exec tsx src/index.ts",
+    "dev": "HOSTNAME=127.0.0.1 PORT=4241 NODE_ENV=development nodemon --watch src --exec tsx src/index.ts",
     "dev-db-build": "NODE_ENV=development npx prisma migrate dev --name init",
     "dev-db-seed": "NODE_ENV=development npx prisma db seed"
   },
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.1.0",
     "@fastify/jwt": "^10.0.0",
     "@fastify/oauth2": "^8.1.2",
     "@prisma/client": "^6.17.0",
+    "dotenv": "^17.2.3",
     "fastify": "^5.6.1",
+    "google-auth-library": "^10.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^4.0.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
