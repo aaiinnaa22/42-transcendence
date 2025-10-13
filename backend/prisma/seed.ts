@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 // Seed the database for the development environment
 const seedDev = async () => {
 	const frank = await prisma.user.upsert({
-		where: { email: 'trashman@hive.fi' },
+		where: { googleId: 'frank-reynolds-google-id' },
 		update: {},
 		create: {
 			email: 'trashman@hive.fi',
@@ -19,7 +19,7 @@ const seedDev = async () => {
 		}
 	});
 	const charlie = await prisma.user.upsert({
-		where: { email: 'wildcard@hive.fi' },
+		where: { googleId: 'charlie-kelly-google-id' },
 		update: {},
 		create: {
 			email: 'wildcard@hive.fi',

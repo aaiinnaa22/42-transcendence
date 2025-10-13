@@ -67,9 +67,9 @@ const authRoutes = async (server: FastifyInstance) => {
 
       server.log.info("Step 4: Upserting user in database...");
       const user = await server.prisma.user.upsert({
-        where: { email },
+        where: { googleId },
         update: {
-          googleId,
+          email,
           username: name || null,
           avatarUrl: picture || null,
           lastLogin: new Date(),
