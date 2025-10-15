@@ -1,3 +1,5 @@
+import {Profile} from "./Profile";
+import {Settings} from "./Settings";
 
 const navItems = ["play", "leaderboard", "tournament"] as const;
 
@@ -19,7 +21,7 @@ export const NavBar = ({currentPage, onNavigate}: NavBarProps) =>
 					const isActive = currentPage == item;
 					return (
 						<div
-							key={item} 
+							key={item}
 							onClick={() => onNavigate(item)}
 							className={"mt-16 rounded-tl-xl rounded-tr-xl px-2 py-2 cursor-pointer border-2 "
 							+ (isActive ? "bg-white border-b-0 border-black" : "hover:pt-3 border-transcendence-beige")}>
@@ -30,9 +32,11 @@ export const NavBar = ({currentPage, onNavigate}: NavBarProps) =>
 					);
 				})}
 			</div>
-			<div className="flex flex-row gap-5">
-				<span className="material-symbols-outlined !text-3xl">account_circle</span>
-				<span className="material-symbols-outlined !text-3xl">settings</span>
+			<div className="flex flex-row gap-5 items-center align-center">
+				{/*<span className="material-symbols-outlined !text-3xl">account_circle</span>*/}
+				<Profile></Profile>
+				{/*<span className="material-symbols-outlined !text-3xl">settings</span>*/}
+				<Settings></Settings>
 			</div>
 		</div>
 	);

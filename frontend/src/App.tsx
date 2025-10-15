@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 import './index.css'
-import {NavBar} from "./components/NavBar";
+import {NavBar} from "./components/navbar/NavBar";
 import {PlayButton} from "./components/PlayButton";
 import {Leaderboard} from "./components/Leaderboard";
 import {Tournament} from "./components/Tournament";
