@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider    = "prisma-client-js"
+}
+
+/// Once ready to launch set the database location in the Docker container's environment
+datasource db {
+    provider    = "sqlite"
+    url         = "file:./dev.db"
+    // url         = env("DATABASE_URL")
+}
+
+model User {
+    id              String      @id @default(uuid())
+    googleId        String      @unique
+    email           String      @unique
+    username        String?
+    avatarUrl       String?
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    lastLogin       DateTime?
+
+    playerStats     PlayerStats?
+}
+
+model PlayerStats {
+    userId          String      @id
+    wins            Int         @default(0)
+    losses          Int         @default(0)
+    playedGames     Int         @default(0)
+    eloRating       Int         @default(1200)
+
+    user            User        @relation(fields: [userId], references: [id])
+}
