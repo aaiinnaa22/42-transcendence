@@ -11,3 +11,23 @@
 	--font-transcendence-two: "Inclusive Sans", sans-serif;
 	--font-transcendence-three: "Bebas Neue", sans-serif;
 }
+
+/* ping pong ball animation
+@keyframes pingpong {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-40%) scale(1.1);
+  }
+  50% {
+    transform: translateY(0) scale(1);
+  }
+  75% {
+    transform: translateY(-20%) scale(0.95);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+*/
