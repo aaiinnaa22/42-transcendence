@@ -45,6 +45,7 @@ const authRoutes = async (server: FastifyInstance) => {
 
       server.log.info("Step 2: Verifying ID token...");
       const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
       const ticket = await client.verifyIdToken({
         idToken,
         audience: process.env.GOOGLE_CLIENT_ID,
@@ -57,7 +58,8 @@ const authRoutes = async (server: FastifyInstance) => {
         return reply.code(400).send({ error: "Invalid ID token" });
       }
 
-      const { email, name, picture, sub: googleId } = payload;
+      const providerSource = "google";
+      const { email, name, sub: providerId } = payload;
       server.log.info(`Step 3: Extracted user info: ${email} (${name})`);
 
       if (!server.prisma) {
@@ -65,23 +67,51 @@ const authRoutes = async (server: FastifyInstance) => {
         throw new Error("Prisma not available on server");
       }
 
-      server.log.info("Step 4: Upserting user in database...");
-      const user = await server.prisma.user.upsert({
-        where: { googleId },
-        update: {
-          email,
-          username: name || null,
-          avatarUrl: picture || null,
-          lastLogin: new Date(),
+      server.log.info("Step 4: Checking for existing provider info...");
+      const existingProvider = await server.prisma.provider.findUnique({
+        where: {
+            providerSource_providerId : { providerSource, providerId }
         },
-        create: {
-          googleId,
-          email,
-          username: name || null,
-          avatarUrl: picture || null,
-          lastLogin: new Date(),
-        },
+        include: { user: true },
       });
+
+      let user: any = null;
+
+      // For existing users the email should've been set during the initial Oauth login or account registration
+      if (existingProvider?.user) {
+        server.log.info("Step 4.a: User exists, updating login time...");
+        user = await server.prisma.user.update({
+            where: { id: existingProvider?.user!.id },
+            data: {
+                lastLogin: new Date(),
+            }
+        });
+      } else {
+        if (await server.prisma.user.findUnique({ where: email })) {
+            // TODO: redirect to login page
+            server.log.info("Step 4.b: Email from the provider already in use...");
+            return reply.code(400).send({ error: "User with that email already exists" });
+        } else {
+            server.log.info("Step 4.c: No existing records on user, creating new account...")
+            user = await server.prisma.user.create({
+                data: {
+                    email,
+                    username: name,
+                    lastLogin: new Date(),
+                    playerStats: { create: {} },
+                    providers: {
+                        create: [
+                            {
+                                providerSource,
+                                providerId,
+                            }
+                        ]
+                    }
+                }
+            });
+        }
+      }
+
       server.log.info(`Step 4 DONE: User upserted (ID: ${user.id})`);
 
       // jwt creation with JWT plugin
@@ -98,6 +128,7 @@ const authRoutes = async (server: FastifyInstance) => {
 
     } catch (err: any) {
       server.log.error(`Google OAuth failed at ${err?.stack || err}`);
+      // TODO: adjust contents of err
       reply.code(500).send({ error: "Google OAuth failed", details: err?.message });
     }
   });
