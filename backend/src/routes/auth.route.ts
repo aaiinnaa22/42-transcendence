@@ -160,7 +160,6 @@ const authRoutes = async (server: FastifyInstance) => {
   server.get("/auth/me", { preHandler: authenticate }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { userId } = request.user as { userId: string };
-
       const user = await server.prisma.user.findUnique({
         where: { id: userId },
         include: { playerStats: true }

@@ -48,8 +48,10 @@ GET /auth/google/callback
   "message": "Login successful",
   "user": {
     "id": "uuid",
+    "googleId": "google-user-id", //maybe?
     "email": "user@example.com",
     "username": "Display Name",
+    "avatarUrl": "https://...",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z",
     "lastLogin": "2024-01-01T00:00:00.000Z",
@@ -144,8 +146,10 @@ POST /auth/login
   "message": "Login successful",
   "user": {
     "id": "uuid",
+    "googleId": "local-timestamp", //maybe?
     "email": "user@example.com",
     "username": "DisplayName",
+    "avatarUrl": null,
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z",
     "lastLogin": "2024-01-01T00:00:00.000Z",
@@ -192,8 +196,10 @@ Authorization: Bearer <jwt-token>
 ```json
 {
   "id": "uuid",
+  "googleId": "google-user-id", //maybe
   "email": "user@example.com",
   "username": "Display Name",
+  "avatarUrl": "https://...",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z",
   "lastLogin": "2024-01-01T00:00:00.000Z",
@@ -267,8 +273,10 @@ Content-Type: application/json
 ```json
 {
   "id": "uuid",
+  "googleId": "google-user-id",
   "email": "user@example.com",
   "username": "NewDisplayName",
+  "avatarUrl": "https://new-avatar-url.com",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z",
   "lastLogin": "2024-01-01T00:00:00.000Z",
@@ -356,8 +364,10 @@ curl http://localhost:4241/healthcheck
 ```typescript
 interface User {
   id: string;           // UUID
+  googleId?: string;     // Google user ID or local timestamp //maybe?
   email: string;         // User email (unique)
   username?: string;    // Display name
+  avatarUrl?: string;   // Profile picture URL
   password?: string;    // Hashed password (for local auth)
   createdAt: Date;      // Account creation date
   updatedAt: Date;      // Last update date
