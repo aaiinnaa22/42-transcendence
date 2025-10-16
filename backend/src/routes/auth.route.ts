@@ -87,7 +87,7 @@ const authRoutes = async (server: FastifyInstance) => {
             }
         });
       } else {
-        if (await server.prisma.user.findUnique({ where: email })) {
+        if (await server.prisma.user.findUnique({ where:{ email }})) {
             // TODO: redirect to login page
             server.log.info("Step 4.b: Email from the provider already in use...");
             return reply.code(400).send({ error: "User with that email already exists" });
@@ -120,6 +120,7 @@ const authRoutes = async (server: FastifyInstance) => {
       server.log.info("Step 5 DONE: JWT created");
 
       // Return session token
+      // TODO: Setup JWT renew token
       reply.send({
         message: "Login successful",
         user,

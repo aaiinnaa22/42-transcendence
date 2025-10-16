@@ -5,7 +5,7 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "HOSTNAME=127.0.0.1 PORT=4241 NODE_ENV=development nodemon --watch src --exec tsx src/index.ts",
+    "dev": "NODE_ENV=development nodemon --watch src --exec tsx src/index.ts",
     "dev-db-build": "NODE_ENV=development npx prisma migrate dev --name init",
     "dev-db-seed": "NODE_ENV=development npx prisma db seed"
   },

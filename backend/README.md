@@ -72,41 +72,15 @@ The default rating of all new players is set to 1200.
 
 ### Database
 
-The database will consist of two different tables. One for user data, another for player statistics.
+The database will consist of multiple tables with relations to each other. A main table for an user which ties to authentication provider table(s) and/or local authentication details table. A default table is attached to the user which includes details on the games played by the given user.
 
-```prisma
-model User {
-    id              String      @id @default(uuid())
-    googleId        String      @unique
-    email           String      @unique
-    username        String?
-    avatarUrl       String?
-    createdAt       DateTime    @default(now())
-    updatedAt       DateTime    @updatedAt
-    lastLogin       DateTime?
-
-    playerStats     PlayerStats?
-}
-```
-
-```prisma
-model PlayerStats {
-    userId          String      @id
-    wins            Int         @default(0)
-    losses          Int         @default(0)
-    playedGames     Int         @default(0)
-    eloRating       Int         @default(1200)
-
-    user            User        @relation(fields: [userId], references: [id])
-}
-```
+The UUID is used within the JWT responses to authorize data access.
 
 
 ### TODOs
 - Implement an API which is able to communicate with the database.
-- Implement SQLite database which stores client information (UUID, Google ID, username, email, creation date, last login), and tournament information (wins/losses, rank).
-- Utilize oauth2 for authentication in order to avoid salting + hashing passwords in the database ourselves.
+- Implement local account registration on the /auth/register route. Include hashed + salted credentials.
+- Provide authenticated users with a JWT authoriztion token.
 - Make the game server-authoritative by moving game logic to the backend.
 - Switch to secure connections (https).
-- Switch request schema with JWT for session management and authentication.
 - Implement schemas for game data streaming.
