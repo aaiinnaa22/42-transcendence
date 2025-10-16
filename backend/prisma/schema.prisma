@@ -2,35 +2,60 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider    = "prisma-client-js"
+  provider    = "prisma-client-js"
 }
 
 /// Once ready to launch set the database location in the Docker container's environment
 datasource db {
-    provider    = "sqlite"
-    url         = "file:./dev.db"
-    // url         = env("DATABASE_URL")
+  provider    = "sqlite"
+  url         = "file:./dev.db"
+  // url         = env("DATABASE_URL")
 }
 
+// User table containing user-related information
 model User {
     id              String      @id @default(uuid())
     googleId        String      @unique
-    email           String      @unique
+    email           String?     @unique
     username        String?
     avatarUrl       String?
+    password        String?     // For local auth
     createdAt       DateTime    @default(now())
     updatedAt       DateTime    @updatedAt
     lastLogin       DateTime?
-
     playerStats     PlayerStats?
+    providers       Provider[]
+    credential      Credential?
 }
 
-model PlayerStats {
-    userId          String      @id
-    wins            Int         @default(0)
-    losses          Int         @default(0)
-    playedGames     Int         @default(0)
-    eloRating       Int         @default(1200)
+// Authentication providers table (Google, GitHub, Facebook, etc)
+model Provider {
+  userId          String
+  providerSource  String
+  providerId      String
 
-    user            User        @relation(fields: [userId], references: [id])
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([providerSource, providerId])
+  @@index([userId])
+}
+
+// Table for local authentication of the user
+model Credential {
+  userId          String      @id
+  password        String
+  updatedAt       DateTime    @updatedAt
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// User's player statistics table
+model PlayerStats {
+  userId          String      @id
+  wins            Int         @default(0)
+  losses          Int         @default(0)
+  playedGames     Int         @default(0)
+  eloRating       Int         @default(1200)
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -5,30 +5,42 @@ const prisma = new PrismaClient();
 // Seed the database for the development environment
 const seedDev = async () => {
 	const frank = await prisma.user.upsert({
-		where: { googleId: 'frank-reynolds-google-id' },
+		where: { email: 'trashman@hive.fi' },
 		update: {},
 		create: {
 			email: 'trashman@hive.fi',
-			googleId: 'frank-reynolds-google-id',
 			username: 'TrashMan',
-			avatarUrl: null,
 			lastLogin: new Date(),
 			playerStats: {
 				create: {}
+			},
+			providers: {
+				create: [
+					{
+						providerSource: "google",
+						providerId: 'frank-reynolds-google-id',
+					},
+				]
 			}
 		}
 	});
 	const charlie = await prisma.user.upsert({
-		where: { googleId: 'charlie-kelly-google-id' },
+		where: { email: 'wildcard@hive.fi' },
 		update: {},
 		create: {
 			email: 'wildcard@hive.fi',
-			googleId: 'charlie-kelly-google-id',
 			username: 'The Wildcard',
-			avatarUrl: null,
 			lastLogin: new Date(),
 			playerStats: {
 				create: {}
+			},
+			providers: {
+				create: [
+					{
+						providerSource: "google",
+						providerId: 'charlie-kelly-google-id',
+					},
+				]
 			}
 		}
 	});
