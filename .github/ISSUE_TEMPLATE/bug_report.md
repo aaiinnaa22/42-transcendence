@@ -19,5 +19,5 @@ Explain what you expected to happen.
 ## Actual Behavior
 Explain what actually happened.
 
-## Steps to Reproduc
+## Steps to Reproduce
 Explain the steps to reproduce the behavior.
