@@ -32,6 +32,7 @@ To test the backend locally, create a `.env` file within the backend directory w
 | GOOGLE_CLIENT_ID		| Create in Google Cloud Console				|
 | GOOGLE_CLIENT_SECRET	| Create in Google Cloud Console				|
 | GOOGLE_CALLBACK_URL	| http://localhost:4241/auth/google/callback	|
+| SALT_ROUNDS			| How many times hashing should salt the creds	|
 
 ### Backend Languages
 - Javascript
@@ -79,8 +80,6 @@ The UUID is used within the JWT responses to authorize data access.
 
 ### TODOs
 - Implement an API which is able to communicate with the database.
-- Implement local account registration on the /auth/register route. Include hashed + salted credentials.
-- Provide authenticated users with a JWT authoriztion token.
 - Make the game server-authoritative by moving game logic to the backend.
 - Switch to secure connections (https).
 - Implement schemas for game data streaming.
