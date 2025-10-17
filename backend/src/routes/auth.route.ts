@@ -219,19 +219,24 @@ const authRoutes = async (server: FastifyInstance) => {
       // Find user
       const user = await server.prisma.user.findUnique({
         where: { email },
-        include: { playerStats: true, credential: true }
+        include: { playerStats: true }
       });
 
       if (!user) {
         return reply.code(401).send({ error: "Invalid user" });
       }
 
+      const existingCredential = await server.prisma.credential.findUnique({
+        where: { userId: user.id },
+        select: { password: true },
+       });
+
       // Verify password
-      if (!user.credential || !user.credential.password) {
+      if (!existingCredential?.password) {
         return reply.code(401).send({ error: "Invalid password" });
       }
 
-      const isValidPassword = await bcrypt.compare(password, user.credential.password);
+      const isValidPassword = await bcrypt.compare(password, existingCredential.password);
       if (!isValidPassword) {
         return reply.code(401).send({ error: "Invalid password" });
       }
