@@ -1,8 +1,4 @@
-type LoginProps = {
-	onLoginSuccess: () => void;
-};
-
-export const Login = ({onLoginSuccess}: LoginProps) => {
+export const Login = () => {
 	return (
 		<div>Login Page</div>
 	);
