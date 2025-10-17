@@ -6,7 +6,7 @@ const userRoutes = async (server: FastifyInstance) => {
   server.get("/users/profile", { preHandler: authenticate }, async (request, reply) => {
     try {
       const { userId } = request.user as { userId: string };
-      
+
       const user = await server.prisma.user.findUnique({
         where: { id: userId },
         include: { playerStats: true }
@@ -27,13 +27,12 @@ const userRoutes = async (server: FastifyInstance) => {
   server.put("/users/profile", { preHandler: authenticate }, async (request, reply) => {
     try {
       const { userId } = request.user as { userId: string };
-      const { username, avatarUrl } = request.body as { username?: string; avatarUrl?: string };
-      
+      const { username } = request.body as { username?: string };
+
       const user = await server.prisma.user.update({
         where: { id: userId },
         data: {
           username: username || undefined,
-          avatarUrl: avatarUrl || undefined,
         },
         include: { playerStats: true }
       });
