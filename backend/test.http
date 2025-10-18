@@ -10,3 +10,22 @@ Accept: application/json
 GET http://127.0.0.1:4241/test/<UUID> HTTP/1.1
 Accept: application/json
 
+### test local register
+POST http://localhost:4241/auth/register
+Content-Type: application/json
+
+{
+  "username": "rich",
+  "email": "rich@example.com",
+  "password": "12345678"
+}
+
+### test local login
+POST http://localhost:4241/auth/login
+Content-Type: application/json
+
+{
+  "username": "rich",
+  "email": "rich@example.com",
+  "password": "12345678"
+}
