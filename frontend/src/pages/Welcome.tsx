@@ -1,6 +1,6 @@
 import GoogleSignIn from "../assets/googleSignIn.svg";
-import { SignUp } from "./SignUp";
-import { Login } from "./Login";
+import { SignUp } from "../components/welcome/SignUp";
+import { Login } from "../components/welcome/Login";
 import {Route, Routes, useNavigate, useLocation} from "react-router-dom";
 
 export const Welcome = () => {
