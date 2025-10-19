@@ -5,22 +5,21 @@ if [ -f /app/.env ]; then
   export $(grep -v '^#' /app/.env | xargs)
 fi
 
-# Ensure Prisma client exists
+# Making sure that Prisma client exists
 npx prisma generate
 
-# Apply migrations (if any). For SQLite you can use migrate deploy.
+# Applying migrations if they exist
 if npx prisma migrate status >/dev/null 2>&1; then
   echo "Running migrations..."
   npx prisma migrate deploy || true
 fi
 
-# Seed the DB (only if you have a prisma seed configured)
+# Seeding basics into the database
 if [ -f /app/prisma/seed.ts ] || [ -f /app/prisma/seed.js ]; then
   echo "Seeding DB..."
   npx prisma db seed || true
 fi
 
-# Start the compiled Node app
 echo "Starting backend..."
 exec npm run dev
 
