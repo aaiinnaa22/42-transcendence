@@ -9,15 +9,15 @@ fi
 npx prisma generate
 
 # Applying migrations if they exist
-if npx prisma migrate status >/dev/null 2>&1; then
-  echo "Running migrations..."
-  npx prisma migrate deploy || true
-fi
+echo "Running migrations..."
+npx prisma migrate deploy || echo "Migration step skipped (no migrations found)."
 
 # Seeding basics into the database
 if [ -f /app/prisma/seed.ts ] || [ -f /app/prisma/seed.js ]; then
-  echo "Seeding DB..."
-  npx prisma db seed || true
+  echo "Seeding database..."
+  npx prisma db seed || echo "Seeding failed or skipped"
+else
+  echo "No seed file found, skipping..."
 fi
 
 echo "Starting backend..."
