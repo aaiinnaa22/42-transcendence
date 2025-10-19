@@ -1,15 +1,3 @@
-const createUserSchema = {
-	type: 'object',
-	required: [ 'googleId', 'email' ],
-	properties: {
-		googleId: { type: 'string' },
-		email: { type: 'string', format: 'email' },
-		username: { type: ['string', 'null'] },
-		avatarUrl: { type: ['string', 'null'] }
-	},
-	additionalProperties: false
-};
-
 const userRequestSchema = {
 	type: 'object',
 	required: [ 'id' ],
@@ -21,13 +9,11 @@ const userRequestSchema = {
 
 const userResponseSchema = {
 	type: 'object',
-	required: [ 'id', 'googleId', 'email' ],
+	required: [ 'id' ],
 	properties: {
 		id: { type: 'string' },
-		googleId: { type: 'string' },
-		email: { type: 'string', format: 'email' },
+		email: { type: ['string', 'null'], format: 'email' },
 		username: { type: ['string', 'null'] },
-		avatarUrl: { type: ['string', 'null'] },
 		createdAt: { type: 'string', format: 'date-time' },
 		updatedAt: { type: 'string', format: 'date-time' },
 		lastLogin: { type: ['string', 'null'], format: 'date-time' },
@@ -35,4 +21,4 @@ const userResponseSchema = {
 	additionalProperties: false
 };
 
-export default { createUserSchema, userRequestSchema, userResponseSchema };
+export default { userRequestSchema, userResponseSchema };

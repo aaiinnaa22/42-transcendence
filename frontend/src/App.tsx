@@ -16,4 +16,17 @@ function App() {
 	);
 };
 
+/*function App() {
+	const [isGameOn, setGameOn] = useState(false);
+	return (
+	<div className="bg-transcendence-black min-h-screen w-full flex flex-col">
+		<NavBar></NavBar>
+		{!isGameOn ?
+			(<PlayButton startGame={() => setGameOn(true)}></PlayButton>) :
+			(<GameComponent exitGame={() => setGameOn(false)}></GameComponent>)
+		}
+	</div>
+  )
+}*/
+
 export default App
