@@ -1,34 +1,20 @@
-import { useState } from 'react'
-import './App.css'
+import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import './index.css'
-import {NavBar} from "./components/NavBar";
-import {PlayButton} from "./components/PlayButton";
-import {Leaderboard} from "./components/Leaderboard";
-import {Tournament} from "./components/Tournament";
+import {Home} from "./pages/Home";
+import {Welcome} from "./pages/Welcome";
 
 function App() {
-	const [isGameOn, setGameOn] = useState(false);
-	type Page = "play" | "leaderboard" | "tournament";
-	const [currentPage, setPage] = useState<Page>("play");
-
-	const renderPage = () => {
-		switch (currentPage)
-		{
-			case "leaderboard":
-				return <Leaderboard></Leaderboard>;
-			case "tournament":
-				return <Tournament></Tournament>;
-			default:
-				return <PlayButton startGame={() => setGameOn(true)} ></PlayButton>;
-		}
-	};
+	const [isLoggedIn, setLoggedIn] = useState(false);
 	return (
-		<div className="bg-transcendence-black min-h-screen w-full flex flex-col">
-			<NavBar currentPage={currentPage} onNavigate={setPage}></NavBar>
-			{renderPage()};
-		</div>
-  )
-}
+		<Router>
+			<Routes>
+				<Route path="/*" element={<Welcome/>} />
+				<Route path="/home" element={isLoggedIn ? <Home /> : <Navigate to="/" replace/>} />
+			</Routes>
+		</Router>
+	);
+};
 
 /*function App() {
 	const [isGameOn, setGameOn] = useState(false);
