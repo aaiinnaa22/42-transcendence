@@ -6,12 +6,12 @@ services:
       - "4241:4241"
     env_file:
       - ./backend/.env
-    environment:
-      DATABASE_URL: "file:/data/dev.db"
+    #environment:
+    #  DATABASE_URL: "file:/data/dev.db"
     networks:
       - transcendence_net
     volumes:
-      - db_data:/data
+      - db_data:/app/prisma
 
   frontend:
     build: ./frontend
