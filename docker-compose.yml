@@ -1,0 +1,35 @@
+services:
+  backend:
+    build: ./backend
+    container_name: tr_backend
+    ports:
+      - "4241:4241"
+    env_file:
+      - ./backend/.env
+    #environment:
+    #  DATABASE_URL: "file:/data/dev.db"
+    networks:
+      - transcendence_net
+    volumes:
+      - db_data:/app/prisma
+
+  frontend:
+    build: ./frontend
+    container_name: tr_frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: "http://backend:4241"
+      HOST: "0.0.0.0"
+      PORT: 8080
+    networks:
+      - transcendence_net
+
+networks:
+  transcendence_net:
+    driver: bridge
+
+volumes:
+  db_data:
