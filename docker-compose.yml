@@ -17,13 +17,13 @@ services:
     build: ./frontend
     container_name: tr_frontend
     ports:
-      - "3000:3000"
+      - "8080:8080"
     depends_on:
       - backend
     environment:
       VITE_API_URL: "http://backend:4241"
       HOST: "0.0.0.0"
-      PORT: 3000
+      PORT: 8080
     networks:
       - transcendence_net
 
