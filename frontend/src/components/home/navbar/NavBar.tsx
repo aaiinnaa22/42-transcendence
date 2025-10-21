@@ -33,10 +33,8 @@ export const NavBar = ({currentPage, onNavigate}: NavBarProps) =>
 				})}
 			</div>
 			<div className="flex flex-row gap-5 items-center align-center">
-				{/*<span className="material-symbols-outlined !text-3xl">account_circle</span>*/}
-				<Profile></Profile>
-				{/*<span className="material-symbols-outlined !text-3xl">settings</span>*/}
-				<Settings></Settings>
+				<Profile/>
+				<Settings/>
 			</div>
 		</div>
 	);
