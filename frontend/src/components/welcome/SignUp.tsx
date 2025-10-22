@@ -5,24 +5,37 @@ export const SignUp = () => {
 	const [email, setEmail] = useState("");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
+	const [error, setError] = useState("");
 	const navigate = useNavigate();
 
 	const handleSignUp = async (e: React.FormEvent) =>
 	{
 		e.preventDefault();
-		const response = await fetch("http://localhost:4241/auth/register",
-		{
-			method: "POST",
-			headers:{
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({email, password, username,}),
-		});
-		const data = await response.json();
-		if (data.message === "Registration successful")
-			navigate("/home");
-		else
-			console.error(data.message || "Signup failed");
+		setError("");
+
+		try {
+			const response = await fetch("http://localhost:4241/auth/register",
+			{
+				method: "POST",
+				headers:{
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({email, password, username,}),
+			});
+			const data = await response.json();
+			if (!response.ok || data.error)
+			{
+				throw new Error(data.error || "Signup failed. Please try again.");
+			}
+			if (data.message === "Registration successful")
+				navigate("/home");
+			else
+				throw new Error(data.message || "Something went wrong. Please try again later.");
+		}
+		catch (err: any) {
+			console.error("Signup error:", err);
+			setError(err.message || "Something went wrong. Please try again later.");
+		}
 	};
 
 	return (
@@ -42,6 +55,7 @@ export const SignUp = () => {
 				placeholder="password"
 				onChange={(e) => setPassword(e.target.value)}
 				className="border-1 rounded-lg placeholder:text-lg px-3 text-2xl w-75 h-10 landscape:placeholder:text-sm landscape:text-sm landscape:w-60 landscape:h-8 lg:landscape:w-75 lg:landscape:h-10 lg:landscape:text-lg lg:landscape:placeholder:text-lg"/>
+			{error && <div className="text-red-500 text-sm landscape:text-xs lg:landscape:text-sm">{error}</div>}
 			<div className="bg-transcendence-beige flex rounded-2xl w-35 h-18 align-center text-md font-bold justify-center text-center mt-5 landscape:mt-3 lg:landscape:mt-10 tracking-wider landscape:text-xs landscape:w-20 landscape:h-14 lg:landscape:text-lg lg:landscape:w-35 lg:landscape:h-18">
 				<button className="text-transcendence-black cursor-pointer hover:pt-2" type="submit">SUBMIT</button>
 			</div>
