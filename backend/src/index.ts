@@ -13,6 +13,21 @@ const server : FastifyInstance = Fastify({
 // Main of the backend server
 const start = async () => {
 	try {
+		// Register CORS plugin FIRST
+		await server.register(import('@fastify/cors'), {
+			origin: [
+				'http://localhost:8080',
+				'http://127.0.0.1:8080',
+				'http://frontend:8080', // Docker container name
+				'http://tr_frontend:8080', // Docker container name
+				'http://localhost:3000', // Alternative local port
+				'http://127.0.0.1:3000' // Alternative local port
+			],
+			credentials: true,
+			methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+			allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+		});
+
 		await server.register(prismaPlugin);
 		await server.register(jwtPlugin);
 
