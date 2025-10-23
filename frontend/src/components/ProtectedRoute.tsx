@@ -14,7 +14,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-	useEffect(() => {
+	/*useEffect(() => {
 		const checkAuth = async () => {
 			try
 			{
@@ -33,11 +33,11 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 			}
 		};
 		checkAuth();
-	}, []);
+	}, []);*/
 
-	if (!isAuthenticated) {
+	/*if (!isAuthenticated) {
 		return <Navigate to="/" replace />;
-	}
+	}*/
 
 	return <>{children}</>
 }

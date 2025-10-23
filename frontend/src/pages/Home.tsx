@@ -1,23 +1,25 @@
 import { useState } from 'react'
 import {NavBar} from "../components/home/navbar/NavBar";
 import {PlayButton} from "../components/home/PlayButton";
-import {Leaderboard} from "../components/home/Leaderboard";
-import {Tournament} from "../components/home/Tournament";
+import {Stats} from "../components/home/Stats";
+import {Profile} from "../components/home/Profile";
 import {Game} from "../components/home/Game";
+import {Settings} from "../components/home/navbar/Settings";
 
 export const Home = () => {
 	const [isGameOn, setGameOn] = useState(false);
-	type Page = "play" | "leaderboard" | "tournament";
+	type Page = "play" | "stats" | "profile";
 	const [currentPage, setCurrentPage] = useState<Page>("play");
+	const [showSettings, setShowSettings] = useState(false);
 
 	const renderPage = () =>
 	{
 		switch (currentPage)
 		{
-			case "leaderboard":
-				return <Leaderboard/>
-			case "tournament":
-				return <Tournament/>;
+			case "stats":
+				return <Stats/>
+			case "profile":
+				return <Profile/>;
 			default:
 				return !isGameOn
 					? (<PlayButton startGame={() => setGameOn(true)}/>)
@@ -26,8 +28,9 @@ export const Home = () => {
 	}
 	return (
 		<div className="bg-transcendence-black min-h-screen w-full flex flex-col">
-			<NavBar currentPage={currentPage} onNavigate={setCurrentPage}/>
+			<NavBar currentPage={currentPage} onNavigate={setCurrentPage} onSettingsClick={() => setShowSettings(!showSettings)} activeSettings={showSettings}/>
 			{renderPage()};
+			{<Settings isOpen={showSettings}/>}
 		</div>
 	)
 };

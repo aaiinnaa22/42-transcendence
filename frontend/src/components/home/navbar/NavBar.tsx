@@ -1,7 +1,7 @@
-import {Profile} from "./Profile";
-import {Settings} from "./Settings";
 
-const navItems = ["play", "leaderboard", "tournament"] as const;
+import { useState } from "react";
+
+const navItems = ["play", "stats", "profile"] as const;
 
 type Page = typeof navItems[number];
 
@@ -9,9 +9,11 @@ type NavBarProps =
 {
 	currentPage: Page;
 	onNavigate: (page: Page) => void;
+	onSettingsClick: () => void;
+	activeSettings: boolean;
 };
 
-export const NavBar = ({currentPage, onNavigate}: NavBarProps) =>
+export const NavBar = ({currentPage, onNavigate, onSettingsClick, activeSettings}: NavBarProps) =>
 {
 	return (
 		<div className="flex flex-row items-center justify-between h-18 lg:h-32 bg-transcendence-beige px-10">
@@ -32,9 +34,13 @@ export const NavBar = ({currentPage, onNavigate}: NavBarProps) =>
 					);
 				})}
 			</div>
-			<div className="flex flex-row gap-5 items-center align-center">
-				<Profile/>
-				<Settings/>
+			<div className="relative w-[1.75em] h-[1.75em] flex items-center justify-center group">
+				<span className={"absolute rounded-full w-[1.2em] h-[1.2em] bg-transparent " + (activeSettings ? "!bg-transcendence-white" : "group-hover:bg-transcendence-white")}></span>
+				<span
+					className="relative material-symbols-outlined !text-3xl cursor-pointer"
+					onClick={onSettingsClick}>
+					settings
+				</span>
 			</div>
 		</div>
 	);
