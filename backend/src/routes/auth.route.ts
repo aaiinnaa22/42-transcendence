@@ -145,11 +145,10 @@ const authRoutes = async (server: FastifyInstance) => {
       setAuthCookies(reply, accessToken, refreshToken);
       server.log.info("Step 5 DONE: JWT created");
 
-      reply.send({
-        message: "Login successful",
-        user,
-
-      });
+      //NEW: redirect from google auth
+      const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
+      server.log.info(`Step 6: Redirecting to ${clientRedirectUrl}`);
+      return reply.redirect(clientRedirectUrl);
 
     } catch (err: any) {
       server.log.error(`Google OAuth failed at ${err?.stack || err}`);
