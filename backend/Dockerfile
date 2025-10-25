@@ -6,7 +6,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-COPY . . 
+COPY prisma ./prisma
+COPY src ./src
 
 #Data dir for SQLite
 RUN mkdir -p /data && chmod 777 /data

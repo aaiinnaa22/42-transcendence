@@ -11,7 +11,7 @@ services:
     networks:
       - transcendence_net
     volumes:
-      - db_data:/app/prisma
+      - ./backend/prisma:/app/prisma 
 
   frontend:
     build: ./frontend
@@ -32,4 +32,4 @@ networks:
     driver: bridge
 
 volumes:
-  db_data:
+  db_data: {}
