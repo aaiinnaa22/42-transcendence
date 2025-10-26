@@ -4,7 +4,7 @@ import {PlayButton} from "../components/home/PlayButton";
 import {Stats} from "../components/home/Stats";
 import {Profile} from "../components/home/Profile";
 import {Game} from "../components/home/Game";
-import {Settings} from "../components/home/navbar/Settings";
+import {Settings} from "../components/home/settings/Settings";
 
 export const Home = () => {
 	const [isGameOn, setGameOn] = useState(false);
