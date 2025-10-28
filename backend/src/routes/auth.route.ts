@@ -4,6 +4,28 @@ import { OAuth2Client } from "google-auth-library";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import bcrypt from "bcrypt";
 
+//TO DO: redirecting the user back to the client 
+
+function setAuthCookies(reply: FastifyReply, accessToken: string, refreshToken: string) {
+  reply
+    .setCookie('accessToken', accessToken, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      signed: true,
+      maxAge: 60 * 15, // 15 min
+    })
+    .setCookie('refreshToken', refreshToken, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      signed: true,
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+}
+
 const authRoutes = async (server: FastifyInstance) => {
   server.register(fastifyOauth2, {
     name: "googleOAuth2",
@@ -118,16 +140,15 @@ const authRoutes = async (server: FastifyInstance) => {
 
       // jwt creation with JWT plugin
       server.log.info("Step 5: Signing app JWT...");
-      const appToken = server.jwt.sign({ userId: user.id, email: user.email });
+      const accessToken = server.jwt.sign({ userId: user.id, email: user.email }, {expiresIn: '15m'} );
+      const refreshToken = server.jwt.sign({userId: user.id}, {expiresIn: '7d'});
+      setAuthCookies(reply, accessToken, refreshToken);
       server.log.info("Step 5 DONE: JWT created");
 
-      // Return session token
-      // TODO: Setup JWT renew token
-      reply.send({
-        message: "Login successful",
-        user,
-        appToken,
-      });
+      //NEW: redirect from google auth
+      const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
+      server.log.info(`Step 6: Redirecting to ${clientRedirectUrl}`);
+      return reply.redirect(clientRedirectUrl);
 
     } catch (err: any) {
       server.log.error(`Google OAuth failed at ${err?.stack || err}`);
@@ -156,9 +177,12 @@ const authRoutes = async (server: FastifyInstance) => {
     }
   });
 
-  // Logout endpoint (client discards token)
+  // Logout endpoint (now it clears cookies)
   server.post("/auth/logout", { preHandler: authenticate }, async (request: FastifyRequest, reply: FastifyReply) => {
-    reply.send({ message: "Logged out successfully" });
+    reply
+      .clearCookie('accessToken', { path: '/' })
+      .clearCookie('refreshToken', { path: '/' })
+      .send({ message: "Logged out successfully" });
   });
 
   // Register with email/password
@@ -196,13 +220,15 @@ const authRoutes = async (server: FastifyInstance) => {
         }
       });
 
-      // Generate JWT
-      const appToken = server.jwt.sign({ userId: user.id, email: user.email });
+      // Generate JWT (access and refresh tokens)
+      const accessToken = server.jwt.sign({ userId: user.id, email: user.email }, { expiresIn: '15m' });
+      const refreshToken = server.jwt.sign({ userId: user.id }, { expiresIn: '7d' });
+
+      setAuthCookies(reply, accessToken, refreshToken);
 
       reply.send({
         message: "Registration successful",
         user,
-        appToken,
       });
 
     } catch (err: any) {
@@ -247,20 +273,44 @@ const authRoutes = async (server: FastifyInstance) => {
         data: { lastLogin: new Date() }
       });
 
-      // Generate JWT
-      const appToken = server.jwt.sign({ userId: user.id, email: user.email });
+      // Generate JWT (access and refresh)
+      const accessToken = server.jwt.sign({ userId: user.id, email: user.email }, { expiresIn: '15m' });
+      const refreshToken = server.jwt.sign({ userId: user.id }, { expiresIn: '7d' });
+
+      setAuthCookies(reply, accessToken, refreshToken);
 
       reply.send({
         message: "Login successful",
         user,
-        appToken,
       });
-
     } catch (err: any) {
       server.log.error(`Login failed: ${err?.message}`);
       reply.code(500).send({ error: "Login failed" });
     }
   });
+  // TO DO: /auth/refresh route
+  server.post('/auth/refresh', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const signed = request.cookies.refreshToken;
+      if (!signed) return reply.code(401).send({ error: 'No refresh token' });
+
+      const unsign = request.unsignCookie(signed);
+      if (!unsign.valid) return reply.code(401).send({ error: 'Invalid cookie signature' });
+
+      const decoded = server.jwt.verify(unsign.value) as { userId: string };
+      const user = await server.prisma.user.findUnique({ where: { id: decoded.userId } });
+      if (!user) return reply.code(404).send({ error: 'User not found' });
+
+      const newAccess = server.jwt.sign({ userId: user.id, email: user.email }, { expiresIn: '15m' });
+      const newRefresh = server.jwt.sign({ userId: user.id }, { expiresIn: '7d' });
+      setAuthCookies(reply, newAccess, newRefresh);
+
+      reply.send({ message: 'Token refreshed' });
+    } catch (err: any){
+      server.log.error(`Refresh failed: ${err.message}`);
+      reply.code(401).send({ error: 'Invalid refresh token' })
+    }
+  })
 };
 
 export default authRoutes;

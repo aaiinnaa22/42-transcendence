@@ -5,6 +5,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { Server, IncomingMessage, ServerResponse } from 'http'; // TODO: Change to https once viable
 import prismaPlugin from './plugins/prisma.ts';
 import jwtPlugin from './plugins/jwt.ts';
+import fastifyCookie from '@fastify/cookie';
 
 const server : FastifyInstance = Fastify({
 	logger: true
@@ -14,6 +15,14 @@ const server : FastifyInstance = Fastify({
 const start = async () => {
 	try {
 		// Register CORS plugin FIRST
+		await server.register(fastifyCookie, {
+			secret: process.env.COOKIE_SECRET!,
+			parseOptions:{
+				sameSite: 'strict',
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+			}
+		});
 		await server.register(import('@fastify/cors'), {
 			origin: [
 				'http://localhost:8080',
