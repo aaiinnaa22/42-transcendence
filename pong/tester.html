@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fastify WebSocket Test</title>
+  <style>
+    body { font-family: sans-serif; background: #222; color: #eee; text-align: center; }
+    canvas { background: #333; margin-top: 20px; border: 1px solid #666; }
+  </style>
+</head>
+<body>
+  <h1>Fastify WebSocket Test</h1>
+  <p>Use arrow keys to move your player</p>
+  <p id="status">Connecting...</p>
+  <canvas id="game" width="400" height="400"></canvas>
+
+  <script>
+    const ws = new WebSocket('ws://localhost:4545/ws');
+    const status = document.getElementById('status');
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    let players = {};
+
+    ws.onopen = () => {
+      status.textContent = "Connected!";
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'state') {
+        players = data.players;
+        draw();
+      }
+    };
+
+    ws.onclose = () => {
+      status.textContent = "Disconnected.";
+    };
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const id in players) {
+        const { x, y } = players[id];
+        ctx.fillStyle = 'lime';
+        ctx.fillRect(200 + x, 200 + y, 10, 10);
+      }
+    }
+
+    // Send movement commands with arrow keys
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp') sendMove(0, -5);
+      if (e.key === 'ArrowDown') sendMove(0, 5);
+      if (e.key === 'ArrowLeft') sendMove(-5, 0);
+      if (e.key === 'ArrowRight') sendMove(5, 0);
+    });
+
+    function sendMove(dx, dy) {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'move', dx, dy }));
+      }
+    }
+  </script>
+</body>
+</html>
+
