@@ -23,6 +23,7 @@ export const Settings = ({isOpen}: SettingsProps) =>
 			const response = await fetch("http://localhost:4241/auth/logout",
 			{
 				method: "POST",
+				credentials: "include",
 			});
 			const data = await response.json();
 			if (!response.ok || data.error)

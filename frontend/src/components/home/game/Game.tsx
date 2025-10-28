@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from "react";
-import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN } from "./constants";
+import React, { useRef, useEffect, useState } from "react";
+import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN } from "./constants.ts";
 
 type GameProps = {
 	exitGame: () => void;
@@ -12,6 +12,8 @@ export const Game = ({exitGame}: GameProps) =>
     const player = useRef({ x: 10, y: HEIGHT/2, width: 10, height: PADDLE_LEN, points: 0 });
     const player2 = useRef({ x: 1580, y: HEIGHT/2, width: 10, height: PADDLE_LEN, points: 0 });
     const ball = useRef({ x: WIDTH/2, y: HEIGHT/2, vx: 0, vy: 0 });
+	const [player1PointsHtml, setPlayer1PointsHtml] = useState(0);
+	const [player2PointsHtml, setPlayer2PointsHtml] = useState(0);
 
     const keysPressed = useRef({});
 
@@ -34,16 +36,16 @@ export const Game = ({exitGame}: GameProps) =>
         if (keysPressed.current["w"] && playerReference.y != 0) playerReference.y -= 10;
         if (keysPressed.current["s"] && playerReference.y != (HEIGHT-PADDLE_LEN)) playerReference.y += 10;
         //randomize the starting direction
-        if (keysPressed.current[" "] && ballReference.vx === 0 && ballReference.vy === 0) 
+        if (keysPressed.current[" "] && ballReference.vx === 0 && ballReference.vy === 0)
         {
                 ballReference.vx = Math.random() < 0.5 ? Math.random() * -6 - 9 : Math.random() * 6 + 9;
                 ballReference.vy = Math.floor(Math.random() * 8) - 4;
         }
 
-        //Update ball position 
+        //Update ball position
         ballReference.x += ballReference.vx;
         ballReference.y += ballReference.vy;
-    
+
         //check if ball is colliding players
         if (ballReference.x >= playerReference.x && ballReference.x <= playerReference.x + playerReference.width && ballReference.y >= playerReference.y && ballReference.y <= playerReference.y + playerReference.height)
         {
@@ -93,17 +95,19 @@ export const Game = ({exitGame}: GameProps) =>
 
         const ctx = canvasRef.current.getContext("2d");
 
-        
+
         ctx.clearRect(0,0, gridSize * tileSize, gridSize * tileSize);
 
         ctx.fillStyle = "white";
         ctx.fillRect(playerReference.x, playerReference.y, playerReference.width, playerReference.height);
         ctx.fillRect(playerReference2.x, playerReference2.y, playerReference2.width, playerReference2.height);
         ctx.fillRect(ballReference.x,ballReference.y, BALL_SIZE, BALL_SIZE);
-        ctx.font = "20px Arial";
-        ctx.fillText(`Points: ${playerReference2.points}`,10,80);
-        ctx.fillText(`Points: ${playerReference.points}`,300,80);
-        ctx.fillText(`Speed: vx: ${ballReference.vx} vy: ${ballReference.vy}`,10,110);
+        //ctx.font = "20px Arial";
+        //ctx.fillText(`Points: ${playerReference2.points}`,10,80);
+		setPlayer2PointsHtml(playerReference.points);
+        //ctx.fillText(`Points: ${playerReference.points}`,300,80);
+		setPlayer1PointsHtml(playerReference2.points);
+        //ctx.fillText(`Speed: vx: ${ballReference.vx} vy: ${ballReference.vy}`,10,110);
     };
 
     useEffect(() => {
@@ -124,14 +128,20 @@ export const Game = ({exitGame}: GameProps) =>
         };
     },[]);
     return (
-		<div>
-		<button
-			className="bg-transcendence-beige text-transcendence-black"
-			onClick={exitGame}>
-			Hello from Game! Press to exit.
-		</button>
-
-        <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} style={{ border: "1px solid white" }}/>
+		<div className="flex flex-col items-center justify-center min-h-screen">
+			<div className="flex flex-row items-center text-transcendence-white gap-10 font-transcendence-three text-4xl">
+				<span>{player1PointsHtml}</span>
+				<span>|</span>
+				<span>{player2PointsHtml}</span>
+			</div>
+			<div className="aspect-[5/3] border-4 border-white">
+				<canvas ref={canvasRef} width={WIDTH} height={HEIGHT} className="w-full h-full"/>
+			</div>
+			<button
+				className="bg-transcendence-beige text-transcendence-black w-30 h-10 text-lg rounded-md font-transcendence-two"
+				onClick={exitGame}>
+				EXIT GAME
+			</button>
         </div>
     );
 };

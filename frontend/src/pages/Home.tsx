@@ -3,7 +3,7 @@ import {NavBar} from "../components/home/navbar/NavBar";
 import {PlayButton} from "../components/home/PlayButton";
 import {Stats} from "../components/home/Stats";
 import {Profile} from "../components/home/Profile";
-import {Game} from "../components/home/Game";
+import {Game} from "../components/home/game/Game";
 import {Settings} from "../components/home/settings/Settings";
 
 export const Home = () => {
