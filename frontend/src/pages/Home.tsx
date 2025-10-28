@@ -29,7 +29,7 @@ export const Home = () => {
 	return (
 		<div className="bg-transcendence-black min-h-screen w-full flex flex-col">
 			<NavBar currentPage={currentPage} onNavigate={setCurrentPage} onSettingsClick={() => setShowSettings(!showSettings)} activeSettings={showSettings}/>
-			{renderPage()};
+			{renderPage()}
 			{<Settings isOpen={showSettings}/>}
 		</div>
 	)

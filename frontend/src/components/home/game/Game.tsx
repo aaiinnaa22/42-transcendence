@@ -127,21 +127,38 @@ export const Game = ({exitGame}: GameProps) =>
             window.removeEventListener("keyup", handleKeyUp);
         };
     },[]);
+
+	const screenIsPortrait = window.innerHeight > window.innerWidth;
+
     return (
-		<div className="flex flex-col items-center justify-center min-h-screen">
-			<div className="flex flex-row items-center text-transcendence-white gap-10 font-transcendence-three text-4xl">
-				<span>{player1PointsHtml}</span>
-				<span>|</span>
-				<span>{player2PointsHtml}</span>
+		<div className="grid grid-cols-6 grid-rows-[auto_auto]
+		portrait:grid-cols-[auto_auto_auto]
+		gap-[5vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] p-[8vw]">
+			<span
+				className="text-transcendence-white font-transcendence-three text-4xl
+					 row-start-1 col-start-1
+					 portrait:self-end
+					text-right">{player1PointsHtml}</span>
+			<span className="text-transcendence-white font-transcendence-three text-4xl hidden">|</span>
+			<span className="text-transcendence-white font-transcendence-three text-4xl
+				row-start-1 col-start-6
+				portrait:col-start-3">{player2PointsHtml}</span>
+			<div className="
+				flex-grow flex items-center justify-center
+				border-4 border-transcendence-white rounded-xl overflow-hidden
+				row-start-1 col-start-2 col-span-4
+				portrait:col-span-1">
+				<canvas ref={canvasRef} width={screenIsPortrait ? HEIGHT : WIDTH} height={screenIsPortrait ? WIDTH : HEIGHT} className="w-full h-full"/>
 			</div>
-			<div className="aspect-[5/3] border-4 border-white">
-				<canvas ref={canvasRef} width={WIDTH} height={HEIGHT} className="w-full h-full"/>
+			<div className="flex justify-center
+				row-start-2 col-start-3 col-span-2
+				portrait:col-start-2 portrait:col-span-1">
+				<button
+					className="bg-transcendence-beige text-transcendence-black w-30 h-10 text-lg rounded-md font-transcendence-two"
+					onClick={exitGame}>
+					EXIT GAME
+				</button>
 			</div>
-			<button
-				className="bg-transcendence-beige text-transcendence-black w-30 h-10 text-lg rounded-md font-transcendence-two"
-				onClick={exitGame}>
-				EXIT GAME
-			</button>
         </div>
     );
 };
