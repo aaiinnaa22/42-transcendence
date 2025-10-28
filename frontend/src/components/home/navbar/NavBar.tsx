@@ -16,7 +16,7 @@ type NavBarProps =
 export const NavBar = ({currentPage, onNavigate, onSettingsClick, activeSettings}: NavBarProps) =>
 {
 	return (
-		<div className="flex flex-row items-center justify-between h-18 lg:h-32 bg-transcendence-beige px-10">
+		<div className="z-10 border-b-4 border-transcendence-black flex flex-row items-center justify-between h-18 lg:h-32 bg-transcendence-beige px-10">
 			<h1 className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]">PONG</h1>
 			<div className="hidden h-full lg:flex flex-row sm:gap-5 md:gap-10 lg:gap-20 2xl:gap-30 font-transcendence-two text-2xl">
 				{navItems.map((item) => {
