@@ -302,7 +302,8 @@ const authRoutes = async (server: FastifyInstance) => {
       if (!user) return reply.code(404).send({ error: 'User not found' });
 
       const newAccess = server.jwt.sign({ userId: user.id, email: user.email }, { expiresIn: '15m' });
-      setAuthCookies(reply, newAccess, unsign.value);
+      const newRefresh = server.jwt.sign({ userId: user.id }, { expiresIn: '7d' });
+      setAuthCookies(reply, newAccess, newRefresh);
 
       reply.send({ message: 'Token refreshed' });
     } catch (err: any){
