@@ -133,7 +133,8 @@ export const Game = ({exitGame}: GameProps) =>
     return (
 		<div className="grid grid-cols-6 grid-rows-[auto_auto]
 		portrait:grid-cols-[auto_auto_auto]
-		gap-[5vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] p-[8vw]">
+		gap-[5vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] p-[8vw]
+		sm:landscape:p-[2vw]">
 			<span
 				className="text-transcendence-white font-transcendence-three text-4xl
 					 row-start-1 col-start-1
