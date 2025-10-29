@@ -1,6 +1,3 @@
-
-import { useState } from "react";
-
 const navItems = ["play", "stats", "profile"] as const;
 
 type Page = typeof navItems[number];
@@ -9,14 +6,14 @@ type NavBarProps =
 {
 	currentPage: Page;
 	onNavigate: (page: Page) => void;
-	onSettingsClick: () => void;
-	activeSettings: boolean;
+	currentPanel: "settings" | "menu" | null;
+	onTogglePanel: (panel: "settings" | "menu") => void;
 };
 
-export const NavBar = ({currentPage, onNavigate, onSettingsClick, activeSettings}: NavBarProps) =>
+export const NavBar = ({currentPage, onNavigate, currentPanel, onTogglePanel}: NavBarProps) =>
 {
 	return (
-		<div className="z-10 border-b-4 border-transcendence-black flex flex-row items-center justify-between h-18 lg:h-32 bg-transcendence-beige px-10">
+		<div className="z-10 border-b-4 border-transcendence-black flex flex-row items-center justify-between h-18 lg:h-32 bg-transcendence-beige px-5 lg:px-10">
 			<h1 className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]">PONG</h1>
 			<div className="hidden h-full lg:flex flex-row sm:gap-5 md:gap-10 lg:gap-20 2xl:gap-30 font-transcendence-two text-2xl">
 				{navItems.map((item) => {
@@ -34,12 +31,19 @@ export const NavBar = ({currentPage, onNavigate, onSettingsClick, activeSettings
 					);
 				})}
 			</div>
-			<div className="relative w-[1.75em] h-[1.75em] flex items-center justify-center group">
-				<span className={"absolute rounded-full w-[1.2em] h-[1.2em] bg-transparent " + (activeSettings ? "!bg-transcendence-white" : "group-hover:bg-transcendence-white")}></span>
+			<div className="flex items-center justify-center gap-3">
+				<div className="hidden relative lg:flex items-center justify-center group">
+					<span className={"absolute rounded-full w-[1.2em] h-[1.2em] bg-transparent " + (currentPanel === "settings" ? "!bg-transcendence-white" : "group-hover:bg-transcendence-white")}></span>
+					<span
+						className="relative material-symbols-outlined !text-3xl cursor-pointer"
+						onClick={() => onTogglePanel("settings")}>
+						settings
+					</span>
+				</div>
 				<span
-					className="relative material-symbols-outlined !text-3xl cursor-pointer"
-					onClick={onSettingsClick}>
-					settings
+					className="lg:!hidden material-symbols-outlined !text-3xl cursor-pointer"
+					onClick={() => onTogglePanel("menu")}>
+						menu
 				</span>
 			</div>
 		</div>
