@@ -1,4 +1,4 @@
-import {ToggleButton} from "./ToggleButton";
+import {ToggleButton} from "../../utils/ToggleButton";
 import {useState} from "react";
 import { useNavigate } from "react-router-dom";
 import {LanguageSelector} from "./LanguageSelector"

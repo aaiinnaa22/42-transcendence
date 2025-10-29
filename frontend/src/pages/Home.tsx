@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import {NavBar} from "../components/home/navbar/NavBar";
+import {NavBar} from "../components/home/NavBar";
 import {PlayButton} from "../components/home/PlayButton";
 import {Stats} from "../components/home/Stats";
 import {Profile} from "../components/home/Profile";
 import {Game} from "../components/home/game/Game";
-import {Settings} from "../components/home/settings/Settings";
-import {Menu} from "../components/home/menu"
-import {SideTab} from "../components/home/SideTab"
-import {PopUp} from "../components/home/PopUp"
+import {Settings} from "../components/home/panels/settings/Settings";
+import {Menu} from "../components/home/panels/Menu"
+import {SideTab} from "../components/home/utils/SideTab"
+import {PopUp} from "../components/home/utils/PopUp"
 
 export const Home = () => {
 	const [isGameOn, setGameOn] = useState(false);
