@@ -44,7 +44,7 @@ export const Home = () => {
 			/>
 			{renderPage()}
 			{<SideTab isOpen={currentPanel === "settings"}><Settings centralize={false}/></SideTab>}
-			{<PopUp isOpen={currentPanel === "menu"}><Menu/></PopUp>}
+			{<PopUp isOpen={currentPanel === "menu"}><Menu currentPage={currentPage} onNavigate={setCurrentPage}/></PopUp>}
 		</div>
 	)
 };
