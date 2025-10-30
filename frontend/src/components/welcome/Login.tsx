@@ -43,7 +43,7 @@ export const Login = () => {
 	};
 
 	return (
-		<form onSubmit={handleLogin} className="flex flex-col justify-center items-center font-transcendence-two text-transcendence-white text-left gap-10 landscape:gap-5 lg:landscape:gap-10">
+		<form onSubmit={handleLogin} className="flex flex-col pt-[5vh] items-center font-transcendence-two text-transcendence-white text-left gap-10 landscape:gap-5 lg:landscape:gap-10">
 			<input
 				type="text"
 				placeholder="email"
