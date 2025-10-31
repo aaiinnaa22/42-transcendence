@@ -1,19 +1,21 @@
 import { useState } from 'react'
 import {NavBar} from "../components/home/NavBar";
 import {PlayButton} from "../components/home/PlayButton";
-import {Stats} from "../components/home/Stats";
+import {Leaderboard} from "../components/home/stats/Leaderboard";
 import {Profile} from "../components/home/Profile";
 import {Game} from "../components/home/game/Game";
 import {Settings} from "../components/home/panels/settings/Settings";
 import {Menu} from "../components/home/panels/Menu"
 import {SideTab} from "../components/home/utils/SideTab"
 import {PopUp} from "../components/home/utils/PopUp"
+import { PersonalStats } from '../components/home/stats/PersonalStats';
 
 export const Home = () => {
 	const [isGameOn, setGameOn] = useState(false);
 	type Page = "play" | "stats" | "profile";
 	const [currentPage, setCurrentPage] = useState<Page>("play");
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "settings" | null>(null);
+	const [isPersonalStats, setIsPersonalStats] = useState(true);
 
 	const togglePanel = (panel: "settings" | "menu") => {
 		setCurrentPanel(currentPanel === panel ? null : panel);
@@ -24,7 +26,9 @@ export const Home = () => {
 		switch (currentPage)
 		{
 			case "stats":
-				return <Stats/>
+				return isPersonalStats
+				? (<PersonalStats switchStats={() => setIsPersonalStats(false)}/>)
+				: (<Leaderboard switchStats={() => setIsPersonalStats(true)}/>)
 			case "profile":
 				return <Profile/>;
 			default:
