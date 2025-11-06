@@ -1,6 +1,11 @@
 'use strict'
 
 const fastify = require('fastify')()
+const cors = require('@fastify/cors')
+
+fastify.register(cors, {
+  origin: '*', // or specify: ['http://localhost:3000']
+})
 
 fastify.register(require('@fastify/websocket'), {
   options: { maxPayload: 1048576 }
@@ -32,9 +37,10 @@ fastify.register(async function (fastify) {
   })
 })
 
-fastify.listen({ port: 4545 }, err => {
+fastify.listen({ port: 4545, host: '0.0.0.0' }, err => {
   if (err) {
     fastify.log.error(err)
     process.exit(1)
   }
+  console.log('WebSocket server listening on ws://localhost:4545');
 })
