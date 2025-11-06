@@ -29,3 +29,9 @@ Content-Type: application/json
   "email": "rich@example.com",
   "password": "12345678"
 }
+
+POST http://localhost:4241/auth/logout
+Content-Type: application/json
+
+{
+}
