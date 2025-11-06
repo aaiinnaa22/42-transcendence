@@ -42,8 +42,8 @@ export const Settings = ({centralize}: SettingsProps) =>
 	}
 
 	return (
-		<div className={"flex flex-col gap-6 landscape:!items-start " + (centralize ? "items-center justify-center" : "")}>
-			<h1 className="text-transcendence-black font-transcendence-two text-lg font-semibold pb-[2vh] lg:pb-[5vh]">Settings</h1>
+		<div className={"flex flex-col gap-6 lg:gap-15 landscape:!items-start  " + (centralize ? "items-center justify-center" : "")}>
+			<h1 className="text-transcendence-black font-transcendence-two text-lg font-semibold">Settings</h1>
 			<div className="flex flex-col md:gap-10 gap-5">
 				<div className="flex flex-col gap-3">
 					<ToggleButton enabled={toggleOn} onToggle={() => setToggleOn(!toggleOn)}/>
@@ -51,12 +51,14 @@ export const Settings = ({centralize}: SettingsProps) =>
 				</div>
 				<LanguageSelector/>
 			</div>
-			<h2
-				className="text-transcendence-black font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
-				onClick={handleLogOut}>
-				Log out
-			</h2>
-			<h2 className="text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold">Delete account</h2>
+			<div className={"flex flex-col gap-2 landscape:!text-left " + (centralize ? "text-center" : "")}>
+				<h2
+					className="text-transcendence-black font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
+					onClick={handleLogOut}>
+					Log out
+				</h2>
+				<h2 className="text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">Delete account</h2>
+			</div>
 		</div>
 	);
 }
