@@ -53,7 +53,7 @@ export const Profile = () => {
 	return (
 		<div className="w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] grid grid-cols-[auto_auto_auto] grid-rows-[auto_auto_auto] py-[10vh]">
 			<div className="flex flex-col col-start-2 items-center gap-4">
-				<h2 className="text-transcendence-white font-transcendence-three tracking-[0.17em] font-semibold text-3xl">Hi {username}!</h2>
+				<h2 className="text-transcendence-white font-transcendence-three tracking-[0.2em] font-semibold text-3xl">Hi {username}!</h2>
 				<div className="relative inline-block">
 					{profilePic
 					? <img className="h-35 w-35 rounded-full" src={profilePic}></img>
@@ -75,6 +75,3 @@ export const Profile = () => {
 		</div>
 	);
 }
-
-
-//TODO: request /auth/me for user name, send back and forth profile pic for storage
