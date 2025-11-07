@@ -43,14 +43,7 @@ export const Settings = ({centralize}: SettingsProps) =>
 
 	return (
 		<div className={"flex flex-col gap-6 lg:gap-15 landscape:!items-start  " + (centralize ? "items-center justify-center" : "")}>
-			<h1 className="text-transcendence-black font-transcendence-two text-lg font-semibold">Settings</h1>
-			<div className="flex flex-col md:gap-10 gap-5">
-				<div className="flex flex-col gap-3">
-					<ToggleButton enabled={toggleOn} onToggle={() => setToggleOn(!toggleOn)}/>
-					<ToggleButton enabled={toggleOn} onToggle={() => setToggleOn(!toggleOn)}/>
-				</div>
-				<LanguageSelector/>
-			</div>
+			<LanguageSelector/>
 			<div className={"flex flex-col gap-2 landscape:!text-left " + (centralize ? "text-center" : "")}>
 				<h2
 					className="text-transcendence-black font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
