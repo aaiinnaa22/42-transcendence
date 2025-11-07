@@ -1,7 +1,14 @@
 'use strict'
 
+let WIDTH = 1600;
+let HEIGHT = 800;
+let BALL_SIZE = 10;
+let PADDLE_LEN = 140;
+
 const fastify = require('fastify')()
 const cors = require('@fastify/cors')
+//const Player = require('./player.js');
+const Game = require('./game.js');
 
 fastify.register(cors, {
   origin: '*', // or specify: ['http://localhost:3000']
@@ -11,29 +18,44 @@ fastify.register(require('@fastify/websocket'), {
   options: { maxPayload: 1048576 }
 })
 
-let players = {};
+let games = {};
 
 fastify.register(async function (fastify) {
   fastify.get('/*', { websocket: true }, (socket /* WebSocket */, req /* FastifyRequest */) => {
-    console.log("New conneciton");
-    const id = Date.now().toString();
-    players[id] = { x: 0, y: 0 };
+    console.log("New connection");
 
+    const GameId = Date.now().toString();
+    const game = new Game(GameId);
+    game.addPlayer();
+    games[GameId] = game;
+ 
     socket.on('message', message => {
-
       const data = JSON.parse(message.toString());
-      if (data.type === 'move') {
+
+       if (data.type === 'move') {
         console.log("Message recieved: ", message);
         console.log("Data recieved: ", data);
-        players[id].x += data.dx;
-        players[id].y += data.dy;
+        //players[id].move(data.dx, data.dy);
+        games[GameId].movePlayer(1,data.dx, data.dy);
       }
-      // Broadcast player positions
-      const payload = JSON.stringify({ type: 'state', players });
+      // // Broadcast player positions
+      // const payload = JSON.stringify({ type: 'state', players });
+
+      // Get the game state (which includes players' states) and broadcast it
+      const gameState = games[GameId].getState();  // Get game state
+      const payload = JSON.stringify(gameState);  // Serialize the game state
 
       console.log("Seding message: ", payload);
+      
       socket.send(payload);
-    })
+
+    });
+
+    socket.on('close', () => {
+      console.log("Connection closed for player " + GameId);
+      // Remove the player and game from the respective lists when they disconnect
+      delete games[GameId];
+    });
   })
 })
 

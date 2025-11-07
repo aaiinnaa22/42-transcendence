@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN } from "./constants.ts";
-import { io } from 'socket.io-client';
+
 
 type GameProps = {
 	exitGame: () => void;
@@ -16,9 +16,12 @@ export const Game = ({exitGame}: GameProps) =>
 	const [player1PointsHtml, setPlayer1PointsHtml] = useState(0);
 	const [player2PointsHtml, setPlayer2PointsHtml] = useState(0);
 
-    const socket = io('ws://localhost:4545');
-
     const keysPressed = useRef({});
+
+    const ws = new WebSocket('ws://localhost:4545/ws');
+    ws.onopen = () => {
+      console.log("AAAAAAAAAAAAAAAAAAAAAA");
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
         keysPressed.current[e.key] = true;
@@ -28,15 +31,6 @@ export const Game = ({exitGame}: GameProps) =>
         keysPressed.current[e.key] = false;
     };
 
-    socket.on('connect', () => {
-      console.log('Connected:', socket.id);
-      socket.emit('message', 'Hello from React!');
-    });
-
-    socket.on('disconnected', () => {
-      console.log('Disconnected:', socket.id);
-      socket.emit('message', 'Hello from React!');
-    });
 
     const updateGame = () => {
         const playerReference = player.current;
