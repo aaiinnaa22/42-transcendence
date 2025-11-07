@@ -20,7 +20,7 @@ export const LanguageSelector = () => {
 	return (
 		<div className="w-40">
 			<button
-				className="border-3 px-3 border-transcendence-black w-40 rounded-lg flex flex-row justify-between relative z-20 bg-transcendence-beige"
+				className="border-3 px-3 border-transcendence-black w-40 rounded-lg flex flex-row justify-between items-center relative z-20 bg-transcendence-beige"
 				onClick={() => setTabOpen(!tabOpen)}>
 			<span className="text-md landscape:text-sm lg:landscape:text-md">{selected.name}</span>
 			<span className={"material-symbols-outlined cursor-pointer transition-transform duration-300 " + (tabOpen ? "rotate-180" : "")}>arrow_drop_down</span>
