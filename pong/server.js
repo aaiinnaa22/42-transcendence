@@ -32,22 +32,30 @@ fastify.register(async function (fastify) {
     socket.on('message', message => {
       const data = JSON.parse(message.toString());
 
-       if (data.type === 'move') {
-        console.log("Message recieved: ", message);
+      if (data.type === 'move') {
+        console.log("Message recieved 'move' : ", message);
         console.log("Data recieved: ", data);
-        //players[id].move(data.dx, data.dy);
-        games[GameId].movePlayer(1,data.dx, data.dy);
+        games[GameId].movePlayer(data.id,data.dx, data.dy);
+        const gameState = games[GameId].getState();  // Get game state
+        const payload = JSON.stringify(gameState);  // Serialize the game state
+
+        console.log("Seding message: ", payload);
+        
+        socket.send(payload);
       }
-      // // Broadcast player positions
-      // const payload = JSON.stringify({ type: 'state', players });
 
-      // Get the game state (which includes players' states) and broadcast it
-      const gameState = games[GameId].getState();  // Get game state
-      const payload = JSON.stringify(gameState);  // Serialize the game state
+      if (data.type === 'get_state') 
+      {
+        console.log("Message recieved 'get_state' : ", message);
+        console.log("Data recieved: ", data);
+        games[GameId].moveBall();
+        const gameState = games[GameId].getState();  // Get game state
+        const payload = JSON.stringify(gameState);  // Serialize the game state
 
-      console.log("Seding message: ", payload);
-      
-      socket.send(payload);
+        console.log("Seding message: ", payload);
+        
+        socket.send(payload);
+      }
 
     });
 
