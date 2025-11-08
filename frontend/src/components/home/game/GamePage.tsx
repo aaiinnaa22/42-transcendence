@@ -14,17 +14,17 @@ export const GamePage = ({exitGame}: GamePageProps) =>
 			</div>
 			<div className="flex flex-row col-start-2 row-start-2 gap-10 lg:gap-40 pt-[8%] lg:pt-[18%] justify-center
 			portrait:flex-col portrait:items-center portrait:gap-20 portrait:pt-0">
-				<div className="flex flex-col font-transcendence-two gap-6 text-center">
-					<div className="rounded-xl flex flex-row justify-center items-center gap-3 p-8 cursor-pointer border-3 border-transcendence-white group">
-						<span className="material-symbols-outlined text-transcendence-white w-5 group-hover:pl-1">arrow_forward_ios</span>
-						<h2 className="text-2xl text-transcendence-white">play together</h2>
+				<div className="flex flex-col font-transcendence-two gap-6 text-center max-w-70">
+					<div className="rounded-2xl flex flex-row justify-center items-center gap-3 p-8 cursor-pointer border-3 border-transcendence-white group h-25">
+						<span className="material-symbols-outlined text-transcendence-white w-5">arrow_forward_ios</span>
+						<h2 className="text-2xl text-transcendence-white group-hover:pt-1">play together</h2>
 					</div>
 					<p className="italic text-transcendence-white">play together with your friend on the same screen</p>
 				</div>
 				<div className="flex flex-col font-transcendence-two gap-6 text-center">
-					<div className="rounded-xl flex flex-row justify-center items-center gap-3 p-8 border-3 border-transcendence-white cursor-pointer group">
-						<span className="material-symbols-outlined text-transcendence-white w-5 group-hover:pl-1">arrow_forward_ios</span>
-						<h2 className="text-2xl text-transcendence-white">tournament</h2>
+					<div className="rounded-2xl flex flex-row justify-center items-center gap-3 p-8 border-3 border-transcendence-white cursor-pointer group h-25">
+						<span className="material-symbols-outlined text-transcendence-white w-5">social_leaderboard</span>
+						<h2 className="text-2xl text-transcendence-white group-hover:pt-1">tournament</h2>
 					</div>
 					<p className="italic text-transcendence-white">play with others around the world</p>
 				</div>

@@ -20,13 +20,13 @@ export const LanguageSelector = () => {
 	return (
 		<div className="w-40">
 			<button
-				className="border-3 px-3 border-transcendence-black w-40 rounded-lg flex flex-row justify-between items-center relative z-20 bg-transcendence-beige"
+				className="border-3 px-3 border-transcendence-white w-40 rounded-lg flex flex-row justify-between items-center relative z-20"
 				onClick={() => setTabOpen(!tabOpen)}>
-			<span className="text-md landscape:text-sm lg:landscape:text-md">{selected.name}</span>
-			<span className={"material-symbols-outlined cursor-pointer transition-transform duration-300 " + (tabOpen ? "rotate-180" : "")}>arrow_drop_down</span>
+			<span className="text-md text-transcendence-white landscape:text-sm lg:landscape:text-md">{selected.name}</span>
+			<span className={"text-transcendence-white material-symbols-outlined cursor-pointer transition-transform duration-300 " + (tabOpen ? "rotate-180" : "")}>arrow_drop_down</span>
 			</button>
 			{tabOpen && (
-				<ul className="px-4 flex flex-col border-3 border-transcendence-black bg-transcendence-beige text-transcendence-black text-sm landscape:text-xs lg:landscape:text-sm gap-1 rounded-b-lg -mt-2 py-3 absolute z-10 w-40">
+				<ul className="px-4 flex flex-col border-3 border-t-0 border-transcendence-white bg-transcendence-black text-transcendence-white text-sm landscape:text-xs lg:landscape:text-sm gap-1 rounded-b-lg -mt-2 py-3 absolute z-10 w-40">
 					{Languages.filter((currentLanguage) => currentLanguage != selected).map((currentLanguage) => (
 						<li
 							onClick={() => {
