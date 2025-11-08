@@ -26,7 +26,7 @@ export const LanguageSelector = () => {
 			<span className={"material-symbols-outlined cursor-pointer transition-transform duration-300 " + (tabOpen ? "rotate-180" : "")}>arrow_drop_down</span>
 			</button>
 			{tabOpen && (
-				<ul className="px-4 flex flex-col bg-transcendence-black text-transcendence-white text-sm landscape:text-xs lg:landscape:text-sm gap-1 rounded-b-lg -mt-2 py-3 absolute z-10 w-40">
+				<ul className="px-4 flex flex-col border-3 border-transcendence-black bg-transcendence-beige text-transcendence-black text-sm landscape:text-xs lg:landscape:text-sm gap-1 rounded-b-lg -mt-2 py-3 absolute z-10 w-40">
 					{Languages.filter((currentLanguage) => currentLanguage != selected).map((currentLanguage) => (
 						<li
 							onClick={() => {

@@ -1,7 +1,4 @@
 
-import { useNavigate } from "react-router-dom";
-import {Settings} from './settings/Settings'
-
 const navItems = ["play", "stats", "profile"] as const;
 
 type Page = typeof navItems[number];
@@ -39,9 +36,6 @@ export const Menu = ({currentPage, onNavigate}: MenuProps) =>
 							</div>
 						);
 						})}
-					</div>
-					<div className="landscape:border-l-2 landscape:border-transcendence-black landscape:pl-8">
-						<Settings centralize={true}/>
 					</div>
 			</div>
 		</div>

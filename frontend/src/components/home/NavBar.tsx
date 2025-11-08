@@ -6,8 +6,8 @@ type NavBarProps =
 {
 	currentPage: Page;
 	onNavigate: (page: Page) => void;
-	currentPanel: "settings" | "menu" | null;
-	onTogglePanel: (panel: "settings" | "menu") => void;
+	currentPanel: "chat" | "menu" | null;
+	onTogglePanel: (panel: "chat" | "menu") => void;
 };
 
 export const NavBar = ({currentPage, onNavigate, currentPanel, onTogglePanel}: NavBarProps) =>
@@ -33,11 +33,11 @@ export const NavBar = ({currentPage, onNavigate, currentPanel, onTogglePanel}: N
 			</div>
 			<div className="flex items-center justify-center gap-3">
 				<div className="hidden relative xl:flex items-center justify-center group">
-					<span className={"absolute rounded-full w-[1.2em] h-[1.2em] bg-transparent " + (currentPanel === "settings" ? "!bg-transcendence-white" : "group-hover:bg-transcendence-white")}></span>
+					<span className={"absolute top-1.25 w-[1.2em] h-[1.25em] bg-transparent " + (currentPanel === "chat" ? "!bg-transcendence-white" : "group-hover:bg-transcendence-white")}></span>
 					<span
 						className="relative material-symbols-outlined !text-3xl cursor-pointer"
-						onClick={() => onTogglePanel("settings")}>
-						settings
+						onClick={() => onTogglePanel("chat")}>
+						chat_bubble
 					</span>
 				</div>
 				<span

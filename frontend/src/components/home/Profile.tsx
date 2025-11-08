@@ -1,4 +1,5 @@
 import {useState, useEffect, useRef} from 'react'
+import {Settings} from "./panels/settings/Settings"
 
 export const Profile = () => {
 	const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -72,6 +73,9 @@ export const Profile = () => {
 						</input>
 					</div>
 				</div>
+			</div>
+			<div className="col-start-2 row-start-2 flex flex-col items-center">
+				<Settings/>
 			</div>
 		</div>
 	);
