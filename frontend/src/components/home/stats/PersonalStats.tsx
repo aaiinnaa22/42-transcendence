@@ -1,4 +1,5 @@
 import {CircleDiagram} from "../utils/CircleDiagram";
+import {useEffect, useState} from 'react';
 
 type PersonalStatsProps =
 {
@@ -7,16 +8,38 @@ type PersonalStatsProps =
 
 export const PersonalStats = ({switchStats}: PersonalStatsProps) =>
 {
-	const PlayerStats =	{
-		wins:  1,
-		losses: 3,
+	const [playerStats, setPlayerStats] =	useState({
+		wins:  0,
+		losses: 0,
 		gamesPlayed: 0,
 		rating: 0
-	};
-	const totalGames = PlayerStats.wins + PlayerStats.losses;
-	const percentageWon = (PlayerStats.wins / totalGames) * 100;
+	});
+	const percentageWon = (playerStats.wins / playerStats.gamesPlayed) * 100;
 	const percentageLost = 100 - percentageWon;
-	PlayerStats.gamesPlayed = PlayerStats.wins + PlayerStats.losses;
+	useEffect(() => {
+		const getStats = async () => {
+			try
+			{
+				const response = await fetch("http://localhost:4241/users/profile", {
+					method: "GET",
+					credentials: "include",
+				});
+				const data = await response.json();
+				setPlayerStats({
+					wins: data.playerStats?.wins ?? 0,
+					losses: data.playerStats?.losses ?? 0,
+					gamesPlayed: data.playerStats?.playedGames ?? 0,
+					rating: data.playerStats?.eloRating ?? 0
+				});
+
+			}
+			catch (err: any)
+			{
+				console.error(err.message);
+			}
+		};
+		getStats();
+	}, []);
 
 	return (
 		<div className="relative w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] grid grid-cols-[auto_auto_auto] grid-rows-[auto_auto_auto] px-[10vw]
@@ -35,7 +58,7 @@ export const PersonalStats = ({switchStats}: PersonalStatsProps) =>
 				<div
 					className="rounded-xl border-3 w-fit px-[1vw] border-transcendence-white bg-transcendence-beige flex flex-col items-center justify-center
 					h-10 min-w-20 lg:h-20 lg:min-w-40 md:portrait:h-20 md:portrait:min-w-40">
-					<h3 className="text-transcendence-black font-transcendence-two">{PlayerStats.wins}</h3>
+					<h3 className="text-transcendence-black font-transcendence-two">{playerStats.wins}</h3>
 				</div>
 			</div>
 			<div className="portrait:hidden text-transcendence-white w-full h-full flex flex-col items-center justify-center gap-1"><CircleDiagram percentage1={percentageWon} percentage2={percentageLost}/></div>
@@ -46,7 +69,7 @@ export const PersonalStats = ({switchStats}: PersonalStatsProps) =>
 				<div
 					className="rounded-xl border-3 w-fit px-[1vw] border-transcendence-white flex flex-col items-center justify-center
 					h-10 min-w-20 lg:h-20 lg:min-w-40 md:portrait:h-20 md:portrait:min-w-40">
-					<h3 className="text-transcendence-white font-transcendence-two">{PlayerStats.losses}</h3>
+					<h3 className="text-transcendence-white font-transcendence-two">{playerStats.losses}</h3>
 				</div>
 			</div>
 			<div
@@ -54,7 +77,7 @@ export const PersonalStats = ({switchStats}: PersonalStatsProps) =>
 				text-xl lg:text-3xl md:portrait:text-3xl
 				gap-1 lg:gap-4 md:portrait:gap-4">
 				<h2>In total you have played</h2>
-				<h2>{PlayerStats.gamesPlayed}</h2>
+				<h2>{playerStats.gamesPlayed}</h2>
 				<h2>games</h2>
 			</div>
 			<div
@@ -63,7 +86,7 @@ export const PersonalStats = ({switchStats}: PersonalStatsProps) =>
 				<div className="min-w-[15%] portrait:min-w-[40%] portrait:h-[30%] w-fit h-[50%] px-[2vw] bg-transcendence-white rounded-2xl flex flex-col items-center justify-center">
 				<h2
 					className="font-transcendence-three tracking-[0.1em] font-bold
-					text-xl lg:text-3xl md:portrait:text-3xl">RATING: {PlayerStats.rating}</h2>
+					text-xl lg:text-3xl md:portrait:text-3xl">RATING: {playerStats.rating}</h2>
 				</div>
 			</div>
 		</div>
