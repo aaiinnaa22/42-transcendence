@@ -11,6 +11,7 @@ export const Profile = () => {
 				const response = await fetch("http://localhost:4241/auth/me",
 				{
 					method: "GET",
+					credentials: "include",
 				});
 				const data = await response.json();
 				const {username, profilePic} = data;
