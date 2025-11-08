@@ -3,11 +3,13 @@ import {NavBar} from "../components/home/NavBar";
 import {PlayButton} from "../components/home/PlayButton";
 import {Leaderboard} from "../components/home/stats/Leaderboard";
 import {Profile} from "../components/home/Profile";
-import {Game} from "../components/home/game/Game";
+//import {Game} from "../components/home/game/Game";
+//import {Settings} from "../components/home/panels/settings/Settings";
 import {Menu} from "../components/home/panels/Menu"
 import {SideTab} from "../components/home/utils/SideTab"
 import {PopUp} from "../components/home/utils/PopUp"
 import { PersonalStats } from '../components/home/stats/PersonalStats';
+import { GamePage } from '../components/home/game/GamePage';
 
 export const Home = () => {
 	const [isGameOn, setGameOn] = useState(false);
@@ -33,7 +35,7 @@ export const Home = () => {
 			default:
 				return !isGameOn
 					? (<PlayButton startGame={() => setGameOn(true)}/>)
-					: (<Game exitGame={() => setGameOn(false)}/>);
+					: (<GamePage exitGame={() => setGameOn(false)}/>);
 		}
 	}
 
