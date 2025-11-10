@@ -44,14 +44,11 @@ Content-Type: application/json
 {
   "username": "rich",
   "email": "rich@example.com",
-  "password": "1234567890"
+  "password": "12345678"
 }
 
-### test user delete
-DELETE http://localhost:4241/users/profile
+POST http://localhost:4241/auth/logout
 Content-Type: application/json
 
 {
-
 }
-
