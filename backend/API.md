@@ -7,6 +7,24 @@ This document provides comprehensive API documentation for the 42-transcendence 
 http://localhost:4241
 ```
 
+## What’s current (Nov 2025)
+
+- Auth uses signed HttpOnly cookies (not Authorization headers):
+  - accessToken (~15m) and refreshToken (~7d)
+  - Frontend must send requests with credentials: 'include'
+- Key endpoints:
+  - GET /auth/google → OAuth start (redirect)
+  - GET /auth/google/callback → sets cookies and redirects to CLIENT_REDIRECT_URL
+  - POST /auth/register, POST /auth/login → return user JSON and set cookies
+  - GET /auth/me → current user (cookies required)
+  - POST /auth/logout → clears cookies (cookies required)
+  - POST /auth/refresh → refreshes cookies using refreshToken
+  - GET /users/me → self profile (cookies)
+  - PUT /users/me → update self (username, avatar, email, password)
+  - DELETE /users/me → delete account
+
+Note: CORS is configured to allow credentials from approved origins. Cookies are SameSite=strict, HttpOnly, and Secure in production.
+
 ## Authentication Methods
 
 The API supports two authentication methods:
@@ -40,30 +58,7 @@ curl http://localhost:4241/auth/google
 GET /auth/google/callback
 ```
 
-**Description**: Handles Google OAuth callback (internal use).
-
-**Response**:
-```json
-{
-  "message": "Login successful",
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "username": "Display Name",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z",
-    "lastLogin": "2024-01-01T00:00:00.000Z",
-    "playerStats": {
-      "userId": "uuid",
-      "wins": 0,
-      "losses": 0,
-      "playedGames": 0,
-      "eloRating": 1200
-    }
-  },
-  "appToken": "jwt-token-here"
-}
-```
+**Description**: Handles Google OAuth callback. Sets auth cookies (accessToken, refreshToken) and redirects to CLIENT_REDIRECT_URL.
 
 ---
 
@@ -86,29 +81,7 @@ POST /auth/register
 ```
 
 **Response**:
-```json
-{
-  "message": "Registration successful",
-  "user": {
-    "id": "uuid",
-    "googleId": "local-timestamp",
-    "email": "user@example.com",
-    "username": "DisplayName",
-    "avatarUrl": null,
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z",
-    "lastLogin": null,
-    "playerStats": {
-      "userId": "uuid",
-      "wins": 0,
-      "losses": 0,
-      "playedGames": 0,
-      "eloRating": 1200
-    }
-  },
-  "appToken": "jwt-token-here"
-}
-```
+200 JSON with user. Also sets auth cookies (accessToken, refreshToken).
 
 **Error Responses**:
 - `400` - User already exists
@@ -139,27 +112,7 @@ POST /auth/login
 ```
 
 **Response**:
-```json
-{
-  "message": "Login successful",
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "username": "DisplayName",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z",
-    "lastLogin": "2024-01-01T00:00:00.000Z",
-    "playerStats": {
-      "userId": "uuid",
-      "wins": 0,
-      "losses": 0,
-      "playedGames": 0,
-      "eloRating": 1200
-    }
-  },
-  "appToken": "jwt-token-here"
-}
-```
+200 JSON with user. Also sets auth cookies (accessToken, refreshToken).
 
 **Error Responses**:
 - `401` - Invalid user or invalid password
@@ -176,17 +129,12 @@ curl -X POST http://localhost:4241/auth/login \
 
 ## 👤 User Endpoints
 
-### Get Current User
+### Get Current User (identity)
 ```http
 GET /auth/me
 ```
 
-**Description**: Get current authenticated user information.
-
-**Headers**:
-```
-Authorization: Bearer <jwt-token>
-```
+**Description**: Get current authenticated user information (uses auth cookies).
 
 **Response**:
 ```json
@@ -214,84 +162,56 @@ Authorization: Bearer <jwt-token>
 
 **Example**:
 ```bash
-curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+# After login, copy Set-Cookie values and send them back as Cookie header
+curl -H "Cookie: accessToken=<copied>; refreshToken=<copied>" \
   http://localhost:4241/auth/me
 ```
 
 ---
 
-### Get User Profile
+### Get Self Profile
 ```http
-GET /users/profile
+GET /users/me
 ```
 
-**Description**: Get user profile information (same as /auth/me).
-
-**Headers**:
-```
-Authorization: Bearer <jwt-token>
-```
+**Description**: Get user profile information (same as /auth/me). Uses auth cookies.
 
 **Response**: Same as `/auth/me`
 
 **Example**:
 ```bash
-curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  http://localhost:4241/users/profile
+curl -H "Cookie: accessToken=<copied>; refreshToken=<copied>" \
+  http://localhost:4241/users/me
 ```
 
 ---
 
-### Update User Profile
+### Update Self Profile
 ```http
-PUT /users/profile
+PUT /users/me
 ```
 
-**Description**: Update user profile information.
-
-**Headers**:
-```
-Authorization: Bearer <jwt-token>
-Content-Type: application/json
-```
+**Description**: Update user profile (only provided fields). Uses auth cookies.
 
 **Request Body**:
 ```json
-{
-  "username": "NewDisplayName", // optional
-  "avatarUrl": "https://new-avatar-url.com" // optional
-}
+{ "username": "NewDisplayName", "avatar": "https://...", "email": "new@example.com", "password": "newPass" }
 ```
 
-**Response**:
-```json
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "username": "NewDisplayName",
-  "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2024-01-01T00:00:00.000Z",
-  "lastLogin": "2024-01-01T00:00:00.000Z",
-  "playerStats": {
-    "userId": "uuid",
-    "wins": 0,
-    "losses": 0,
-    "playedGames": 0,
-    "eloRating": 1200
-  }
-}
-```
+**Response**: 200 { message, updatedFields: string[], user }
 
 **Error Responses**:
-- `401` - Unauthorized (invalid/missing token)
+- `409` - Unique constraint failed (e.g., email)
+- `404` - User not found
 - `500` - Failed to update user profile
 
 **Example**:
 ```bash
-curl -X PUT -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Cookie: accessToken=<copied>; refreshToken=<copied>" \
   -d '{"username":"NewUsername"}' \
-  http://localhost:4241/users/profile
+  http://localhost:4241/users/me
 ```
 
 ---
@@ -301,12 +221,7 @@ curl -X PUT -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 POST /auth/logout
 ```
 
-**Description**: Logout user (client should discard token).
-
-**Headers**:
-```
-Authorization: Bearer <jwt-token>
-```
+**Description**: Logout user and clear auth cookies.
 
 **Response**:
 ```json
@@ -315,14 +230,22 @@ Authorization: Bearer <jwt-token>
 }
 ```
 
-**Error Responses**:
-- `401` - Unauthorized (invalid/missing token)
+Auth: Requires auth cookies.
 
 **Example**:
 ```bash
-curl -X POST -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+curl -X POST \
+  -H "Cookie: accessToken=<copied>; refreshToken=<copied>" \
   http://localhost:4241/auth/logout
 ```
+
+### Refresh tokens
+```http
+POST /auth/refresh
+```
+
+Uses the signed refreshToken cookie to issue new access/refresh cookies.
+Responses: 200 { message: "Token refreshed" } or 401 on invalid/expired token.
 
 ---
 

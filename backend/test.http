@@ -25,6 +25,23 @@ POST http://localhost:4241/auth/login
 Content-Type: application/json
 
 {
+  "username": "dog chi is the best",
+  "email": "rich11@example.com",
+  "password": "12345678"
+}
+
+### test logout
+POST http://localhost:4241/auth/logout
+Content-Type: application/json
+
+{
+}
+
+### test user update
+PUT http://localhost:4241/users/profile
+Content-Type: application/json
+
+{
   "username": "rich",
   "email": "rich@example.com",
   "password": "12345678"

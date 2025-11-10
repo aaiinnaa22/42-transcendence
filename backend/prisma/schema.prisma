@@ -15,14 +15,19 @@ datasource db {
 model User {
   id              String      @id @default(uuid())
   email           String?     @unique
-  username        String?
+  username        String?     @unique
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   lastLogin       DateTime?
+  avatar          String?
 
   providers       Provider[]
   credential      Credential?
   playerStats     PlayerStats?
+  
+  // Friends relationships
+  friendships     Friendship[] @relation("UserFriendships")
+  friendOf        Friendship[] @relation("FriendFriendships")
 }
 
 // Authentication providers table (Google, GitHub, Facebook, etc)
@@ -55,4 +60,21 @@ model PlayerStats {
   eloRating       Int         @default(1200)
 
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Friendship table for user relationships
+model Friendship {
+  id          String   @id @default(uuid())
+  userId      String
+  friendId    String
+  status      String   @default("pending") // pending, accepted, blocked
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend      User     @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
 }
