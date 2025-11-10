@@ -17,8 +17,37 @@ const statsRoutes = async ( server: FastifyInstance ) =>
 
 			if ( !playerStats )
 			{
-				return response.code( 404 ).send( { error: "statistics not found"} );
+				return response.code( 404 ).send( { error: "Statistics not found"} );
 			}
+			response.send( playerStats );
+		}
+		catch ( error: any )
+		{
+			server.log.error( `Get statistics failed: ${error?.message}` );
+			response.code( 500 ).send( {error: "Failed to get player stats"} );
+		}
+	} );
+
+	// Get statistics of another player
+	server.get( "/stats/user/:username", { preHandler: authenticate }, async ( request, response ) =>
+	{
+		try
+		{
+			const { playername } = request.params as { playername: string };
+
+			const playerStats = await server.prisma.user.findFirst( {
+				where: { username: playername },
+				select: {
+					username: true,
+					playerStats: { omit: { userId: true } }
+				 }
+			} );
+
+			if ( !playerStats )
+			{
+				return response.code( 404 ).send( {error: "Player not found"} );
+			}
+
 			response.send( playerStats );
 		}
 		catch ( error: any )
