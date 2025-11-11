@@ -52,3 +52,13 @@ Content-Type: application/json
 
 {
 }
+
+### test stats retrieval
+GET http://localhost:4241/stats/user/TrashMan
+Content-Type: application/json
+
+{
+  "username": "rich",
+  "email": "rich@example.com",
+  "password": "12345678"
+}
