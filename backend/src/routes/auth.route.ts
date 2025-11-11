@@ -1,10 +1,17 @@
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
-import fastifyOauth2 from "@fastify/oauth2";
+import fastifyOauth2, { type OAuth2Namespace } from "@fastify/oauth2";
 import { OAuth2Client } from "google-auth-library";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import bcrypt from "bcrypt";
 
 //TO DO: redirecting the user back to the client 
+
+// Augment Fastify instance with oauth2 namespace added by the plugin
+declare module 'fastify' {
+  interface FastifyInstance {
+    googleOAuth2: OAuth2Namespace;
+  }
+}
 
 function setAuthCookies(reply: FastifyReply, accessToken: string, refreshToken: string) {
   reply
@@ -44,7 +51,8 @@ const authRoutes = async (server: FastifyInstance) => {
     },
     startRedirectPath: "/auth/google",
     callbackUri: process.env.GOOGLE_CALLBACK_URL || "http://localhost:4241/auth/google/callback",
-    generateStateFunction: () => undefined,
+    // Must return a string; used for CSRF state parameter
+    generateStateFunction: () => Math.random().toString(36).slice(2),
     checkStateFunction: () => true,
   });
 
@@ -84,6 +92,11 @@ const authRoutes = async (server: FastifyInstance) => {
 
       const providerSource = "google";
       const { email, name, sub: providerId } = payload;
+      if (!email) {
+        server.log.error("Provider did not return an email address");
+        return reply.code(400).send({ error: "Email not provided by provider" });
+      }
+      const verifiedEmail: string = email;
       server.log.info(`Step 3: Extracted user info: ${email} (${name})`);
 
       if (!server.prisma) {
@@ -111,7 +124,7 @@ const authRoutes = async (server: FastifyInstance) => {
             }
         });
       } else {
-        if (await server.prisma.user.findUnique({ where:{ email }})) {
+    if (await server.prisma.user.findUnique({ where:{ email: verifiedEmail }})) {
             // TODO: redirect to login page
             server.log.info("Step 4.b: Email from the provider already in use...");
             return reply.code(400).send({ error: "User with that email already exists" });
@@ -119,8 +132,8 @@ const authRoutes = async (server: FastifyInstance) => {
             server.log.info("Step 4.c: No existing records on user, creating new account...")
             user = await server.prisma.user.create({
                 data: {
-                    email,
-                    username: name,
+          email: verifiedEmail,
+          username: name ?? null,
                     lastLogin: new Date(),
                     playerStats: { create: {} },
                     providers: {

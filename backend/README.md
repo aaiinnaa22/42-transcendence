@@ -34,6 +34,24 @@ To test the backend locally, create a `.env` file within the backend directory w
 | GOOGLE_CALLBACK_URL	| http://localhost:4241/auth/google/callback	|
 | SALT_ROUNDS			| How many times hashing should salt the creds	|
 
+### Continuous Integration (CI)
+
+This repository uses GitHub Actions to validate the backend on:
+
+- push: only on protected branches (main, develop)
+- pull_request: when a PR targets main or develop
+- manual: you can trigger the workflow from the Actions tab (workflow_dispatch)
+
+What runs in CI:
+- Backend job (Node 20):
+	- npm install
+	- npm test (unit + integration tests)
+	- npm run build (TypeScript typecheck/compile)
+
+Notes:
+- The backend tests mock the database (Prisma), so no DB service is required in CI.
+- If you add package-lock.json, we can switch to `npm ci` and enable better caching.
+
 ### Backend Languages
 - Javascript
 - Typescript
