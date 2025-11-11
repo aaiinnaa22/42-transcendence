@@ -33,10 +33,10 @@ const statsRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			const { playername } = request.params as { playername: string };
+			const { username } = request.params as { username: string };
 
-			const playerStats = await server.prisma.user.findFirst( {
-				where: { username: playername },
+			const playerStats = await server.prisma.user.findUnique( {
+				where: { username },
 				select: {
 					username: true,
 					playerStats: { omit: { userId: true } }
