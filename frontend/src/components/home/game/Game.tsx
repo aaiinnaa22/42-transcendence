@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN } from "./constants.ts";
+import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 
 type GameProps = {
 	exitGame: () => void;
@@ -7,108 +7,103 @@ type GameProps = {
 
 export const Game = ({exitGame}: GameProps) =>
 {
+    // I am using useRef instead of useState so things persist when components load again and things wont't rerender
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const status = document.getElementById('status');
-    //const canvas = document.getElementById('game');
-    let players = {};
-    let ball = { x: 0, y: 0 }; // initialize ball position
-
-	const [player1PointsHtml, setPlayer1PointsHtml] = useState(0);
-	const [player2PointsHtml, setPlayer2PointsHtml] = useState(0);
-
+    const PointsRef = useRef<HTMLSpanElement | null>(null);
+    const PointsRef2= useRef<HTMLSpanElement | null>(null);
+    const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef({});
+    const players = useRef<Record<string, any>>({});
+    const ball = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-    const ws = new WebSocket('ws://localhost:4545/ws');
-
-    ws.onopen = () => {
-      console.log("Connected!");
-    }
-    
-    const handleKeyDown = (e: KeyboardEvent) => {
-        keysPressed.current[e.key] = true;
-     };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-        keysPressed.current[e.key] = false;
+    // sends move command to backend server when player wants to move
+    const sendMove = (id: number, dx: number, dy: number) => {
+        const ws = wsRef.current;
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "move", id, dx, dy }));
+        }
     };
 
-    ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.type === 'state') {
-      players = data.players;
-      ball = data.ball;
-      drawGame();
-    }
-    };
-
-    ws.onclose = () => {
-        status.textContent = "Disconnected.";
-    };
-
-    function sendMove(id, dx, dy) {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'move', id, dx, dy }));
-    }
-    }
-
+    //registers what key was pressed and call sendMove function
     const updateGame = () => {
         //Perform action based on the keypressed
-        if (keysPressed.current["ArrowUp"]) sendMove(1, 0, -5);
-        if (keysPressed.current["ArrowDown"]) sendMove(1, 0, 5);
-        if (keysPressed.current["w"]) sendMove(2, 0, -5);
-        if (keysPressed.current["s"]) sendMove(2, 0, 5);
+        if (keysPressed.current["ArrowUp"]) sendMove(2, 0, -10);
+        if (keysPressed.current["ArrowDown"]) sendMove(2, 0, 10);
+        if (keysPressed.current["w"]) sendMove(1, 0, -10);
+        if (keysPressed.current["s"]) sendMove(1, 0, 10);
     };
 
-      // Regularly request updates from the server (every 100 ms)
-    setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'get_state' }));
+    // Poll server regurally so ball position gets updated constantly. I had 10ms interval here but this is now tied to the gameloop (not sure if it spams the server too much like this)
+    const setInterval = () => {
+        const ws = wsRef.current;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "get_state" }));
         }
-    }, 10); // 100 ms interval
+    }
 
+    //draws the game based on the coordinates we got from the back end
     const  drawGame = () => {
-
-        const gridSize = WIDTH;
-        const tileSize = HEIGHT;
-
         const ctx = canvasRef.current.getContext("2d");
 
-        ctx.clearRect(0,0, gridSize * tileSize, gridSize * tileSize);
+        ctx.clearRect(0,0, WIDTH, HEIGHT);
+        ctx.fillStyle = 'white';
     
-        // Draw players
-        for (const id in players) {
-        const { x, y } = players[id];
-        ctx.fillStyle = 'lime';
-        ctx.fillRect(x, y, 10, PADDLE_LEN);
+        // Draw players might fuck up the id is not a number 
+        for (const id in players.current) 
+        {
+            const { x, y } = players.current[id];
+            if (id % 2)
+                PointsRef.current.innerHTML = players.current[id].points;
+            else
+                PointsRef2.current.innerHTML = players.current[id].points;
+            ctx.fillRect(x, y, PADDLE_WIDTH, PADDLE_LEN);
         }
 
         // Draw ball
-        const { x, y } = ball;
-        ctx.fillStyle = 'red';
-        ctx.fillRect(x, y, BALL_SIZE, BALL_SIZE);
-
-		setPlayer2PointsHtml(0);
-		setPlayer1PointsHtml(0);
+        //const { x, y } = ball.current;
+        ctx.fillRect(ball.current.x, ball.current.y, BALL_SIZE, BALL_SIZE);
     };
 
     useEffect(() => {
-        let animationFrameId: number;
-
-        const gameLoop = () => {
-        updateGame();
-        drawGame();
-        animationFrameId = requestAnimationFrame(gameLoop);
-        };
+        let animationFrameId: number; // not needed ??
+        const ws = new WebSocket('ws://localhost:4545/ws');
+        wsRef.current = ws;
+        
+        const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
+        const handleKeyUp = (e: KeyboardEvent) => { keysPressed.current[e.key] = false; };
         window.addEventListener("keydown",handleKeyDown);
         window.addEventListener("keyup", handleKeyUp);
+
+        ws.onopen = () => {console.log("Connected!");}
+        ws.onclose = () => {console.log("Disconnected!");};
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'state') {
+                players.current = data.players;
+                ball.current = data.ball;
+                drawGame();
+        }};
+
+        // Main game loop that keeps calling different update functions
+        const gameLoop = () => {
+            setInterval(); // move ball
+            updateGame(); //register key presses and move players
+            drawGame(); // draws the game canvas TEST IF NEEDED BECAUSE THE GAME IS ALREADY DRAWN AFTER EACH MESSAGE
+            animationFrameId = requestAnimationFrame(gameLoop); // syncs the game to the browser refress rate to make animation smooth
+        };
         gameLoop();
+
+        // Clean up things 
         return () => {
+            ws.close();
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
         };
-    },[]);
+    },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
 
+    // Aina's stuff after this line
 	const screenIsPortrait = window.innerHeight > window.innerWidth;
 
     return (
@@ -116,15 +111,15 @@ export const Game = ({exitGame}: GameProps) =>
 		portrait:grid-cols-[auto_auto_auto]
 		gap-[5vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] p-[8vw]
 		sm:landscape:p-[2vw]">
-			<span
+			<span ref={PointsRef}
 				className="text-transcendence-white font-transcendence-three text-4xl
 					 row-start-1 col-start-1
 					 portrait:self-end
-					text-right">{player1PointsHtml}</span>
+					text-right"></span>
 			<span className="text-transcendence-white font-transcendence-three text-4xl hidden">|</span>
-			<span className="text-transcendence-white font-transcendence-three text-4xl
+			<span ref={PointsRef2} className="text-transcendence-white font-transcendence-three text-4xl
 				row-start-1 col-start-6
-				portrait:col-start-3">{player2PointsHtml}</span>
+				portrait:col-start-3"></span>
 			<div className="
 				flex-grow flex items-center justify-center
 				border-4 border-transcendence-white rounded-xl overflow-hidden

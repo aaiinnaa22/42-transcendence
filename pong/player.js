@@ -1,10 +1,5 @@
 'use strict';
 
-let WIDTH = 1600;
-let HEIGHT = 800;
-let BALL_SIZE = 10;
-let PADDLE_LEN = 140;
-
 class Player {
   constructor(id, x = 0, y = 0) {
     this.id = id;
@@ -21,7 +16,7 @@ class Player {
   }
 
   getState() {
-    return { id: this.id, x: this.x, y: this.y };
+    return { id: this.id, x: this.x, y: this.y, points: this.points };
   }
 }
 
