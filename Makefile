@@ -8,8 +8,8 @@
 # make rebuild-backend - force rebuild backend (no cache)
 # make logs - run all services in the foreground (live logs)
 # make logs-backend - run backend in the foreground (live logs)
-# make rebuild-logs - force rebuild of all serbives + logs
-# make rebuild-logs-backend - force rebuild backend (no cache) + logs
+# make reb-logs - force rebuild of all serbives + logs
+# make reb-logs-backend - force rebuild backend (no cache) + logs
 
 COMPOSE_FILE=docker-compose.yml
 
@@ -23,7 +23,7 @@ build:
 	@docker compose -f $(COMPOSE_FILE) build
 
 up:
-	@echo "Running containers..."
+	@echo "Running containers... (in detached mode)"
 	@docker compose -f $(COMPOSE_FILE) up -d
 
 down:
@@ -58,7 +58,7 @@ rebuild-%:
 	@docker compose -f $(COMPOSE_FILE) build --no-cache $*
 	@docker compose -f $(COMPOSE_FILE) up -d --force-recreate $*
 
-# if you wanna see live logs 
+# if you wanna see live logs (terminal blocking mode)
 logs:
 	@echo "Showing live logs for all services"
 	@docker compose -f $(COMPOSE_FILE) up --build 2>&1 | cat || true
@@ -68,16 +68,16 @@ logs-%:
 	docker compose -f $(COMPOSE_FILE) up --build $* 2>&1 | cat || true
 
 # force rebuild and starting it with the logs
-rebuild-logs:
+reb-logs:
 	@echo "Force rebuilding (no cache) all services and showing live logs..."
 	docker compose -f $(COMPOSE_FILE) down
 	docker compose -f $(COMPOSE_FILE) build --no-cache
 	docker compose -f $(COMPOSE_FILE) up --force-recreate 2>&1 | cat || true
 
-rebuild-logs-%:
+reb-logs-%:
 	@echo "Force rebuilding (no cache) and showing logs for service: $*"
 	docker compose -f $(COMPOSE_FILE) stop $*
 	docker compose -f $(COMPOSE_FILE) build --no-cache $*
 	docker compose -f $(COMPOSE_FILE) up --force-recreate $* 2>&1 | cat || true
 
-.PHONY: all clean fclean re up down build rebuild rebuild-% logs logs-% rebuild-logs rebuild-logs-% $(SERVICES)
+.PHONY: all clean fclean re up down build rebuild rebuild-% logs logs-% reb-logs reb-logs-% $(SERVICES)
