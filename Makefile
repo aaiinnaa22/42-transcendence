@@ -13,7 +13,7 @@
 
 COMPOSE_FILE=docker-compose.yml
 
-SERVICES = backend frontend pong
+SERVICES = backend frontend
 
 all: build up
 	@echo "Transcendence up and running."
