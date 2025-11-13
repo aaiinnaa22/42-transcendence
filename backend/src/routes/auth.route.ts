@@ -3,6 +3,7 @@ import fastifyOauth2, { type OAuth2Namespace } from "@fastify/oauth2";
 import { OAuth2Client } from "google-auth-library";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import bcrypt from "bcrypt";
+import { checkPasswordStrength, checkEmailFormat } from "../shared/utility/validation.utility.ts";
 
 //TO DO: redirecting the user back to the client
 
@@ -232,11 +233,19 @@ const authRoutes = async ( server: FastifyInstance ) =>
         		username?: string;
       		};
 
-			// Check if email is already in use
-			const existingEmail = await server.prisma.user.findUnique( {
-				where: { email }
-			} );
+			// Validate email format and confirm minimum password strength requirements
+			if ( !checkEmailFormat( email ) )
+			{
+				return reply.code( 400 ).send( { error: "Invalid email" } );
+			}
 
+			if ( !checkPasswordStrength( password ) )
+			{
+				return reply.code( 400 ).send( { error: "Password too weak" } );
+			}
+
+			// Check if email is already in use
+			const existingEmail = await server.prisma.user.findUnique( { where: { email } } );
 			if ( existingEmail )
 			{
 				return reply.code( 400 ).send( { error: "User already exists" } );
@@ -245,7 +254,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			// Check if the username is taken
 			if ( username !== undefined )
 			{
-				const existingUsername = await server.prisma.user.findFirst( {
+				const existingUsername = await server.prisma.user.findUnique( {
 					where: { username }
 				} );
 
