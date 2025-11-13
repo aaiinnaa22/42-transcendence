@@ -16,6 +16,18 @@ services:
       - db_data:/app/prisma
     environment:
       - NODE_ENV=development
+      - ./backend/prisma:/app/prisma
+
+  pong:
+    build: ./backend/src/pong
+    container_name: tr_pong
+    ports:
+      - "4545:4545"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: 4545
+    networks:
+      - transcendence_net
 
   frontend:
     build: ./frontend
