@@ -17,6 +17,18 @@ services:
     environment:
       - NODE_ENV=development
 
+  pong:
+    build: ./pong
+    container_name: tr_pong
+    ports:
+      - "4545:4545"
+    env_file:
+      - ./backend/.env
+    #environment:
+    #  DATABASE_URL: "file:/data/dev.db"
+    networks:
+      - transcendence_net
+
   frontend:
     build: ./frontend
     container_name: tr_frontend
