@@ -23,3 +23,4 @@ EXPOSE 4241
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["npm", "run", "dev"]
+
