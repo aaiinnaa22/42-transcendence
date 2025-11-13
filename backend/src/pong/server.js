@@ -23,6 +23,7 @@ const start = async () => {
 	    // Create new game instance with unique name and add it to the games
 	    const GameId = Date.now().toString();
 	    const game = new Game(GameId);
+		//game.sockets = [socket]; // store connections in this game
 	    // Adding two players to the game in correct postision (Could this be done during the construction of Game instance??)
 	    game.addPlayer();
 	    games[GameId] = game;
@@ -56,6 +57,22 @@ const start = async () => {
 	        //console.log("Seding message: ", payload);
 
 	        socket.send(payload);
+	      }
+
+			if (data.type === 'chat')
+	      {
+	        //console.log("Message recieved 'get_state' : ", message);
+	        //console.log("Data recieved: ", data);
+			// Get game state
+	        const payload = JSON.stringify({type: 'chat', message: data.message});  // Serialize the game state
+			console.log("Recieved chat message" + data.message);
+	        console.log("Seding message: ", payload);
+			// for (const [gameId, game] of Object.entries(games)) {
+			// if (game.sockets) {
+			// for (const client of game.sockets) {
+			// 	client.send(payload);
+			// }}}
+			socket.send(payload);
 	      }
 	    });
 
