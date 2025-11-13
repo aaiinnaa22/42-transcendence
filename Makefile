@@ -13,7 +13,7 @@
 
 COMPOSE_FILE=docker-compose.yml
 
-SERVICES = backend frontend pong
+SERVICES = backend frontend
 
 all: build up
 	@echo "Transcendence up and running."
@@ -32,7 +32,7 @@ down:
 
 clean:
 	@echo "Removing containers, images and volumes..."
-	@docker compose -f $(COMPOSE_FILE) down --rmi all -v
+	@docker compose -f $(COMPOSE_FILE) down --rmi all -v 
 	@docker system prune -f --volumes
 
 fclean: clean
