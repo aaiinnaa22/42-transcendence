@@ -3,24 +3,38 @@ import {NavBar} from "../components/home/NavBar";
 import {PlayButton} from "../components/home/PlayButton";
 import {Leaderboard} from "../components/home/stats/Leaderboard";
 import {Profile} from "../components/home/Profile";
-//import {Game} from "../components/home/game/Game";
+import {Game} from "../components/home/game/Game";
 //import {Settings} from "../components/home/panels/settings/Settings";
 import {Menu} from "../components/home/panels/Menu"
 import {SideTab} from "../components/home/utils/SideTab"
 import {PopUp} from "../components/home/utils/PopUp"
 import { PersonalStats } from '../components/home/stats/PersonalStats';
-import { GamePage } from '../components/home/game/GamePage';
+import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
+import { ExitTopLeft } from '../components/home/utils/ExitTopLeft';
 
 export const Home = () => {
-	const [isGameOn, setGameOn] = useState(false);
 	type Page = "play" | "stats" | "profile";
 	const [currentPage, setCurrentPage] = useState<Page>("play");
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "chat" | null>(null);
 	const [isPersonalStats, setIsPersonalStats] = useState(true);
+	const [currentGamePage, setCurrentGamePage] = useState<"playButton" | "chooseGame" | "gamePlay">("playButton");
 
 	const togglePanel = (panel: "chat" | "menu") => {
 		setCurrentPanel(currentPanel === panel ? null : panel);
 	};
+
+	const renderGame = () =>
+	{
+		switch (currentGamePage)
+		{
+			case "chooseGame":
+				return <ExitTopLeft onExitClick={() => setCurrentGamePage("playButton")}><ChooseGameMode onGameChoose={() => setCurrentGamePage("gamePlay")}/></ExitTopLeft>;
+			case "gamePlay":
+				return <ExitTopLeft onExitClick={() => setCurrentGamePage("playButton")}><Game/></ExitTopLeft>;
+			default:
+				return <PlayButton onButtonClick={() => setCurrentGamePage("chooseGame")}/>;
+		}
+	}
 
 	const renderPage = () =>
 	{
@@ -33,9 +47,7 @@ export const Home = () => {
 			case "profile":
 				return <Profile/>;
 			default:
-				return !isGameOn
-					? (<PlayButton startGame={() => setGameOn(true)}/>)
-					: (<GamePage exitGame={() => setGameOn(false)}/>);
+				return renderGame();
 		}
 	}
 
