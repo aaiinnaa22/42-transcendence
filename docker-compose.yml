@@ -16,6 +16,7 @@ services:
       - db_data:/app/prisma
     environment:
       - NODE_ENV=development
+      - ./backend/prisma:/app/prisma
 
   frontend:
     build: ./frontend
@@ -28,6 +29,7 @@ services:
       VITE_API_URL: "http://backend:4241"
       HOST: "0.0.0.0"
       PORT: 8080
+      WS_URL: "ws://localhost:4545/ws"
     networks:
       - transcendence_net
 

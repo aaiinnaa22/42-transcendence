@@ -3,13 +3,14 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 // Seed the database for the development environment
-const seedDev = async () => {
-	const frank = await prisma.user.upsert({
-		where: { email: 'trashman@hive.fi' },
+const seedDev = async () =>
+{
+	const frank = await prisma.user.upsert( {
+		where: { email: "trashman@hive.fi" },
 		update: {},
 		create: {
-			email: 'trashman@hive.fi',
-			username: 'TrashMan',
+			email: "trashman@hive.fi",
+			username: "TrashMan",
 			lastLogin: new Date(),
 			playerStats: {
 				create: {}
@@ -18,18 +19,18 @@ const seedDev = async () => {
 				create: [
 					{
 						providerSource: "google",
-						providerId: 'frank-reynolds-google-id',
+						providerId: "frank-reynolds-google-id",
 					},
 				]
 			}
 		}
-	});
-	const charlie = await prisma.user.upsert({
-		where: { email: 'wildcard@hive.fi' },
+	} );
+	const charlie = await prisma.user.upsert( {
+		where: { email: "wildcard@hive.fi" },
 		update: {},
 		create: {
-			email: 'wildcard@hive.fi',
-			username: 'The Wildcard',
+			email: "wildcard@hive.fi",
+			username: "The Wildcard",
 			lastLogin: new Date(),
 			playerStats: {
 				create: {}
@@ -38,28 +39,31 @@ const seedDev = async () => {
 				create: [
 					{
 						providerSource: "google",
-						providerId: 'charlie-kelly-google-id',
+						providerId: "charlie-kelly-google-id",
 					},
 				]
 			}
 		}
-	});
+	} );
 
-	console.log({ frank, charlie });
-}
+	console.log( { frank, charlie } );
+};
 
 
-const main = async () => {
-	if (process.env.NODE_ENV === 'development')
-		await seedDev();
+const main = async () =>
+{
+	if ( process.env.NODE_ENV === "development" )
+	{await seedDev();}
 };
 
 main()
-	.then(async () => {
+	.then( async () =>
+	{
 		await prisma.$disconnect();
-	})
-	.catch(async (err) => {
-		console.error(err);
+	} )
+	.catch( async ( err ) =>
+	{
+		console.error( err );
 		await prisma.$disconnect();
-		process.exit(1);
-	});
+		process.exit( 1 );
+	} );
