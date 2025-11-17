@@ -17,9 +17,9 @@ export const NavBar = ({currentPage, onNavigate, currentPanel, onTogglePanel}: N
 			<h1 className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]">PONG</h1>
 			<div className="hidden h-full xl:flex flex-row sm:gap-5 md:gap-10 lg:gap-20 2xl:gap-30 font-transcendence-two text-2xl">
 				{navItems.map((item) => {
-					const isActive = currentPage == item;
+					const isActive = currentPage === item;
 					return (
-						<div
+						<button
 							key={item}
 							onClick={() => onNavigate(item)}
 							className={"mt-16 rounded-tl-xl rounded-tr-xl px-2 py-2 cursor-pointer border-2 "
@@ -27,24 +27,24 @@ export const NavBar = ({currentPage, onNavigate, currentPanel, onTogglePanel}: N
 							<h2 className="text-black font-normal text-center">
 								{item}
 							</h2>
-						</div>
+						</button>
 					);
 				})}
 			</div>
 			<div className="flex items-center justify-center gap-3">
 				<div className="hidden relative xl:flex items-center justify-center group">
 					<span className={"absolute top-1.25 w-[1.2em] h-[1.25em] bg-transparent " + (currentPanel === "chat" ? "!bg-transcendence-white" : "group-hover:bg-transcendence-white")}></span>
-					<span
+					<button
 						className="relative material-symbols-outlined !text-3xl cursor-pointer"
 						onClick={() => onTogglePanel("chat")}>
 						chat_bubble
-					</span>
+					</button>
 				</div>
-				<span
+				<button
 					className="xl:!hidden material-symbols-outlined !text-3xl cursor-pointer"
 					onClick={() => onTogglePanel("menu")}>
 						menu
-				</span>
+				</button>
 			</div>
 		</div>
 	);

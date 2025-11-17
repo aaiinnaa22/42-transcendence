@@ -60,7 +60,7 @@ export const Profile = () => {
 					{profilePic
 					? <img className="h-35 w-35 rounded-full" src={profilePic}></img>
 					: <span className="material-symbols-outlined text-transcendence-white !text-9xl">account_circle</span>}
-					<div
+					<button
 						className="absolute top-2 right-2 bg-transcendence-white w-8 h-8 rounded-full border-2 border-transcendence-black flex flex-col justify-center items-center cursor-pointer"
 						onClick={() => profilePicInputRef.current?.click()}>
 						<span className="material-symbols-outlined text-transcendence-black">photo_camera</span>
@@ -71,7 +71,7 @@ export const Profile = () => {
 							ref={profilePicInputRef}
 							onChange={handleProfilePicChange}>
 						</input>
-					</div>
+					</button>
 				</div>
 			</div>
 			<div className="col-start-2 row-start-2 flex flex-col items-center">

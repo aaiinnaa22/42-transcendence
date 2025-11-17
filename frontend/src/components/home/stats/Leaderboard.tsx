@@ -26,13 +26,13 @@ export const Leaderboard = ({switchStats}: LeaderboardProps) => {
 	return (
 		<div className="relative w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] grid grid-cols-[20%_60%_20%] grid-rows-[15%_auto] px-[10vw] py-[10vh]
 			portrait:grid-cols-[auto] gap-3">
-			<div className="absolute text-transcendence-white font-transcendence-two tracking-[0.02em] flex items-center justify-center
+			<button className="absolute text-transcendence-white font-transcendence-two tracking-[0.02em] flex items-center justify-center
 			top-5 left-5 xl:top-10 xl:left-10
 			text-xs xl:text-sm cursor-pointer"
 			onClick={switchStats}>
 				<span className="material-symbols-outlined">arrow_forward</span>
 				<h3 className="h-full">My stats</h3>
-			</div>
+			</button>
 			<div className="w-full h-full flex flex-col items-center col-span-3 tracking-[0.2em]">
 				<h1 className="text-transcendence-white font-transcendence-three
 					text-xl lg:text-3xl md:portrait:text-3xl">

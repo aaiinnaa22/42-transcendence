@@ -38,12 +38,12 @@ export const Settings = () =>
 		<div className={"flex flex-col gap-6 lg:gap-15 items-center justify-center"}>
 			<LanguageSelector/>
 			<div className={"flex flex-col gap-2 text-center"}>
-				<h2
+				<button
 					className="text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
 					onClick={handleLogOut}>
 					Log out
-				</h2>
-				<h2 className="text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">Delete account</h2>
+				</button>
+				<button className="text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">Delete account</button>
 			</div>
 		</div>
 	);

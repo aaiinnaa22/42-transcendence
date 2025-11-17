@@ -23,7 +23,7 @@ export const Menu = ({currentPage, onNavigate}: MenuProps) =>
 						{navItems.map((item) => {
 						const isActive = currentPage == item;
 						return (
-							<div
+							<button
 								key={item}
 								onClick={() => onNavigate(item)}
 								className={"cursor-pointer flex flex-row items-center gap-2 "
@@ -33,7 +33,7 @@ export const Menu = ({currentPage, onNavigate}: MenuProps) =>
 								<h2 className="text-black font-transcendence-two text-md">
 									{item}
 								</h2>
-							</div>
+							</button>
 						);
 						})}
 					</div>

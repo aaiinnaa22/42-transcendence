@@ -7,22 +7,19 @@ export const Welcome = () => {
 	const navigate = useNavigate();
 	const {pathname} = useLocation();
 
-	const subtitle = pathname === "/"
-		? (
-				<div className="bg-transcendence-white rounded-full animate-bounce w-4 h-4 lg:w-5 lg:h-5 text-right"></div>
-		)
-		: pathname === "/login"
-		? (<h1 className="text-transcendence-white font-transcendence-two text-right tracking-wider w-full">LOGIN</h1>)
-		: pathname === "/signup"
-		? (<h1 className="text-transcendence-white font-transcendence-two text-right tracking-wider w-full">SIGN UP</h1>)
-		: null;
 	return (
 		<div className="bg-transcendence-black h-screen w-screen
 		grid grid-cols-1 grid-rows-[35%_auto]">
 			<div className="flex flex-col items-center justify-end pb-[3vh]">
 				<h1 className="text-transcendence-white font-transcendence-one font-extrabold text-7xl tracking-[0.8rem] text-center landscape:text-5xl lg:landscape:text-7xl">PONG</h1>
 				<div className="w-60 h-10 inline-flex justify-end mt-5 landscape:w-44 landscape:mt-3 lg:landscape:w-60 lg:landscape:mt-5">
-					{subtitle}
+					  {pathname === '/' ? (
+							<div className="bg-transcendence-white rounded-full animate-bounce w-4 h-4 lg:w-5 lg:h-5" />
+						) : (
+							<h1 className="text-transcendence-white font-transcendence-two text-right tracking-wider w-full">
+							{pathname === '/login' ? 'LOGIN' : pathname === '/signup' ? 'SIGN UP' : ''}
+							</h1>
+						)}
 				</div>
 			</div>
 			<Routes>
