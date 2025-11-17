@@ -1,0 +1,47 @@
+<body style="background:#222; color:#eee; font-family:sans-serif;">
+
+<p id="status">Connecting...</p>
+
+<div id="messages" style="
+  height:150px; overflow-y:auto; background:#111;
+  border:1px solid #555; padding:10px; width:400px; margin:auto;">
+</div>
+
+<div style="display:flex; width:400px; margin:10px auto;">
+  <input id="messageBox" style="flex:1; padding:8px; background:#333; border:none; color:#eee;">
+  <button id="sendBtn" style="padding:8px 12px; background:#444; border:none; color:#eee;">Send</button>
+</div>
+
+<script>
+  const ws = new WebSocket('ws://c2r2p11.hive.fi:4241/chat');
+
+  ws.onopen   = () => status.textContent = "Connected!";
+  ws.onclose  = () => status.textContent = "Disconnected!";
+  ws.onmessage = e => {
+    const d = JSON.parse(e.data);
+    if (d.type === "chat") add(d.username || "Player", d.message);
+  };
+
+  ws.onerror = (e) => {
+  console.log("WebSocket ERROR", e);
+  status.textContent = "Error connecting.";
+  };
+
+  function add(user, msg){
+    const div=document.createElement('div');
+    div.textContent = `${user}: ${msg}`;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  sendBtn.onclick = send;
+  messageBox.onkeypress = e => e.key === "Enter" && send();
+
+  function send(){
+    const text = messageBox.value.trim();
+    if (!text) return;
+    ws.send(JSON.stringify({ type:"chat", message:text }));
+    messageBox.value = "";
+  }
+</script>
+</body>
