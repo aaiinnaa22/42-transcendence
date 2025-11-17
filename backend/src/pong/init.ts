@@ -49,6 +49,23 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 				socket.send( payload );
 			}
+			
+			if (data.type === 'chat')
+			{
+				console.log("Message recieved 'get_state' : ", message);
+				console.log("Data recieved: ", data);
+				// Get game state
+				const payload = JSON.stringify({type: 'chat', message: data.message});  // Serialize the game state
+				console.log("Recieved chat message" + data.message);
+				console.log("Seding message: ", payload);
+				// for (const [gameId, game] of Object.entries(games)) {
+				// if (game.sockets) {
+				// for (const client of game.sockets) {
+				// 	client.send(payload);
+				// }}}
+				socket.send(payload);
+			}
+
 		} );
 
 		socket.on( "close", () =>
