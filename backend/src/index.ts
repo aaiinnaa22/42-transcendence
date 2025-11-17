@@ -58,6 +58,8 @@ const start = async () =>
 		// User route
 		await server.register( import( "./routes/user.route.ts" ) );
 
+		await server.register( import( "./routes/avatar.route.ts" ) );
+
 		await server.register( import( "./routes/stats.route.ts" ) );
 
 		// Game module initialization

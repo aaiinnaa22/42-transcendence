@@ -99,7 +99,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			}
 
 			const providerSource = "google";
-			const { email, name, sub: providerId } = payload;
+			const { email, name, picture, sub: providerId } = payload;
 			if ( !email )
 			{
 				server.log.error( "Provider did not return an email address" );
@@ -145,12 +145,16 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				}
 				else
 				{
+					const avatarType = picture ? "provider" : null;
+
 					server.log.info( "Step 4.c: No existing records on user, creating new account..." );
 					user = await server.prisma.user.create( {
 						data: {
 							email: verifiedEmail,
 							username: name ?? null,
 							lastLogin: new Date(),
+							avatar: picture ?? null,
+							avatarType,
 							playerStats: { create: {} },
 							providers: {
 								create: [
