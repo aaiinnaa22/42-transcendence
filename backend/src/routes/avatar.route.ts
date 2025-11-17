@@ -11,8 +11,6 @@ const ALLOWED_FORMATS = ["image/jpeg", "image/png", "image/webp"];
 
 const avatarRoutes = async ( server: FastifyInstance ) =>
 {
-	server.register( import( "@fastify/multipart" ) );
-
 	// Set the user's avatar
 	server.post(
 		"/users/avatar",
