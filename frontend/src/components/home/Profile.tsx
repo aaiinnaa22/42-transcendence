@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from 'react'
-import {Settings} from "./panels/settings/Settings"
+import {Settings} from "./settings/Settings"
 
 export const Profile = () => {
 	const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export const Profile = () => {
 			{
 				method: "POST",
 				headers: {
-					"Content-Type": "image/*",
+					"Content-Type": "image/*", //webp, png, jpeg (must be convertible to webp!)
 				},
 				body: profilePicFile,
 			});

@@ -4,13 +4,14 @@ import {PlayButton} from "../components/home/PlayButton";
 import {Leaderboard} from "../components/home/stats/Leaderboard";
 import {Profile} from "../components/home/Profile";
 import {Game} from "../components/home/game/Game";
-//import {Settings} from "../components/home/panels/settings/Settings";
+import { Chat } from '../components/home/panels/chat/Chat';
 import {Menu} from "../components/home/panels/Menu"
 import {SideTab} from "../components/home/utils/SideTab"
 import {PopUp} from "../components/home/utils/PopUp"
 import { PersonalStats } from '../components/home/stats/PersonalStats';
 import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
 import { ExitTopLeft } from '../components/home/utils/ExitTopLeft';
+import { Discussion } from '../components/home/panels/chat/Discussion';
 
 export const Home = () => {
 	type Page = "play" | "stats" | "profile";
@@ -18,6 +19,7 @@ export const Home = () => {
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "chat" | null>(null);
 	const [isPersonalStats, setIsPersonalStats] = useState(true);
 	const [currentGamePage, setCurrentGamePage] = useState<"playButton" | "chooseGame" | "gamePlay">("playButton");
+	const [currentChat, setCurrentChat] = useState<"chat" | "discussion">("chat");
 
 	const togglePanel = (panel: "chat" | "menu") => {
 		setCurrentPanel(currentPanel === panel ? null : panel);
@@ -51,6 +53,17 @@ export const Home = () => {
 		}
 	}
 
+	const renderChat = () =>
+	{
+		switch (currentChat)
+		{
+			case "chat":
+				return <Chat onChatClick={() => setCurrentChat("discussion")}/>
+			case "discussion":
+				return <Discussion onExitClick={() => setCurrentChat("chat")}/>
+		}
+	}
+
 	return (
 		<div className="bg-transcendence-black min-h-screen w-full flex flex-col">
 			<NavBar
@@ -60,7 +73,7 @@ export const Home = () => {
 				onTogglePanel={togglePanel}
 			/>
 			{renderPage()}
-			{<SideTab isOpen={currentPanel === "chat"}><div>chat</div></SideTab>}
+			{<SideTab isOpen={currentPanel === "chat"}>{renderChat()}</SideTab>}
 			{<PopUp isOpen={currentPanel === "menu"}><Menu currentPage={currentPage} onNavigate={setCurrentPage}/></PopUp>}
 		</div>
 	)
