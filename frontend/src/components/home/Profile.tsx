@@ -68,19 +68,10 @@ export const Profile = () => {
 			{
 				method: "POST",
 				credentials: "include",
-				headers: {
-					"Content-Type": "image/*",
-				},
 				body: formData,
 			});
 
-			// Check if the file was uploaded
-			const data = await response.json();
-			if (!response.ok || data.error)
-			{
-				throw new Error("Couldn't change profile picture. Please try again later.");
-			}
-			else
+			if (response.ok)
 			{
 				// Set image from backend
 				const avatarBlob = await response.blob();
@@ -98,6 +89,7 @@ export const Profile = () => {
 		}
 		catch (err: any) {
 			console.error("Failed to store profile picture");
+			setProfilePic(null);
 		};
 	};
 
