@@ -11,39 +11,90 @@ export const Profile = () => {
 				const response = await fetch("http://localhost:4241/auth/me",
 				{
 					method: "GET",
+					credentials: "include",
 				});
 				const data = await response.json();
-				const {username, profilePic} = data;
-				setUsername(username || "User");
-				setProfilePic(profilePic || null);
+
+				setUsername(data.username || "User");
+
+				if (data.avatarType === "provider")
+				{
+					setProfilePic(profilePic || null);
+				}
+				else if (data.avatarType === "local")
+				{
+					const avatarResponse = await fetch("http://localhost:4241/users/avatar",
+					{
+						method: "GET",
+						credentials: "include",
+					});
+
+					if (avatarResponse.ok)
+					{
+						const avatarBlob = await avatarResponse.blob();
+						const avatarUrl = URL.createObjectURL(avatarBlob);
+						setProfilePic(avatarUrl);
+					}
+				}
 			}
 			catch (err: any) {
 				console.error("Failed to fetch user info");
 			};
 		};
 		getUserInfo();
+
+		return () => {
+			if (profilePic && profilePic.startsWith("blob:"))
+			{
+				URL.revokeObjectURL(profilePic);
+			}
+		}
 	}, []);
 
 	const handleProfilePicChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		const profilePicFile = event.target.files?.[0];
 		if (!profilePicFile) return;
-		const profileUrl = URL.createObjectURL(profilePicFile); //temp try out
-		setProfilePic(profileUrl); //temp try out
+
+		// Preview the uploaded image
+		const profileUrl = URL.createObjectURL(profilePicFile);
+		setProfilePic(profileUrl);
+
+
 		try {
-			const response = await fetch("http://localhost:4241/auth/me",
+			const formData = new FormData();
+			formData.append("file", profilePicFile);
+
+			const response = await fetch("http://localhost:4241/users/avatar",
 			{
 				method: "POST",
+				credentials: "include",
 				headers: {
 					"Content-Type": "image/*",
 				},
-				body: profilePicFile,
+				body: formData,
 			});
+
+			// Check if the file was uploaded
 			const data = await response.json();
 			if (!response.ok || data.error)
 			{
 				throw new Error("Couldn't change profile picture. Please try again later.");
 			}
-			//set image from backend
+			else
+			{
+				// Set image from backend
+				const avatarBlob = await response.blob();
+				const avatarUrl = URL.createObjectURL(avatarBlob);
+
+				// Prevent memory leak
+				if (profileUrl)
+				{
+					URL.revokeObjectURL(profileUrl);
+				}
+				setProfilePic(avatarUrl);
+			}
+
+
 		}
 		catch (err: any) {
 			console.error("Failed to store profile picture");
