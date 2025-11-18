@@ -17,6 +17,7 @@ export const SignUp = () => {
 			const response = await fetch("http://localhost:4241/auth/register",
 			{
 				method: "POST",
+				credentials: "include",
 				headers:{
 					"Content-Type": "application/json",
 				},

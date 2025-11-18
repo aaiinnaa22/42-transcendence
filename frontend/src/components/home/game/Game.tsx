@@ -1,11 +1,8 @@
 import React, { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 
-type GameProps = {
-	exitGame: () => void;
-};
 
-export const Game = ({exitGame}: GameProps) =>
+export const Game = () =>
 {
     // I am using useRef instead of useState so things persist when components load again and things wont't rerender
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -107,34 +104,24 @@ export const Game = ({exitGame}: GameProps) =>
 	const screenIsPortrait = window.innerHeight > window.innerWidth;
 
     return (
-		<div className="grid grid-cols-6 grid-rows-[auto_auto]
-		portrait:grid-cols-[auto_auto_auto]
-		gap-[5vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] p-[8vw]
-		sm:landscape:p-[2vw]">
+		<div className="relative grid grid-cols-[5%_auto_5%] grid-rows-[auto]
+		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
+		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
 			<span ref={PointsRef}
 				className="text-transcendence-white font-transcendence-three text-4xl
-					 row-start-1 col-start-1
+					col-start-1 row-start-1
 					 portrait:self-end
 					text-right"></span>
 			<span className="text-transcendence-white font-transcendence-three text-4xl hidden">|</span>
-			<span ref={PointsRef2} className="text-transcendence-white font-transcendence-three text-4xl
-				row-start-1 col-start-6
+			<span  ref={PointsRef2} className="text-transcendence-white font-transcendence-three text-4xl
+				col-start-3 row-start-1
 				portrait:col-start-3"></span>
 			<div className="
 				flex-grow flex items-center justify-center
 				border-4 border-transcendence-white rounded-xl overflow-hidden
-				row-start-1 col-start-2 col-span-4
+				col-start-2
 				portrait:col-span-1">
 				<canvas ref={canvasRef} width={screenIsPortrait ? HEIGHT : WIDTH} height={screenIsPortrait ? WIDTH : HEIGHT} className="w-full h-full"/>
-			</div>
-			<div className="flex justify-center
-				row-start-2 col-start-3 col-span-2
-				portrait:col-start-2 portrait:col-span-1">
-				<button
-					className="bg-transcendence-beige text-transcendence-black w-30 h-10 text-lg rounded-md font-transcendence-two"
-					onClick={exitGame}>
-					EXIT GAME
-				</button>
 			</div>
         </div>
     );
