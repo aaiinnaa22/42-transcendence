@@ -41,6 +41,14 @@ const start = async () =>
 			allowedHeaders: ["Content-Type", "Authorization", "Cookie"]
 		} );
 
+		// Multipart for file handling
+		await server.register( import( "@fastify/multipart" ), {
+			limits: {
+				fileSize: 4 * 1024 * 1024, // 4MB
+				files: 1
+			}
+		} );
+
 		await server.register( prismaPlugin );
 		await server.register( jwtPlugin );
 
@@ -59,6 +67,8 @@ const start = async () =>
 
 		// User route
 		await server.register( import( "./routes/user.route.ts" ) );
+
+		await server.register( import( "./routes/avatar.route.ts" ) );
 
 		await server.register( import( "./routes/stats.route.ts" ) );
 

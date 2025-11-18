@@ -1,16 +1,9 @@
-import {ToggleButton} from "../../utils/ToggleButton";
 import {useState} from "react";
 import { useNavigate } from "react-router-dom";
 import {LanguageSelector} from "./LanguageSelector"
 
-type SettingsProps=
+export const Settings = () =>
 {
-	centralize: boolean;
-}
-
-export const Settings = ({centralize}: SettingsProps) =>
-{
-	const [toggleOn, setToggleOn] = useState(false);
 	const [error, setError] = useState("");
 	const navigate = useNavigate();
 
@@ -42,21 +35,16 @@ export const Settings = ({centralize}: SettingsProps) =>
 	}
 
 	return (
-		<div className={"flex flex-col gap-6 landscape:!items-start " + (centralize ? "items-center justify-center" : "")}>
-			<h1 className="text-transcendence-black font-transcendence-two text-lg font-semibold pb-[2vh] lg:pb-[5vh]">Settings</h1>
-			<div className="flex flex-col md:gap-10 gap-5">
-				<div className="flex flex-col gap-3">
-					<ToggleButton enabled={toggleOn} onToggle={() => setToggleOn(!toggleOn)}/>
-					<ToggleButton enabled={toggleOn} onToggle={() => setToggleOn(!toggleOn)}/>
-				</div>
-				<LanguageSelector/>
+		<div className={"flex flex-col gap-6 lg:gap-15 items-center justify-center"}>
+			<LanguageSelector/>
+			<div className={"flex flex-col gap-2 text-center"}>
+				<button
+					className="text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
+					onClick={handleLogOut}>
+					Log out
+				</button>
+				<button className="text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">Delete account</button>
 			</div>
-			<h2
-				className="text-transcendence-black font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
-				onClick={handleLogOut}>
-				Log out
-			</h2>
-			<h2 className="text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold">Delete account</h2>
 		</div>
 	);
 }

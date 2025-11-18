@@ -16,6 +16,7 @@ export const Login = () => {
 			const response = await fetch("http://localhost:4241/auth/login",
 			{
 				method: "POST",
+				credentials: "include",
 				headers:{
 					"Content-Type": "application/json",
 				},
@@ -24,12 +25,7 @@ export const Login = () => {
 			const data = await response.json();
 			if (!response.ok || data.error)
 			{
-				if (data.error === "Invalid user")
-					throw new Error("No account found with this email.");
-				else if (data.error === "Invalid password")
-					throw new Error("The password you entered is incorrect.");
-				else
-					throw new Error(data.error || "Login failed. Please try again.");
+				throw new Error(data.error || "Login failed. Please try again.");
 			}
 			if (data.message === "Login successful")
 				navigate("/home");
