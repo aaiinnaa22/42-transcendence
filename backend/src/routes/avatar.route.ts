@@ -12,6 +12,16 @@ const ALLOWED_FORMATS = ["image/jpeg", "image/png", "image/webp"];
 
 const avatarRoutes = async ( server: FastifyInstance ) =>
 {
+	// Create the directory for local avatars
+	try
+	{
+		await fs.access( AVATAR_DIR );
+	}
+	catch
+	{
+		await fs.mkdir( AVATAR_DIR, { recursive: true } );
+	}
+
 	// Set the user's avatar
 	server.post(
 		"/users/avatar",
