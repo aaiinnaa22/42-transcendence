@@ -47,9 +47,9 @@ export const Game = ({exitGame}: GameProps) =>
 
         ctx.clearRect(0,0, WIDTH, HEIGHT);
         ctx.fillStyle = 'white';
-    
-        // Draw players might fuck up the id is not a number 
-        for (const id in players.current) 
+
+        // Draw players might fuck up the id is not a number
+        for (const id in players.current)
         {
             const { x, y } = players.current[id];
             if (id % 2)
@@ -66,9 +66,9 @@ export const Game = ({exitGame}: GameProps) =>
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
-        const ws = new WebSocket('ws://localhost:4545/ws');
+        const ws = new WebSocket('ws://localhost:4241/ws');
         wsRef.current = ws;
-        
+
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
         const handleKeyUp = (e: KeyboardEvent) => { keysPressed.current[e.key] = false; };
         window.addEventListener("keydown",handleKeyDown);
@@ -94,7 +94,7 @@ export const Game = ({exitGame}: GameProps) =>
         };
         gameLoop();
 
-        // Clean up things 
+        // Clean up things
         return () => {
             ws.close();
             cancelAnimationFrame(animationFrameId);
