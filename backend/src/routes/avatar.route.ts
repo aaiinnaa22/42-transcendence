@@ -4,6 +4,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 import fs from "fs/promises";
+import { BadRequestError, NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
 
 const AVATAR_DIR = path.join( process.cwd(), "upload", "avatars" );
 const MAX_FILESIZE = 4 * 1024 * 1024; // 4MB
@@ -22,21 +23,12 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 				const { userId } = request.user as { userId: string };
 				const data = await request.file();
 
-				if ( !data )
-				{
-					return reply.code( 400 ).send( { error: "No file uploaded"} );
-				}
+				if ( !data ) throw BadRequestError( "No file uploaded" );
 
-				if ( !ALLOWED_FORMATS.includes( data.mimetype ) )
-				{
-					return reply.code( 400 ).send( { error: "Erroneous file format"} );
-				}
+				if ( !ALLOWED_FORMATS.includes( data.mimetype ) ) throw BadRequestError( "Erroneous file format" );
 
 				const imageBuffer = await data.toBuffer();
-				if ( imageBuffer.length > MAX_FILESIZE )
-				{
-					return reply.code( 400 ).send( { error: "File too large. Keep it under 4MB."} );
-				}
+				if ( imageBuffer.length > MAX_FILESIZE ) throw BadRequestError( "File too large. 4MB max." )
 
 				// Convert the image file into webp
 				const processedImage = await sharp( imageBuffer ).resize( 128 ).webp( {quality: 80} ).toBuffer();
@@ -78,7 +70,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 			catch ( err: any )
 			{
 				server.log.error( `Image upload failed ${err}` );
-				reply.code( 500 ).send( { error: "Failed to upload avatar" } );
+				return sendErrorReply( reply, err, "Failed to upload avatar" );
 			}
 		}
 	);
@@ -93,10 +85,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 			{
 				const { filename } = request.params as { filename: string };
 
-				if ( !/^[a-f0-9-]+\.webp$/i.test( filename ) )
-				{
-					return reply.code( 400 ).send( { error: "Invalid filename"} );
-				}
+				if ( !/^[a-f0-9-]+\.webp$/i.test( filename ) ) throw BadRequestError( "Invalid filename" );
 
 				// Check if the file exists
 				const filepath = path.join( AVATAR_DIR, filename );
@@ -108,7 +97,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 			catch ( err: any )
 			{
 				server.log.error( `Avatar fetch failed ${err}` );
-				reply.code( 404 ).send( { error: "No such avatar" } );
+				return sendErrorReply(reply, err, "No such avatar" );
 			}
 		}
 	);
@@ -142,14 +131,18 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 					}
 					else
 					{
-						reply.code( 404 ).send( { error: "You do not have an avatar" } );
+						throw NotFoundError( "Avatar not set" );
 					}
+				}
+				else
+				{
+					throw NotFoundError( "User not found" );
 				}
 			}
 			catch ( err: any )
 			{
 				server.log.error( `Avatar fetch failed ${err}` );
-				reply.code( 404 ).send( { error: "You do not have an avatar" } );
+				return sendErrorReply( reply, err, "You do not have an avatar" );
 			}
 		}
 	);
@@ -167,6 +160,8 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 					where: { id: userId },
 					select: { avatar: true, avatarType: true }
 				} );
+
+				if ( !user ) throw NotFoundError( "User not found" );
 
 				if ( user?.avatarType === "local" && user.avatar )
 				{
@@ -187,7 +182,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 			catch ( err: any )
 			{
 				server.log.error( `Avatar deletion failed ${err}` );
-				reply.code( 404 ).send( { error: "You do not have an existing avatar" } );
+				return sendErrorReply( reply, err, "You do not have an existing avatar" );
 			}
 		}
 	);

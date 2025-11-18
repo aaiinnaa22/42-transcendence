@@ -4,7 +4,7 @@ import { OAuth2Client } from "google-auth-library";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import bcrypt from "bcrypt";
 import { checkPasswordStrength, checkEmailFormat } from "../shared/utility/validation.utility.ts";
-import { HttpError, BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReply, NotFoundError, ConflictError, UnauthorizedError } from "../shared/utility/error.utility.ts";
+import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReply, NotFoundError, ConflictError, UnauthorizedError } from "../shared/utility/error.utility.ts";
 
 // Augment Fastify instance with oauth2 namespace added by the plugin
 declare module "fastify" {
@@ -69,7 +69,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			const tokenResponse = await server.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow( request );
 
 			const { token } = tokenResponse;
-			if ( !token ) throw new HttpError( "Missing token object" );
+			if ( !token ) throw InternalServerError( "Missing token object" );
 			if ( !token.id_token ) throw InternalServerError( "Missing ID token" );
 
 			// Step 2: Verifying ID token
