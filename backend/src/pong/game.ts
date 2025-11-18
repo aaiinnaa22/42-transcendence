@@ -7,15 +7,16 @@ class Game
 	id: string;
 	players: Player[];
 	ball: Ball;
-	socket: WebSocket;
+	sockets: WebSocket[] = [];
 	loop: NodeJS.Timeout;
 
-	constructor( id: string , socket: WebSocket)
+	constructor( id: string , sockets: WebSocket[])
 	{
 		this.id = id;
 		this.players = [];
 		this.ball = new Ball;
-		this.socket = socket;
+
+		this.sockets = sockets.slice();
 		this.startLoop();
 	}
 
@@ -48,7 +49,10 @@ class Game
 	update()
 	{
 		this.moveBall();
-		this.socket.send(JSON.stringify(this.getState()));
+		for (const socket of this.sockets) 
+		{
+			socket.send(JSON.stringify(this.getState()));
+		}
 	}
 
 	moveBall()

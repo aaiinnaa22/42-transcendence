@@ -5,15 +5,18 @@ const gameComponent = async ( server: FastifyInstance ) =>
 {
 	// This stores the game rooms (should be let)
 	const games : Record<string, Game>  = {};
+	const sockets : WebSocket[] = [];
 
 	server.get( "/*", { websocket: true }, ( socket /* WebSocket */, req /* FastifyRequest */ ) =>
 	{
 		void req;
 		console.log( "New connection (creating new game room)" );
+		sockets.push(socket);
 
 		// Create new game instance with unique name and add it to the games
 		const GameId: string = Date.now().toString();
-		const game = new Game( GameId, socket );
+		const game = new Game( GameId, sockets );
+		sockets.pop();
 		// Adding two players to the game in correct postision (Could this be done during the construction of Game instance??)
 		game.addPlayer();
 		games[GameId] = game;
@@ -34,7 +37,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				//console.log("Seding message: ", payload);
 				socket.send( payload );
 			}
-
 		} );
 
 		socket.on( "close", () =>
