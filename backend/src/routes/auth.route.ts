@@ -4,8 +4,7 @@ import { OAuth2Client } from "google-auth-library";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import bcrypt from "bcrypt";
 import { checkPasswordStrength, checkEmailFormat } from "../shared/utility/validation.utility.ts";
-
-//TO DO: redirecting the user back to the client
+import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReply, NotFoundError, ConflictError, UnauthorizedError } from "../shared/utility/error.utility.ts";
 
 // Augment Fastify instance with oauth2 namespace added by the plugin
 declare module "fastify" {
@@ -64,57 +63,32 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			server.log.info( "Step 1: Exchanging code for tokens..." );
+			if ( !server.prisma ) throw ServiceUnavailableError();
 
-			// Use the plugin to exchange the code for tokens
+			// Step 1: Use the plugin to exchange the code for tokens
 			const tokenResponse = await server.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow( request );
-			server.log.info( "Step 1 DONE: Got token response" );
-			const { token } = tokenResponse;
-			if ( !token )
-			{
-				server.log.error( "Missing token object" );
-				throw new Error( "Missing token object" );
-			}
-			const idToken = token.id_token;
-			if ( !idToken )
-			{
-				server.log.error( "Missing id_token" );
-				return reply.code( 400 ).send( { error: "Missing ID token" } );
-			}
 
-			server.log.info( "Step 2: Verifying ID token..." );
+			const { token } = tokenResponse;
+			if ( !token ) throw InternalServerError( "Missing token object" );
+			if ( !token.id_token ) throw InternalServerError( "Missing ID token" );
+
+			// Step 2: Verifying ID token
 			const client = new OAuth2Client( process.env.GOOGLE_CLIENT_ID );
 
 			const ticket = await client.verifyIdToken( {
-				idToken,
+				idToken: token.id_token,
 				audience: process.env.GOOGLE_CLIENT_ID!,
 			} );
-			server.log.info( "Step 2 DONE: ID token verified" );
+
 			const payload = ticket.getPayload();
+			if ( !payload ) throw InternalServerError( "No payload in verified ID token" );
 
-			if ( !payload )
-			{
-				server.log.error( "No payload in verified ID token" );
-				return reply.code( 400 ).send( { error: "Invalid ID token" } );
-			}
-
+			// Step 3: Extract user email and name from Oauth
 			const providerSource = "google";
-			const { email, name, sub: providerId } = payload;
-			if ( !email )
-			{
-				server.log.error( "Provider did not return an email address" );
-				return reply.code( 400 ).send( { error: "Email not provided by provider" } );
-			}
-			const verifiedEmail: string = email;
-			server.log.info( `Step 3: Extracted user info: ${email} (${name})` );
+			const { email, name, picture, sub: providerId } = payload;
+			if ( !email ) throw BadRequestError( "Provider did not include an email address" );
 
-			if ( !server.prisma )
-			{
-				server.log.error( "Prisma plugin not registered" );
-				throw new Error( "Prisma not available on server" );
-			}
-
-			server.log.info( "Step 4: Checking for existing provider info..." );
+			// Step 4: Checking for existing provider info
 			const existingProvider = await server.prisma.provider.findUnique( {
 				where: {
 					providerSource_providerId : { providerSource, providerId }
@@ -127,30 +101,33 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			// For existing users the email should've been set during the initial Oauth login or account registration
 			if ( existingProvider?.user )
 			{
-				server.log.info( "Step 4.a: User exists, updating login time..." );
+				// Step 4.a: User exists, updating login time
 				user = await server.prisma.user.update( {
 					where: { id: existingProvider?.user!.id },
-					data: {
-						lastLogin: new Date(),
-					}
+					data: { lastLogin: new Date() }
 				} );
 			}
 			else
 			{
-				if ( await server.prisma.user.findUnique( { where:{ email: verifiedEmail }} ) )
+				if ( await server.prisma.user.findUnique( { where:{ email }} ) )
 				{
-					// TODO: redirect to login page
-					server.log.info( "Step 4.b: Email from the provider already in use..." );
-					return reply.code( 400 ).send( { error: "User with that email already exists" } );
+					// Step 4.b: Email from the provider already in use
+					const loginRedirectUrl = process.env.CLIENT_LOGIN_REDIRECT_URL || "http://localhost:8080/login";
+					return reply.code( 409 )
+								.send( { error: "User with that email already exists" } )
+								.redirect( loginRedirectUrl );
 				}
 				else
 				{
-					server.log.info( "Step 4.c: No existing records on user, creating new account..." );
+					// Step 4.c: No existing records on user, creating new account
+					const avatarType = picture ? "provider" : null;
 					user = await server.prisma.user.create( {
 						data: {
-							email: verifiedEmail,
+							email,
 							username: name ?? null,
 							lastLogin: new Date(),
+							avatar: picture ?? null,
+							avatarType,
 							playerStats: { create: {} },
 							providers: {
 								create: [
@@ -165,25 +142,22 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				}
 			}
 
-			server.log.info( `Step 4 DONE: User upserted (ID: ${user.id})` );
+			server.log.info( `Google Oauth: User registered (ID: ${user.id})` );
 
-			// jwt creation with JWT plugin
-			server.log.info( "Step 5: Signing app JWT..." );
+			// Step 5: Signing app JWT with JWT plugin
 			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, {expiresIn: "15m"} );
-			const refreshToken = server.jwt.sign( {userId: user.id}, {expiresIn: "7d"} );
+			const refreshToken = server.jwt.sign( { userId: user.id }, {expiresIn: "7d"} );
 			setAuthCookies( reply, accessToken, refreshToken );
-			server.log.info( "Step 5 DONE: JWT created" );
 
-			//NEW: redirect from google auth
+			// Step 6: redirect from google auth
 			const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
-			server.log.info( `Step 6: Redirecting to ${clientRedirectUrl}` );
 			return reply.redirect( clientRedirectUrl );
 
 		}
 		catch ( err: any )
 		{
-			server.log.error( `Google OAuth failed at ${err?.stack || err}` );
-			reply.code( 500 ).send( { error: "Google OAuth failed" } );
+			server.log.error( `Google OAuth failure: ${err?.stack || err}` );
+			return sendErrorReply( reply, err, "Google OAuth failed" );
 		}
 	} );
 
@@ -199,17 +173,13 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				include: { playerStats: true }
 			} );
 
-			if ( !user )
-			{
-				return reply.code( 404 ).send( { error: "User not found" } );
-			}
-
+			if ( !user ) throw NotFoundError( "User not found" );
 			reply.send( user );
 		}
 		catch ( err: any )
 		{
 			server.log.error( `Get user failed: ${err?.message}` );
-			reply.code( 500 ).send( { error: "Failed to get user info" } );
+			return sendErrorReply( reply, err );
 		}
 	} );
 
@@ -234,34 +204,18 @@ const authRoutes = async ( server: FastifyInstance ) =>
       		};
 
 			// Validate email format and confirm minimum password strength requirements
-			if ( !checkEmailFormat( email ) )
-			{
-				return reply.code( 400 ).send( { error: "Invalid email" } );
-			}
-
-			if ( !checkPasswordStrength( password ) )
-			{
-				return reply.code( 400 ).send( { error: "Password too weak" } );
-			}
+			if ( !checkEmailFormat( email ) ) throw BadRequestError( "Invalid email" );
+			if ( !checkPasswordStrength( password ) ) throw BadRequestError( "Password too weak" );
 
 			// Check if email is already in use
-			const existingEmail = await server.prisma.user.findUnique( { where: { email } } );
-			if ( existingEmail )
-			{
-				return reply.code( 400 ).send( { error: "User already exists" } );
-			}
+			if ( await server.prisma.user.findUnique( { where: { email } } ) )
+				throw ConflictError( "User already exists" );
 
 			// Check if the username is taken
 			if ( username !== undefined )
 			{
-				const existingUsername = await server.prisma.user.findUnique( {
-					where: { username }
-				} );
-
-				if ( existingUsername )
-				{
-					return reply.code( 400 ).send( { error: "User already exists" } );
-				}
+				const existingUsername = await server.prisma.user.findUnique( { where: { username } } );
+				if ( existingUsername ) throw ConflictError( "User already exists" );
 			}
 
 			// Hash password
@@ -296,7 +250,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		catch ( err: any )
 		{
 			server.log.error( `Registration failed: ${err?.message}` );
-			reply.code( 500 ).send( { error: "Registration failed" } );
+			return sendErrorReply( reply, err, "Registration failed" );
 		}
 	} );
 
@@ -313,10 +267,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				include: { playerStats: true }
 			} );
 
-			if ( !user )
-			{
-				return reply.code( 401 ).send( { error: "Invalid user" } );
-			}
+			if ( !user ) throw BadRequestError( "Invalid user" );
 
 			const existingCredential = await server.prisma.credential.findUnique( {
 				where: { userId: user.id },
@@ -324,16 +275,10 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			} );
 
 			// Verify password
-			if ( !existingCredential?.password )
-			{
-				return reply.code( 401 ).send( { error: "Invalid password" } );
-			}
+			if ( !existingCredential?.password ) throw BadRequestError( "Not a local user" );
 
 			const isValidPassword = await bcrypt.compare( password, existingCredential.password );
-			if ( !isValidPassword )
-			{
-				return reply.code( 401 ).send( { error: "Invalid password" } );
-			}
+			if ( !isValidPassword ) throw UnauthorizedError( "Invalid password" );
 
 			// Update last login
 			await server.prisma.user.update( {
@@ -355,26 +300,24 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		catch ( err: any )
 		{
 			server.log.error( `Login failed: ${err?.message}` );
-			reply.code( 500 ).send( { error: "Login failed" } );
+			return sendErrorReply(reply, err, "Login failed" );
 		}
 	} );
+
 	// TO DO: /auth/refresh route
 	server.post( "/auth/refresh", async ( request: FastifyRequest, reply: FastifyReply ) =>
 	{
 		try
 		{
 			const signed = request.cookies.refreshToken;
-			if ( !signed )
-			{return reply.code( 401 ).send( { error: "No refresh token" } );}
+			if ( !signed ) throw UnauthorizedError( "No refresh token" );
 
 			const unsign = request.unsignCookie( signed );
-			if ( !unsign.valid )
-			{return reply.code( 401 ).send( { error: "Invalid cookie signature" } );}
+			if ( !unsign.valid ) throw UnauthorizedError( "Invalid cookie signature" );
 
 			const decoded = server.jwt.verify( unsign.value ) as { userId: string };
 			const user = await server.prisma.user.findUnique( { where: { id: decoded.userId } } );
-			if ( !user )
-			{return reply.code( 404 ).send( { error: "User not found" } );}
+			if ( !user ) throw NotFoundError( "User not found" );
 
 			const newAccess = server.jwt.sign( { userId: user.id, email: user.email }, { expiresIn: "15m" } );
 			const newRefresh = server.jwt.sign( { userId: user.id }, { expiresIn: "7d" } );
@@ -385,7 +328,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		catch ( err: any )
 		{
 			server.log.error( `Refresh failed: ${err.message}` );
-			reply.code( 401 ).send( { error: "Invalid refresh token" } );
+			return sendErrorReply(reply, err );
 		}
 	} );
 };
