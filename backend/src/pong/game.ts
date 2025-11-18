@@ -7,21 +7,32 @@ class Game
 	id: string;
 	players: Player[];
 	ball: Ball;
+	socket: WebSocket;
+	loop: NodeJS.Timeout;
 
-	constructor( id: string )
+	constructor( id: string , socket: WebSocket)
 	{
 		this.id = id;
 		this.players = [];
 		this.ball = new Ball;
+		this.socket = socket;
+		this.startLoop();
+	}
+
+	startLoop() 
+	{
+		this.loop = setInterval(() => {
+			this.update();
+		}, 1000 / 60); 
 	}
 
 	addPlayer()
 	{
-		const newPlayer = new Player( 1, 10, HEIGHT / 2 );
+		const newPlayer = new Player( 1, 20, HEIGHT / 2 );
 		this.players.push( newPlayer );
-		const newPlayer2 = new Player( 2, 1580, HEIGHT / 2 );
+		const newPlayer2 = new Player( 2, 1570, HEIGHT / 2 );
 		this.players.push( newPlayer2 );
-		//console.log("Players added");
+		//check that both players were added
 	}
 
 	movePlayer( playerId: number, dx: number, dy: number )
@@ -29,8 +40,15 @@ class Game
 		const player = this.players.find( p => p.id === playerId );
 		if ( player )
 		{
-			player.move( dx, dy ); // Move the player by dx, dy
+			if ((dy === -10 && player.y != 0) || (dy === 10 && player.y != (HEIGHT-PADDLE_LEN))) 
+				player.move( dx, dy );
 		}
+	}
+
+	update()
+	{
+		this.moveBall();
+		this.socket.send(JSON.stringify(this.getState()));
 	}
 
 	moveBall()
@@ -48,6 +66,7 @@ class Game
 			&& this.ball.y >= this.players[0].y
 			&& this.ball.y <= this.players[0].y + PADDLE_LEN )
 		{
+			this.ball.x = this.players[0].x + PADDLE_WIDTH;
 			const playerCenter = this.players[0].y + PADDLE_LEN / 2;
 			this.ball.vy = ( playerCenter - this.ball.y ) * 0.1;
 			this.ball.vx *= -1;
@@ -58,6 +77,7 @@ class Game
 			&& this.ball.y + BALL_SIZE >= this.players[1].y
 			&& this.ball.y <= this.players[1].y + PADDLE_LEN )
 		{
+			this.ball.x = this.players[1].x - BALL_SIZE;
 			const playerCenter2 = this.players[1].y + PADDLE_LEN / 2;
 			this.ball.vy = ( playerCenter2 - this.ball.y ) * 0.1;
 			this.ball.vx *= -1;
@@ -104,6 +124,11 @@ class Game
 			ball: this.ball.getState(),
 		};
 	}
+
+	destroy() 
+	{
+        clearInterval(this.loop);
+    }
 }
 
 export default Game;

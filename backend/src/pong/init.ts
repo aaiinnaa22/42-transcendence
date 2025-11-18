@@ -13,7 +13,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 		// Create new game instance with unique name and add it to the games
 		const GameId: string = Date.now().toString();
-		const game = new Game( GameId );
+		const game = new Game( GameId, socket );
 		// Adding two players to the game in correct postision (Could this be done during the construction of Game instance??)
 		game.addPlayer();
 		games[GameId] = game;
@@ -32,23 +32,9 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				const payload = JSON.stringify( gameState ); // Serialize the game state
 
 				//console.log("Seding message: ", payload);
-
 				socket.send( payload );
 			}
 
-			// Moves the ball
-			if ( data.type === "get_state" && games[GameId] )
-			{
-				//console.log("Message recieved 'get_state' : ", message);
-				//console.log("Data recieved: ", data);
-				games[GameId].moveBall();
-				const gameState = games[GameId].getState(); // Get game state
-				const payload = JSON.stringify( gameState ); // Serialize the game state
-
-				//console.log("Seding message: ", payload);
-
-				socket.send( payload );
-			}
 		} );
 
 		socket.on( "close", () =>
