@@ -17,6 +17,7 @@ export const SignUp = () => {
 			const response = await fetch("http://localhost:4241/auth/register",
 			{
 				method: "POST",
+				credentials: "include",
 				headers:{
 					"Content-Type": "application/json",
 				},
@@ -29,6 +30,8 @@ export const SignUp = () => {
 			}
 			if (data.message === "Registration successful")
 				navigate("/home");
+			else if ( data.message === "Password too weak")
+				throw new Error("Password must include at least one capital and lowercase letter, digit and must be at least 5 characters long.");
 			else
 				throw new Error(data.message || "Something went wrong. Please try again later.");
 		}

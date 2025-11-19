@@ -1,7 +1,4 @@
 
-import { useNavigate } from "react-router-dom";
-import {Settings} from './settings/Settings'
-
 const navItems = ["play", "stats", "profile"] as const;
 
 type Page = typeof navItems[number];
@@ -15,20 +12,18 @@ type MenuProps =
 export const Menu = ({currentPage, onNavigate}: MenuProps) =>
 {
 	return (
-		<div className="
-		grid grid-cols-1 grid-rows-2
-		landscape:grid-cols-2 landscape:grid-rows-1 w-full h-full p-[1vw] pt-[2vw] lg:p-[4vw]">
-			<div className="landscape:pl-[5vh] border-b-3  border-transcendence-black landscape:border-r-3 landscape:border-b-0
-			portrait:flex portrait:justify-center portrait:items-center">
-				<div
-					className="flex flex-col gap-6 items-center justify-center
-					portrait:text-center landscape:!items-start">
-					<h1 className="text-transcendence-black font-transcendence-two text-lg font-semibold pb-[2vh]">Menu</h1>
+		<div className="grid
+			portrait:grid-cols-1 portrait:grid-rows-[20%_80%]
+			grid-cols-1 grid-rows-[20%_80% gap-10 mt-[10vh]">
+			<h1 className="text-transcendence-black font-transcendence-two text-lg font-semibold pb-[2vh] text-center">Menu</h1>
+			<div className="flex gap-20
+			portrait:flex-col portrait:justify-center portrait:items-center
+			flex-row justify-center">
 					<div className="flex flex-col gap-6 portrait:gap-8">
 						{navItems.map((item) => {
 						const isActive = currentPage == item;
 						return (
-							<div
+							<button
 								key={item}
 								onClick={() => onNavigate(item)}
 								className={"cursor-pointer flex flex-row items-center gap-2 "
@@ -38,14 +33,10 @@ export const Menu = ({currentPage, onNavigate}: MenuProps) =>
 								<h2 className="text-black font-transcendence-two text-md">
 									{item}
 								</h2>
-							</div>
+							</button>
 						);
-					})}
+						})}
 					</div>
-				</div>
-			</div>
-			<div className="landscape:pl-[7vh] portrait:flex portrait:justify-center portrait:items-center">
-				<Settings centralize={true}/>
 			</div>
 		</div>
 	);
