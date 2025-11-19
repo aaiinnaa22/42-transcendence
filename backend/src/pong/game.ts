@@ -2,6 +2,11 @@ import Player from "./player.ts";
 import Ball from "./ball.ts";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 
+export enum Location {
+	Left = 1,
+	Right = 2
+};
+
 class Game
 {
 	id: string;
@@ -20,42 +25,54 @@ class Game
 		this.startLoop();
 	}
 
-	startLoop() 
+	private startLoop() : void
 	{
 		this.loop = setInterval(() => {
 			this.update();
-		}, 1000 / 60); 
+		}, 1000 / 60);
 	}
 
-	addPlayer()
+	/**
+	 * @param location The side of the screen which the player occupies
+	 * @param userid The unique identifier of the player (can be empty string if not tracking score)
+	 */
+	public addPlayer( location: Location, userid: string ) : void
 	{
-		const newPlayer = new Player( 1, 20, HEIGHT / 2 );
-		this.players.push( newPlayer );
-		const newPlayer2 = new Player( 2, 1570, HEIGHT / 2 );
-		this.players.push( newPlayer2 );
-		//check that both players were added
+		const horizontal = location == 1 ? 20 : 1570;
+		const player = new Player( location, userid, horizontal, HEIGHT / 2 );
+		this.players.push( player );
 	}
 
-	movePlayer( playerId: number, dx: number, dy: number )
+	public movePlayer( identifier: number | string, dx: number, dy: number ) : void
 	{
-		const player = this.players.find( p => p.id === playerId );
+		let player: Player | undefined;
+
+		if ( typeof identifier === "number" )
+		{
+			player = this.players.find( p => p.location === identifier );
+		}
+		else
+		{
+			player = this.players.find( p => p.userId === identifier )
+		}
+
 		if ( player )
 		{
-			if ((dy === -10 && player.y != 0) || (dy === 10 && player.y != (HEIGHT-PADDLE_LEN))) 
+			if ((dy === -10 && player.y != 0) || (dy === 10 && player.y != (HEIGHT-PADDLE_LEN)))
 				player.move( dx, dy );
 		}
 	}
 
-	update()
+	public update() : void
 	{
 		this.moveBall();
-		for (const socket of this.sockets) 
+		for (const socket of this.sockets)
 		{
 			socket.send(JSON.stringify(this.getState()));
 		}
 	}
 
-	moveBall()
+	public moveBall() : void
 	{
 		this.ball.x += this.ball.vx;
 		this.ball.y += this.ball.vy;
@@ -113,13 +130,13 @@ class Game
 		}
 	}
 
-	getState()
+	public getState()
 	{
 		const playersState: Record<string, any> = {};
 
 		this.players.forEach( player =>
 		{
-			playersState[player.id] = player.getState();
+			playersState[player.location] = player.getState();
 		} );
 
 		return {
@@ -129,8 +146,11 @@ class Game
 		};
 	}
 
-	destroy() 
+	public destroy() : void
 	{
+		this.sockets.forEach(socket => {
+			socket.close();
+		});
         clearInterval(this.loop);
     }
 }
