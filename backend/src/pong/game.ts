@@ -8,7 +8,7 @@ class Game
 	players: Player[];
 	ball: Ball;
 	sockets: WebSocket[] = [];
-	loop: NodeJS.Timeout;
+	loop!: number;
 
 	constructor( id: string , sockets: WebSocket[])
 	{
