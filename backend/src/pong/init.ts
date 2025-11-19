@@ -153,7 +153,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	};
 	const matchmakingInterval = setInterval( matchmakingLoop, 2000 /* Interval when to check */ );
 
-	// Multiplayer game handler
+	// Multiplayer game handler with matchmaking
 	server.get( "/game/multiplayer",
 		{ websocket: true, preHandler: authenticate },
 		async ( socket: WebSocket, request: FastifyRequest ) =>
