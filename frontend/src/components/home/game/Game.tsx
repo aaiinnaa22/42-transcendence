@@ -30,14 +30,6 @@ export const Game = () =>
         if (keysPressed.current["s"]) sendMove(1, 0, 10);
     };
 
-    // Poll server regurally so ball position gets updated constantly. I had 10ms interval here but this is now tied to the gameloop (not sure if it spams the server too much like this)
-    const setInterval = () => {
-        const ws = wsRef.current;
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: "get_state" }));
-        }
-    }
-
     //draws the game based on the coordinates we got from the back end
     const  drawGame = () => {
         const ctx = canvasRef.current.getContext("2d");
@@ -84,7 +76,6 @@ export const Game = () =>
 
         // Main game loop that keeps calling different update functions
         const gameLoop = () => {
-            setInterval(); // move ball
             updateGame(); //register key presses and move players
             drawGame(); // draws the game canvas TEST IF NEEDED BECAUSE THE GAME IS ALREADY DRAWN AFTER EACH MESSAGE
             animationFrameId = requestAnimationFrame(gameLoop); // syncs the game to the browser refress rate to make animation smooth

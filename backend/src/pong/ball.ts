@@ -13,14 +13,15 @@ class Ball
 		this.y = HEIGHT / 2;
 		this.vx = 8;
 		this.vy = 2;
+		this.resetBall();
 	}
 
 	resetBall()
 	{
 		this.x = WIDTH / 2;
 		this.y = HEIGHT / 2;
-		this.vx = 8;
-		this.vy = 2;
+		this.vx = 8; //Math.random() < 0.5 ? Math.random() * -6 - 9 : Math.random() * 6 + 9;;
+		this.vy = Math.floor(Math.random() * 8) - 4;
 	}
 
 	getState()
