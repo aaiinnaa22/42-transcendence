@@ -2,8 +2,6 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import Game, { Location } from "./game.ts";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import type { WebSocket } from "@fastify/websocket";
-import { Prisma, type User } from "@prisma/client";
-import type Player from "./player.ts";
 import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL } from "./constants.ts";
 
 
