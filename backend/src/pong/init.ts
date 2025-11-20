@@ -209,11 +209,15 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 				// Clean up the session
 				server.log.info( `Game: Player disconnect, ending session ${game.id}` );
-				game.destroy();
-				delete games[game.id];
+				endGame( game );
 			}
 			else
 			{
+				// Remove inactive player from the activePlayers map
+				playerConnection?.socket.close();
+				activePlayers.delete( userId );
+
+				// Remove inactive player from the queue
 				const index = playerQueue.findIndex( p => p.userId === userId );
 				if ( index > -1 ) playerQueue.splice( index, 1 );
 
@@ -221,6 +225,17 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			}
 		} );
 	} );
+
+	const endGame = ( game: Game ) => {
+		// Remove players from the active players
+		game.players.forEach( p => {
+			activePlayers.delete(p.userId);
+		} );
+
+		// Destroy the game
+		game.destroy();
+		delete games[game.id];
+	};
 
 	server.addHook( "onClose", () => {
 		clearInterval( matchmakingInterval );
