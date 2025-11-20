@@ -65,7 +65,7 @@ export const Game = () =>
 			const pointsRight = PointsRef.current;
 			const pointsLeft = PointsRef2.current;
 
-            if (player.location === 1)
+            if (player.id === 1)
 			{
 				if (pointsLeft)
                 	pointsLeft.textContent = player.points.toString();
@@ -110,6 +110,10 @@ export const Game = () =>
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue.");
+			}
+			else if (data.type === "error")
+			{
+				console.log("You are already in a match.");
 			}
 			/* ADD ADDITIONAL STATES HERE */
 		};
@@ -156,24 +160,27 @@ export const Game = () =>
 	const screenIsPortrait = window.innerHeight > window.innerWidth;
 
     return (
-		<div className="relative grid grid-cols-[5%_auto_5%] grid-rows-[auto]
+		<div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
 		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
 		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
 			<span ref={PointsRef}
 				className="text-transcendence-white font-transcendence-three text-4xl
-					col-start-1 row-start-1
-					 portrait:self-end
-					text-right"></span>
-			<span className="text-transcendence-white font-transcendence-three text-4xl hidden">|</span>
-			<span  ref={PointsRef2} className="text-transcendence-white font-transcendence-three text-4xl
-				col-start-3 row-start-1
-				portrait:col-start-3"></span>
+					col-start-1 row-start-1 text-right self-center
+					portrait:self-end portrait:text-right">0</span>
+			<span ref={PointsRef2}
+				className="text-transcendence-white font-transcendence-three text-4xl
+					col-start-3 row-start-1 text-left self-center
+					portrait:self-start portrait:text-left">0</span>
 			<div className="
 				flex-grow flex items-center justify-center
 				border-4 border-transcendence-white rounded-xl overflow-hidden
-				col-start-2
-				portrait:col-span-1">
-				<canvas ref={canvasRef} width={screenIsPortrait ? HEIGHT : WIDTH} height={screenIsPortrait ? WIDTH : HEIGHT} className="w-full h-full"/>
+				col-start-2 portrait:col-span-1">
+				<canvas
+					ref={canvasRef}
+					width={screenIsPortrait ? HEIGHT : WIDTH}
+					height={screenIsPortrait ? WIDTH : HEIGHT}
+					className="w-full h-full"
+				/>
 			</div>
         </div>
     );

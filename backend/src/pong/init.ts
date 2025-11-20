@@ -190,6 +190,8 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				const payload = JSON.stringify( gameState ); // Serialize the game state
 				socket.send( payload );
 			}
+
+			// TODO: Figure out a fair win condition
 		} );
 
 		socket.on( "close", () =>

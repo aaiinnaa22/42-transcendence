@@ -114,12 +114,6 @@ class Game
 			{
 				this.players[1].points += 1;
 			}
-			//check if we have winner here
-			//Need to figure out what to do when the game is ended
-			if ( this.players[0].points >= 5 || this.players[1].points >= 5 )
-			{
-				this.players[0].points = 42; // Figure out correct way to end the game currently just a place holder
-			}
 			this.ball.resetBall();
 			return ;
 		}
