@@ -9,7 +9,7 @@ export const Game = () =>
     const PointsRef = useRef<HTMLSpanElement | null>(null);
     const PointsRef2= useRef<HTMLSpanElement | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
-    const keysPressed = useRef({});
+    const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
     const ball = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -30,27 +30,60 @@ export const Game = () =>
         if (keysPressed.current["s"]) sendMove(1, 0, 10);
     };
 
+	const axisScale = () => {
+		const canvas = canvasRef.current;
+		if ( !canvas ) return { scaleX: 1, scaleY: 1 };
+
+		const scaleX: number = canvas.width / WIDTH;
+		const scaleY: number = canvas.height / HEIGHT;
+
+		if ( scaleX === 0 || scaleY === 0 ) return { scaleX: 1, scaleY: 1 };
+		return { scaleX, scaleY };
+	};
+
     //draws the game based on the coordinates we got from the back end
     const  drawGame = () => {
-        const ctx = canvasRef.current.getContext("2d");
+		const canvas = canvasRef.current;
+		if ( !canvas ) return;
+        const ctx = canvas.getContext("2d");
+		if ( !ctx ) return;
 
-        ctx.clearRect(0,0, WIDTH, HEIGHT);
+		const { scaleX, scaleY } = axisScale();
+
+        ctx.clearRect(0,0, canvas.width, canvas.height);
         ctx.fillStyle = 'white';
 
         // Draw players might fuck up the id is not a number
         for (const id in players.current)
         {
-            const { x, y } = players.current[id];
-            if (id % 2)
-                PointsRef.current.innerHTML = players.current[id].points;
+			const player = players.current[id];
+			const scaledX = player.x * scaleX;
+			const scaledY = player.y * scaleY;
+			const scaledWidth = PADDLE_WIDTH * scaleX;
+			const scaledHeight = PADDLE_LEN * scaleY;
+
+			const pointsRight = PointsRef.current;
+			const pointsLeft = PointsRef2.current;
+
+            if (player.location === 1)
+			{
+				if (pointsLeft)
+                	pointsLeft.textContent = player.points.toString();
+			}
             else
-                PointsRef2.current.innerHTML = players.current[id].points;
-            ctx.fillRect(x, y, PADDLE_WIDTH, PADDLE_LEN);
+			{
+				if (pointsRight)
+                	pointsRight.textContent = player.points.toString();
+			}
+            ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
         }
 
         // Draw ball
-        //const { x, y } = ball.current;
-        ctx.fillRect(ball.current.x, ball.current.y, BALL_SIZE, BALL_SIZE);
+		const scaledBallX = ball.current.x * scaleX;
+		const scaledBallY = ball.current.y * scaleY;
+		const scaledBallSize = BALL_SIZE * scaleX;
+
+        ctx.fillRect(scaledBallX, scaledBallY, scaledBallSize, scaledBallSize);
     };
 
     useEffect(() => {
@@ -68,11 +101,18 @@ export const Game = () =>
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data.type === 'state') {
+
+            if (data.type === "state")
+			{
                 players.current = data.players;
                 ball.current = data.ball;
-                drawGame();
-        }};
+        	}
+			else if (data.type === "waiting")
+			{
+				console.log("Waiting in queue.");
+			}
+			/* ADD ADDITIONAL STATES HERE */
+		};
 
         // Main game loop that keeps calling different update functions
         const gameLoop = () => {
@@ -82,12 +122,33 @@ export const Game = () =>
         };
         gameLoop();
 
+		// Handle resize
+		const handleResize = () => {
+			const canvas = canvasRef.current;
+			const isPortrait = window.innerHeight > window.innerWidth;
+			if (canvas)
+			{
+				if (isPortrait)
+				{
+					canvas.width = HEIGHT;
+					canvas.height = WIDTH;
+				}
+				else
+				{
+					canvas.width = WIDTH;
+					canvas.height = HEIGHT;
+				}
+			}
+		};
+		window.addEventListener("resize", handleResize);
+
         // Clean up things
         return () => {
             ws.close();
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
+			window.removeEventListener("resize", handleResize);
         };
     },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
 
