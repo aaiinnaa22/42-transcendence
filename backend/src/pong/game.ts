@@ -63,16 +63,6 @@ class Game
 		}
 	}
 
-	moveSinglePlayer( location: number, dx: number, dy: number )
-	{
-		const player = this.players.find( p => p.location === location );
-		if ( player )
-		{
-			if ((dy === -10 && player.y != 0) || (dy === 10 && player.y != (HEIGHT-PADDLE_LEN))) 
-				player.move( dx, dy );
-		}
-	}
-
 	public update() : void
 	{
 		this.moveBall();

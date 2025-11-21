@@ -68,7 +68,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		matchmakingLoop();
 	};
 
-	//Starts single player game
+	//Big fat helper function that has everything to start single player gamer
 	const startSinglePlayerGame = async ( id: UserId, socket: WebSocket ) => {
 		const stats = await server.prisma.playerStats.findUnique( {
 			where: { userId: id },
@@ -103,7 +103,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}));
 
 		const player1 = activePlayers.get( id );
-
 
 		const gameId: GameId = Date.now().toString();
 		const game = new Game( gameId, [player1.socket] );
