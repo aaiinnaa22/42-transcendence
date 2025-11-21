@@ -1,29 +1,35 @@
 class Player
 {
-	id: number;
+	userId: string;
+	location: number;
 	x: number;
 	y: number;
 	points: number;
 
-	constructor( id: number, x = 0, y = 0 )
+	/**
+	 * @param location Which paddle is controlled by the player
+	 * @param userId The UUID of the user
+	 * @param x Horizontal player position
+	 * @param y vertical player position
+	 */
+	constructor( location: number, userId: string, x = 0, y = 0 )
 	{
-		this.id = id;
+		this.userId = userId ? userId : ""; // Avoid exposing this!!!
+		this.location = location;
 		this.x = x;
 		this.y = y;
 		this.points = 0;
-		//console.log("Player created" + this.id);
 	}
 
 	move( dx: number, dy: number )
 	{
 		this.x += dx;
 		this.y += dy;
-		//console.log("Moving player" + this.id);
 	}
 
 	getState()
 	{
-		return { id: this.id, x: this.x, y: this.y, points: this.points };
+		return { id: this.location, x: this.x, y: this.y, points: this.points };
 	}
 }
 
