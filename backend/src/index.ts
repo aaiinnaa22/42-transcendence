@@ -51,6 +51,13 @@ const start = async () =>
 		await server.register( prismaPlugin );
 		await server.register( jwtPlugin );
 
+		// server.addHook("preHandler", async (request, reply) => {
+		// 	try {
+		// 		await request.jwtVerify();
+		// 	} catch (_) {
+		// 		// Nothing to do here
+		// }});
+
 		// NOTE: Testing database
 		if ( process.env.NODE_ENV === "development" )
 		{
