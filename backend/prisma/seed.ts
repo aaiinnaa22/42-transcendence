@@ -1,47 +1,44 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
 // Seed the database for the development environment
 const seedDev = async () =>
 {
+	const salt_rounds = process.env.SALT_ROUNDS ? parseInt( process.env.SALT_ROUNDS, 10 ) : 10;
+	const trashmanPassword = await bcrypt.hash( "Trashman123", salt_rounds );
+	const wildcardPassword = await bcrypt.hash( "wildCard456", salt_rounds );
+
 	const frank = await prisma.user.upsert( {
-		where: { email: "trashman@hive.fi" },
+		where: { email: "trashman@example.com" },
 		update: {},
 		create: {
-			email: "trashman@hive.fi",
-			username: "TrashMan",
+			email: "trashman@example.com",
+			username: "Trashman",
 			lastLogin: new Date(),
 			playerStats: {
 				create: {}
 			},
-			providers: {
-				create: [
-					{
-						providerSource: "google",
-						providerId: "frank-reynolds-google-id",
-					},
-				]
+			credential: { create: {
+					password: trashmanPassword
+				}
 			}
 		}
 	} );
 	const charlie = await prisma.user.upsert( {
-		where: { email: "wildcard@hive.fi" },
+		where: { email: "wildcard@example.com" },
 		update: {},
 		create: {
-			email: "wildcard@hive.fi",
+			email: "wildcard@example.com",
 			username: "The Wildcard",
 			lastLogin: new Date(),
 			playerStats: {
 				create: {}
 			},
-			providers: {
-				create: [
-					{
-						providerSource: "google",
-						providerId: "charlie-kelly-google-id",
-					},
-				]
+			credential: { create: {
+					password: wildcardPassword
+				},
 			}
 		}
 	} );
@@ -52,8 +49,7 @@ const seedDev = async () =>
 
 const main = async () =>
 {
-	if ( process.env.NODE_ENV === "development" )
-	{await seedDev();}
+	if ( process.env.NODE_ENV === "development" ) await seedDev();
 };
 
 main()
