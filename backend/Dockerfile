@@ -16,6 +16,9 @@ FROM base AS development
 
 # Sources are mounted in this stage
 
+# Copy Prisma configuration
+COPY prisma.config.dev.ts ./prisma.config.ts
+
 # Entrypoint script
 COPY entrypoint.dev.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

@@ -10,8 +10,13 @@ fi
 # Making sure that Prisma client exists
 npx prisma generate
 
-# Apply migrations
-npx prisma migrate dev || echo "Migrations skipped..."
+# Apply migrations or create the initial migration if none exist
+if [ ! -d "/app/prisma/migrations" ] || [ -z "$(ls -A /app/prisma/migrations 2>/dev/null)" ]; then
+	echo "Creating initial migration"
+	npx prisma migrate dev --name init --skip-seed
+else
+	npx migrate dev --skip-seed || echo "Migrations skipped..."
+fi
 
 SEED_MARKER="/app/prisma/.seeded"
 

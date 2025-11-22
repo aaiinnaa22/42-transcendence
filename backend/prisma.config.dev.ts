@@ -1,5 +1,4 @@
 import path from "path";
-import 'dotenv/config';
 import type { PrismaConfig } from "prisma/config";
 
 export default {
