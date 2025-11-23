@@ -13,38 +13,47 @@ import type { WebSocket } from "@fastify/websocket";
 const clients = new Set<WebSocket>();
 
 export default async function chatComponent(server: FastifyInstance) {
-	server.get("/chat", { websocket: true }, async (socket, req) => {
-		// 1. AUTHENTICATE USER
-		try {
-			const signed = req.cookies.accessToken;
-			if (!signed) {
-				socket.close();
-				return;
-			}
+	server.get("/chat", { websocket: true }, (socket, req) => {
+		console.log("WS: Upgrade happened correctly");
+		// temporary auth bypass
+		req.user = { userId: Math.floor(Math.random() * 10000) }; 
+		// or: req.user = { userId: 123 };
 
-			const unsign = req.unsignCookie(signed);
-			// if (!unsign.valid) {
-			// 	socket.close();
-			// 	return;
-			// }
-
-			const user = server.jwt.verify(unsign.value) as {
-				userId: number;
-			};
-
-			req.user = "test_user"; // optional, keeps consistency
-		} catch (err) {
-			socket.close();
-			return;
-		}
-
-		const userId = (req.user as any).userId;
+		const userId = req.user.userId;
 		console.log(`User ${userId} connected to chat.`);
 		clients.add(socket);
+		
+		// 1. AUTHENTICATE USER
+		// try {
+		// 	const signed = req.cookies.accessToken;
+		// 	if (!signed) {
+		// 		console.log("Not signed");
+		// 		socket.close();
+		// 		return;
+		// 	}
+
+		// 	const unsign = req.unsignCookie(signed);
+		// 	if (!unsign.valid) {
+		// 		console.log("Unsign fail")
+		// 		socket.close();
+		// 		return;
+		// 	}
+
+		// 	const user = server.jwt.verify(unsign.value) as { userId: number; };
+
+		// 	req.user = user;
+		// } catch (err) {
+		// 	socket.close();
+		// 	return;
+		// }
+
+		// console.log(`User ${userId} connected to chat.`);
+		// clients.add(socket);
 
 
 		// 2. HANDLE INCOMING MESSAGES
 		socket.on("message", ( message: any )=> {
+			console.log("MESSAGE RECEIVED:", message.toString());
 			let data;
 			try {
 				data = JSON.parse(message.toString());
@@ -53,6 +62,7 @@ export default async function chatComponent(server: FastifyInstance) {
 			}
 
 			if (data.type === "chat") {
+				console.log(`Broadcasting from ${userId}:`, data.message);
 				const payload = JSON.stringify({
 					type: "chat",
 					from: userId,
@@ -61,7 +71,7 @@ export default async function chatComponent(server: FastifyInstance) {
 
 				// broadcast to every connected client
 				for (const client of clients) {
-					if (client.readyState === 1) {
+					if (client.readyState === client.OPEN) {
 						client.send(payload);
 					}
 				}

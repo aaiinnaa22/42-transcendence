@@ -13,35 +13,57 @@
 </div>
 
 <script>
-  const ws = new WebSocket('ws://c2r2p11.hive.fi:4241/chat');
+  // Get DOM elements explicitly (fixes your issue)
+  const statusEl   = document.getElementById("status");
+  const messagesEl = document.getElementById("messages");
+  const messageBox = document.getElementById("messageBox");
+  const sendBtn    = document.getElementById("sendBtn");
 
-  ws.onopen   = () => status.textContent = "Connected!";
-  ws.onclose  = () => status.textContent = "Disconnected!";
-  ws.onmessage = e => {
-    const d = JSON.parse(e.data);
-    if (d.type === "chat") add(d.username || "Player", d.message);
+  // Connect to your websocket
+  const ws = new WebSocket('ws://localhost:4241/chat');
+
+  ws.onopen = () => {
+    statusEl.textContent = "Connected!";
+  };
+
+  ws.onclose = () => {
+    statusEl.textContent = "Disconnected!";
   };
 
   ws.onerror = (e) => {
-  console.log("WebSocket ERROR", e);
-  status.textContent = "Error connecting.";
+    console.log("WebSocket ERROR", e);
+    statusEl.textContent = "Error connecting.";
   };
 
-  function add(user, msg){
-    const div=document.createElement('div');
+  ws.onmessage = (e) => {
+    let d;
+    try { d = JSON.parse(e.data); }
+    catch { return; }
+
+    if (d.type === "chat") {
+      add(d.username || "Player", d.message);
+    }
+  };
+
+  function add(user, msg) {
+    const div = document.createElement('div');
     div.textContent = `${user}: ${msg}`;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
   sendBtn.onclick = send;
-  messageBox.onkeypress = e => e.key === "Enter" && send();
+  messageBox.onkeypress = (e) => {
+    if (e.key === "Enter") send();
+  };
 
-  function send(){
+  function send() {
     const text = messageBox.value.trim();
     if (!text) return;
-    ws.send(JSON.stringify({ type:"chat", message:text }));
+
+    ws.send(JSON.stringify({ type: "chat", message: text }));
     messageBox.value = "";
   }
 </script>
+
 </body>
