@@ -68,7 +68,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		matchmakingLoop();
 	};
 
-	//Big fat helper function that has everything to start single player gamer
+	// Helper for starting single player games
 	const startSinglePlayerGame = async ( id: UserId, socket: WebSocket ) => {
 		const stats = await server.prisma.playerStats.findUnique( {
 			where: { userId: id },
@@ -78,7 +78,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		const eloRating = stats?.eloRating ?? 1200;
 		const joinedAt = Date.now();
 
-		// Create player connection profile
 		const playerConnection: PlayerConnection = {
 			userId: id,
 			socket,
@@ -86,13 +85,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			eloRating,
 			joinedAt
 		};
-		const waitingPlayer: WaitingPlayer = {
-			userId: id,
-			eloRating,
-			joinedAt
-		};
 
-		// Store connection info and queue the player
 		activePlayers.set( id, playerConnection );
 
 		server.log.info( `Game: Player ${id} with elo ${eloRating} joined the queue.`);
@@ -102,22 +95,20 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			eloRating
 		}));
 
-		const player1 = activePlayers.get( id );
-
 		const gameId: GameId = Date.now().toString();
-		const game = new Game( gameId, [player1.socket] );
+		const game = new Game( gameId, [socket] );
 
-		game.addPlayer( Location.Left, player1.userId );
-		game.addPlayer( Location.Right, player1.userId );
+		game.addPlayer( Location.Left, id );
+		game.addPlayer( Location.Right, id );
 
-		player1.gameId = gameId;
+		playerConnection.gameId = gameId;
 
 		games[gameId] = game;
 
-		// Game begins (Alternatively send a message with a type taht announces the game start)
-		const gameState = game.getState();				// Get game state
-		const payload = JSON.stringify( gameState );	// Serialize the game state
-		player1.socket.send( payload );
+		// Game begins
+		const gameState = game.getState();
+		const payload = JSON.stringify( gameState );
+		socket.send( payload );
 	};
 
 	// Helper for creating tournament games
