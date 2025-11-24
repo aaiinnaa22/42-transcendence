@@ -19,12 +19,15 @@ model User {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   lastLogin       DateTime?
+
+  // Avatar from provider or locally stored. Types: "provider", "local", null
   avatar          String?
+  avatarType      String?
 
   providers       Provider[]
   credential      Credential?
   playerStats     PlayerStats?
-  
+
   // Friends relationships
   friendships     Friendship[] @relation("UserFriendships")
   friendOf        Friendship[] @relation("FriendFriendships")
@@ -70,10 +73,10 @@ model Friendship {
   status      String   @default("pending") // pending, accepted, blocked
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   user        User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
   friend      User     @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
-  
+
   @@unique([userId, friendId])
   @@index([userId])
   @@index([friendId])

@@ -2,38 +2,77 @@ import Player from "./player.ts";
 import Ball from "./ball.ts";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 
+export enum Location {
+	Left = 1,
+	Right = 2
+};
+
 class Game
 {
 	id: string;
 	players: Player[];
 	ball: Ball;
+	sockets: WebSocket[] = [];
+	loop!: NodeJS.Timeout;
 
-	constructor( id: string )
+	constructor( id: string , sockets: WebSocket[])
 	{
 		this.id = id;
 		this.players = [];
 		this.ball = new Ball;
+
+		this.sockets = sockets.slice();
+		this.startLoop();
 	}
 
-	addPlayer()
+	private startLoop() : void
 	{
-		const newPlayer = new Player( 1, 10, HEIGHT / 2 );
-		this.players.push( newPlayer );
-		const newPlayer2 = new Player( 2, 1580, HEIGHT / 2 );
-		this.players.push( newPlayer2 );
-		//console.log("Players added");
+		this.loop = setInterval(() => {
+			this.update();
+		}, 1000 / 60);
 	}
 
-	movePlayer( playerId: number, dx: number, dy: number )
+	/**
+	 * @param location The side of the screen which the player occupies
+	 * @param userid The unique identifier of the player (can be empty string if not tracking score)
+	 */
+	public addPlayer( location: Location, userid: string ) : void
 	{
-		const player = this.players.find( p => p.id === playerId );
+		const horizontal = location == 1 ? 20 : 1570;
+		const player = new Player( location, userid, horizontal, HEIGHT / 2 );
+		this.players.push( player );
+	}
+
+	public movePlayer( identifier: number | string, dx: number, dy: number ) : void
+	{
+		let player: Player | undefined;
+
+		if ( typeof identifier === "number" )
+		{
+			player = this.players.find( p => p.location === identifier );
+		}
+		else
+		{
+			player = this.players.find( p => p.userId === identifier )
+		}
+
 		if ( player )
 		{
-			player.move( dx, dy ); // Move the player by dx, dy
+			if ((dy === -10 && player.y != 0) || (dy === 10 && player.y != (HEIGHT-PADDLE_LEN)))
+				player.move( dx, dy );
 		}
 	}
 
-	moveBall()
+	public update() : void
+	{
+		this.moveBall();
+		for (const socket of this.sockets)
+		{
+			socket.send(JSON.stringify(this.getState()));
+		}
+	}
+
+	public moveBall() : void
 	{
 		this.ball.x += this.ball.vx;
 		this.ball.y += this.ball.vy;
@@ -48,6 +87,7 @@ class Game
 			&& this.ball.y >= this.players[0].y
 			&& this.ball.y <= this.players[0].y + PADDLE_LEN )
 		{
+			this.ball.x = this.players[0].x + PADDLE_WIDTH;
 			const playerCenter = this.players[0].y + PADDLE_LEN / 2;
 			this.ball.vy = ( playerCenter - this.ball.y ) * 0.1;
 			this.ball.vx *= -1;
@@ -58,6 +98,7 @@ class Game
 			&& this.ball.y + BALL_SIZE >= this.players[1].y
 			&& this.ball.y <= this.players[1].y + PADDLE_LEN )
 		{
+			this.ball.x = this.players[1].x - BALL_SIZE;
 			const playerCenter2 = this.players[1].y + PADDLE_LEN / 2;
 			this.ball.vy = ( playerCenter2 - this.ball.y ) * 0.1;
 			this.ball.vx *= -1;
@@ -73,12 +114,6 @@ class Game
 			{
 				this.players[1].points += 1;
 			}
-			//check if we have winner here
-			//Need to figure out what to do when the game is ended
-			if ( this.players[0].points >= 5 || this.players[1].points >= 5 )
-			{
-				this.players[0].points = 42; // Figure out correct way to end the game currently just a place holder
-			}
 			this.ball.resetBall();
 			return ;
 		}
@@ -89,13 +124,13 @@ class Game
 		}
 	}
 
-	getState()
+	public getState()
 	{
 		const playersState: Record<string, any> = {};
 
 		this.players.forEach( player =>
 		{
-			playersState[player.id] = player.getState();
+			playersState[player.location] = player.getState();
 		} );
 
 		return {
@@ -104,6 +139,14 @@ class Game
 			ball: this.ball.getState(),
 		};
 	}
+
+	public destroy() : void
+	{
+		this.sockets.forEach(socket => {
+			socket.close();
+		});
+        clearInterval(this.loop);
+    }
 }
 
 export default Game;

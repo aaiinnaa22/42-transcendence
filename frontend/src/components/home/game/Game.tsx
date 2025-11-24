@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 
 
@@ -9,7 +9,7 @@ export const Game = () =>
     const PointsRef = useRef<HTMLSpanElement | null>(null);
     const PointsRef2= useRef<HTMLSpanElement | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
-    const keysPressed = useRef({});
+    const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
     const ball = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -30,40 +30,65 @@ export const Game = () =>
         if (keysPressed.current["s"]) sendMove(1, 0, 10);
     };
 
-    // Poll server regurally so ball position gets updated constantly. I had 10ms interval here but this is now tied to the gameloop (not sure if it spams the server too much like this)
-    const setInterval = () => {
-        const ws = wsRef.current;
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: "get_state" }));
-        }
-    }
+	const axisScale = () => {
+		const canvas = canvasRef.current;
+		if ( !canvas ) return { scaleX: 1, scaleY: 1 };
+
+		const scaleX: number = canvas.width / WIDTH;
+		const scaleY: number = canvas.height / HEIGHT;
+
+		if ( scaleX === 0 || scaleY === 0 ) return { scaleX: 1, scaleY: 1 };
+		return { scaleX, scaleY };
+	};
 
     //draws the game based on the coordinates we got from the back end
     const  drawGame = () => {
-        const ctx = canvasRef.current.getContext("2d");
+		const canvas = canvasRef.current;
+		if ( !canvas ) return;
+        const ctx = canvas.getContext("2d");
+		if ( !ctx ) return;
 
-        ctx.clearRect(0,0, WIDTH, HEIGHT);
+		const { scaleX, scaleY } = axisScale();
+
+        ctx.clearRect(0,0, canvas.width, canvas.height);
         ctx.fillStyle = 'white';
 
         // Draw players might fuck up the id is not a number
         for (const id in players.current)
         {
-            const { x, y } = players.current[id];
-            if (id % 2)
-                PointsRef.current.innerHTML = players.current[id].points;
+			const player = players.current[id];
+			const scaledX = player.x * scaleX;
+			const scaledY = player.y * scaleY;
+			const scaledWidth = PADDLE_WIDTH * scaleX;
+			const scaledHeight = PADDLE_LEN * scaleY;
+
+			const pointsRight = PointsRef.current;
+			const pointsLeft = PointsRef2.current;
+
+            if (player.id === 1)
+			{
+				if (pointsLeft)
+                	pointsLeft.textContent = player.points.toString();
+			}
             else
-                PointsRef2.current.innerHTML = players.current[id].points;
-            ctx.fillRect(x, y, PADDLE_WIDTH, PADDLE_LEN);
+			{
+				if (pointsRight)
+                	pointsRight.textContent = player.points.toString();
+			}
+            ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
         }
 
         // Draw ball
-        //const { x, y } = ball.current;
-        ctx.fillRect(ball.current.x, ball.current.y, BALL_SIZE, BALL_SIZE);
+		const scaledBallX = ball.current.x * scaleX;
+		const scaledBallY = ball.current.y * scaleY;
+		const scaledBallSize = BALL_SIZE * scaleX;
+
+        ctx.fillRect(scaledBallX, scaledBallY, scaledBallSize, scaledBallSize);
     };
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
-        const ws = new WebSocket('ws://localhost:4241/ws');
+        const ws = new WebSocket('ws://localhost:4241/game/multiplayer');
         wsRef.current = ws;
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
@@ -76,20 +101,50 @@ export const Game = () =>
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data.type === 'state') {
+
+            if (data.type === "state")
+			{
                 players.current = data.players;
                 ball.current = data.ball;
-                drawGame();
-        }};
+        	}
+			else if (data.type === "waiting")
+			{
+				console.log("Waiting in queue.");
+			}
+			else if (data.type === "error")
+			{
+				console.log("You are already in a match.");
+			}
+			/* ADD ADDITIONAL STATES HERE */
+		};
 
         // Main game loop that keeps calling different update functions
         const gameLoop = () => {
-            setInterval(); // move ball
             updateGame(); //register key presses and move players
             drawGame(); // draws the game canvas TEST IF NEEDED BECAUSE THE GAME IS ALREADY DRAWN AFTER EACH MESSAGE
             animationFrameId = requestAnimationFrame(gameLoop); // syncs the game to the browser refress rate to make animation smooth
         };
         gameLoop();
+
+		// Handle resize
+		const handleResize = () => {
+			const canvas = canvasRef.current;
+			const isPortrait = window.innerHeight > window.innerWidth;
+			if (canvas)
+			{
+				if (isPortrait)
+				{
+					canvas.width = HEIGHT;
+					canvas.height = WIDTH;
+				}
+				else
+				{
+					canvas.width = WIDTH;
+					canvas.height = HEIGHT;
+				}
+			}
+		};
+		window.addEventListener("resize", handleResize);
 
         // Clean up things
         return () => {
@@ -97,6 +152,7 @@ export const Game = () =>
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
+			window.removeEventListener("resize", handleResize);
         };
     },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
 
@@ -104,24 +160,27 @@ export const Game = () =>
 	const screenIsPortrait = window.innerHeight > window.innerWidth;
 
     return (
-		<div className="relative grid grid-cols-[5%_auto_5%] grid-rows-[auto]
+		<div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
 		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
 		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
 			<span ref={PointsRef}
 				className="text-transcendence-white font-transcendence-three text-4xl
-					col-start-1 row-start-1
-					 portrait:self-end
-					text-right"></span>
-			<span className="text-transcendence-white font-transcendence-three text-4xl hidden">|</span>
-			<span  ref={PointsRef2} className="text-transcendence-white font-transcendence-three text-4xl
-				col-start-3 row-start-1
-				portrait:col-start-3"></span>
+					col-start-1 row-start-1 text-right self-center
+					portrait:self-end portrait:text-right">0</span>
+			<span ref={PointsRef2}
+				className="text-transcendence-white font-transcendence-three text-4xl
+					col-start-3 row-start-1 text-left self-center
+					portrait:self-start portrait:text-left">0</span>
 			<div className="
 				flex-grow flex items-center justify-center
 				border-4 border-transcendence-white rounded-xl overflow-hidden
-				col-start-2
-				portrait:col-span-1">
-				<canvas ref={canvasRef} width={screenIsPortrait ? HEIGHT : WIDTH} height={screenIsPortrait ? WIDTH : HEIGHT} className="w-full h-full"/>
+				col-start-2 portrait:col-span-1">
+				<canvas
+					ref={canvasRef}
+					width={screenIsPortrait ? HEIGHT : WIDTH}
+					height={screenIsPortrait ? WIDTH : HEIGHT}
+					className="w-full h-full"
+				/>
 			</div>
         </div>
     );

@@ -1,35 +1,32 @@
-import { type FastifyInstance } from "fastify";
+import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import {} from "@prisma/client";
+import { NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
 
 const statsRoutes = async ( server: FastifyInstance ) =>
 {
 	// Get player statistics
-	server.get( "/stats/me", { preHandler: authenticate }, async ( request, response ) =>
+	server.get( "/stats/me", { preHandler: authenticate }, async ( request: FastifyRequest, reply: FastifyReply ) =>
 	{
 		try
 		{
 			const { userId } = request.user as { userId: string };
 
-			const playerStats = await server.prisma.playerStats.findUnique( {
-				where: { userId }
-			} );
+			const playerStats = await server.prisma.playerStats.findUnique( { where: { userId } } );
+			if ( !playerStats ) throw NotFoundError( "Statistics not found" );
 
-			if ( !playerStats )
-			{
-				return response.code( 404 ).send( { error: "Statistics not found"} );
-			}
-			response.send( playerStats );
+			reply.send( playerStats );
 		}
-		catch ( error: any )
+		catch ( err: any )
 		{
-			server.log.error( `Get statistics failed: ${error?.message}` );
-			response.code( 500 ).send( {error: "Failed to get player stats"} );
+			server.log.error( `Get statistics failed: ${err?.message}` );
+			return sendErrorReply( reply, err, "Failed to get player stats" );
 		}
 	} );
 
 	// Get statistics of another player
-	server.get( "/stats/user/:username", { preHandler: authenticate }, async ( request, response ) =>
+	server.get( "/stats/user/:username", { preHandler: authenticate },
+		async ( request: FastifyRequest, reply: FastifyReply ) =>
 	{
 		try
 		{
@@ -43,17 +40,14 @@ const statsRoutes = async ( server: FastifyInstance ) =>
 				 }
 			} );
 
-			if ( !playerStats )
-			{
-				return response.code( 404 ).send( {error: "Player not found"} );
-			}
+			if ( !playerStats ) throw NotFoundError( "Player not found" );
 
-			response.send( playerStats );
+			reply.send( playerStats );
 		}
-		catch ( error: any )
+		catch ( err: any )
 		{
-			server.log.error( `Get statistics failed: ${error?.message}` );
-			response.code( 500 ).send( {error: "Failed to get player stats"} );
+			server.log.error( `Get statistics failed: ${err?.message}` );
+			return sendErrorReply( reply, err, "Failed to get player stats" );
 		}
 	} );
 
