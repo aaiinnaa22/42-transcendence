@@ -33,6 +33,11 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			maxAge: 60 * 60 * 24 * 7, // 7 days
 		} );
 }
+// check if user is already logged in
+function isLoggedIn(request: FastifyRequest) 
+{
+  return Boolean(request.cookies?.refreshToken || request.cookies?.accessToken);
+}
 
 const authRoutes = async ( server: FastifyInstance ) =>
 {
@@ -51,12 +56,24 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				tokenPath: "/token",
 			},
 		},
-		startRedirectPath: "/auth/google",
 		callbackUri: process.env.GOOGLE_CALLBACK_URL || "http://localhost:4241/auth/google/callback",
 		// Must return a string; used for CSRF state parameter
 		generateStateFunction: () => Math.random().toString( 36 ).slice( 2 ),
 		checkStateFunction: () => true,
 	} );
+
+	server.get("/auth/google", async (request, reply) => 
+	{
+		const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
+
+		// Prevent login if already logged in
+		if (request.cookies?.accessToken || request.cookies?.refreshToken) {
+			return reply.redirect(clientRedirectUrl);
+		}
+
+		const url = await server.googleOAuth2.generateAuthorizationUri(request, reply);
+  		return reply.redirect(url);
+	});
 
 	// Callback route
 	server.get( "/auth/google/callback", async ( request: FastifyRequest, reply: FastifyReply ) =>
@@ -64,7 +81,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		try
 		{
 			if ( !server.prisma ) throw ServiceUnavailableError();
-
+			
 			// Step 1: Use the plugin to exchange the code for tokens
 			const tokenResponse = await server.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow( request );
 
@@ -197,13 +214,20 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
+			if (isLoggedIn(request)) 
+			{
+				const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
+				return reply.redirect(clientRedirectUrl);
+			}
 			const { email, password, username } = request.body as {
         		email: string;
         		password: string;
-        		username?: string;
+        		username: string;
       		};
 
 			// Validate email format and confirm minimum password strength requirements
+			if ( !username || username === undefined ) throw BadRequestError( "Username missing" );
+			if ( username.length < 3 ) throw BadRequestError( "Username too short" );
 			if ( !checkEmailFormat( email ) ) throw BadRequestError( "Invalid email" );
 			if ( !checkPasswordStrength( password ) ) throw BadRequestError( "Password too weak" );
 
@@ -259,6 +283,11 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
+			if (isLoggedIn(request)) 
+			{
+				const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
+				return reply.redirect(clientRedirectUrl);
+			}
 			const { email, password } = request.body as { email: string; password: string };
 
 			// Find user
@@ -300,7 +329,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		catch ( err: any )
 		{
 			server.log.error( `Login failed: ${err?.message}` );
-			return sendErrorReply(reply, err, "Login failed" );
+			return sendErrorReply(reply, err, err.message ?? "Unknown error" );
 		}
 	} );
 

@@ -88,7 +88,11 @@ export const Game = () =>
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
+<<<<<<< HEAD
         const ws = new WebSocket('ws://localhost:4241/game/singleplayer');
+=======
+        const ws = new WebSocket('ws://localhost:4241/game/multiplayer');
+>>>>>>> main
         wsRef.current = ws;
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };

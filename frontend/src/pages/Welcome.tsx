@@ -2,10 +2,24 @@ import GoogleSignIn from "../assets/googleSignIn.svg";
 import { SignUp } from "../components/welcome/SignUp";
 import { Login } from "../components/welcome/Login";
 import {Route, Routes, useNavigate, useLocation} from "react-router-dom";
+import { useEffect } from "react";
 
 export const Welcome = () => {
 	const navigate = useNavigate();
 	const {pathname} = useLocation();
+
+	useEffect(() => {
+        fetch("http://localhost:4241/auth/me", {
+            method: "GET",
+            credentials: "include",
+        })
+        .then(res => {
+            if (res.ok) {
+                navigate("/home");
+            }
+        })
+        .catch(() => {});
+    }, [navigate]);
 
 	return (
 		<div className="bg-transcendence-black h-screen w-screen
