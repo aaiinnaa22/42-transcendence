@@ -88,13 +88,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 		activePlayers.set( id, playerConnection );
 
-		server.log.info( `Game: Player ${id} with elo ${eloRating} joined the queue.`);
-		socket.send( JSON.stringify({
-			type: "waiting",
-			position: playerQueue.length,
-			eloRating
-		}));
-
 		const gameId: GameId = Date.now().toString();
 		const game = new Game( gameId, [socket] );
 
@@ -286,15 +279,12 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			return;
 		}
 
-		startSinglePlayerGame( userId, socket );
-		//await queuePlayerForTournament( userId, socket );
+		await startSinglePlayerGame( userId, socket );
 
 		socket.on( "message", ( message: any ) =>
 		{
 			const data = JSON.parse( message.toString() );
 			const playerConnection = activePlayers.get( userId );
-
-			// Fetch the active game
 			if ( !playerConnection?.gameId ) return;
 			const game = games[playerConnection.gameId];
 
