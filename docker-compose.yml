@@ -13,10 +13,9 @@ services:
       - transcendence_net
     volumes:
       - ./backend/src:/app/src  # Mount source code, allows for live reload of changes
-      - db_data:/app/prisma
+      - ./backend/prisma:/app/prisma  # Mount prisma directory with schema and database
     environment:
       - NODE_ENV=development
-      - ./backend/prisma:/app/prisma
 
   frontend:
     build: ./frontend

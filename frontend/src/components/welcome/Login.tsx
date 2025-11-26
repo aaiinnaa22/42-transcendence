@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { TwoFALoginModal } from "./TwoFALoginModal";
 
 export const Login = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
+	const [twoFATempToken, setTwoFATempToken] = useState<string | null>(null);
+	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const navigate = useNavigate();
 
 	const handleLogin = async (e: React.FormEvent) =>
@@ -23,14 +26,32 @@ export const Login = () => {
 				body: JSON.stringify({email, password,}),
 			});
 			const data = await response.json();
-			if (!response.ok || data.error)
+
+			// Check for actual errors first (4xx, 5xx with error field)
+			if (!response.ok && data.error)
 			{
 				throw new Error(data.error || "Login failed. Please try again.");
 			}
+
+			// 2FA required flow - check this BEFORE normal login
+			if (data.status === "TWO_FA_REQUIRED" && data.tempToken)
+			{
+				console.log("2FA required, opening modal");
+				setTwoFATempToken(data.tempToken as string);
+				setIsTwoFAModalOpen(true);
+				return;
+			}
+
+			// Normal login flow
 			if (data.message === "Login successful")
+			{
+				console.log("Normal login successful, navigating to home");
 				navigate("/home");
+			}
 			else
+			{
 				throw new Error(data.message || "Something went wrong. Please try again later.");
+			}
 		}
 		catch (err: any) {
 			console.error("Login error:", err);
@@ -39,21 +60,29 @@ export const Login = () => {
 	};
 
 	return (
-		<form onSubmit={handleLogin} className="flex flex-col pt-[5vh] items-center font-transcendence-two text-transcendence-white text-left gap-10 landscape:gap-5 lg:landscape:gap-10">
-			<input
-				type="text"
-				placeholder="email"
-				onChange={(e) => setEmail(e.target.value)}
-				className="border-1 rounded-lg placeholder:text-lg px-3 text-lg w-75 h-10 landscape:placeholder:text-sm landscape:text-sm landscape:w-60 landscape:h-8 lg:landscape:w-75 lg:landscape:h-10 lg:landscape:text-lg lg:landscape:placeholder:text-lg"/>
-			<input
-				type="password"
-				placeholder="password"
-				onChange={(e) => setPassword(e.target.value)}
-				className="border-1 rounded-lg placeholder:text-lg px-3 text-2xl w-75 h-10 landscape:placeholder:text-sm landscape:text-sm landscape:w-60 landscape:h-8 lg:landscape:w-75 lg:landscape:h-10 lg:landscape:text-lg lg:landscape:placeholder:text-lg"/>
-			{error && <div className="text-red-500 text-sm landscape:text-xs lg:landscape:text-sm">{error}</div>}
-			<div className="bg-transcendence-beige flex rounded-2xl w-35 h-18 align-center text-md font-bold justify-center text-center mt-5 tracking-wider landscape:text-xs landscape:w-20 landscape:h-14 lg:landscape:text-lg lg:landscape:w-35 lg:landscape:h-18">
-				<button className="text-transcendence-black cursor-pointer hover:pt-2" type="submit">LOGIN</button>
-			</div>
-		</form>
+		<>
+			<form onSubmit={handleLogin} className="flex flex-col pt-[5vh] items-center font-transcendence-two text-transcendence-white text-left gap-10 landscape:gap-5 lg:landscape:gap-10">
+				<input
+					type="text"
+					placeholder="email"
+					onChange={(e) => setEmail(e.target.value)}
+					className="border-1 rounded-lg placeholder:text-lg px-3 text-lg w-75 h-10 landscape:placeholder:text-sm landscape:text-sm landscape:w-60 landscape:h-8 lg:landscape:w-75 lg:landscape:h-10 lg:landscape:text-lg lg:landscape:placeholder:text-lg"/>
+				<input
+					type="password"
+					placeholder="password"
+					onChange={(e) => setPassword(e.target.value)}
+					className="border-1 rounded-lg placeholder:text-lg px-3 text-2xl w-75 h-10 landscape:placeholder:text-sm landscape:text-sm landscape:w-60 landscape:h-8 lg:landscape:w-75 lg:landscape:h-10 lg:landscape:text-lg lg:landscape:placeholder:text-lg"/>
+				{error && <div className="text-red-500 text-sm landscape:text-xs lg:landscape:text-sm">{error}</div>}
+				<div className="bg-transcendence-beige flex rounded-2xl w-35 h-18 align-center text-md font-bold justify-center text-center mt-5 tracking-wider landscape:text-xs landscape:w-20 landscape:h-14 lg:landscape:text-lg lg:landscape:w-35 lg:landscape:h-18">
+					<button className="text-transcendence-black cursor-pointer hover:pt-2" type="submit">LOGIN</button>
+				</div>
+			</form>
+			<TwoFALoginModal
+				isOpen={isTwoFAModalOpen}
+				tempToken={twoFATempToken}
+				onSuccess={() => navigate("/home")}
+				onClose={() => setIsTwoFAModalOpen(false)}
+			/>
+		</>
 	);
 };
