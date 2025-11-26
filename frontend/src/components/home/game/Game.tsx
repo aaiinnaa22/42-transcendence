@@ -94,8 +94,10 @@ export const Game = () =>
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
         const handleKeyUp = (e: KeyboardEvent) => { keysPressed.current[e.key] = false; };
+		const handleBlur = () => { keysPressed.current = {}; };
         window.addEventListener("keydown",handleKeyDown);
         window.addEventListener("keyup", handleKeyUp);
+		window.addEventListener("blur", handleBlur);
 
         ws.onopen = () => {console.log("Connected!");}
         ws.onclose = () => {console.log("Disconnected!");};
@@ -153,6 +155,7 @@ export const Game = () =>
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
+			window.removeEventListener("blur", handleBlur);
 			window.removeEventListener("resize", handleResize);
         };
     },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
