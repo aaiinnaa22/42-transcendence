@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import Game, { Location } from "./game.ts";
+import Game, { GameMode, Location } from "./game.ts";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import type { WebSocket } from "@fastify/websocket";
 import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL } from "./constants.ts";
@@ -89,7 +89,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		activePlayers.set( id, playerConnection );
 
 		const gameId: GameId = Date.now().toString();
-		const game = new Game( gameId, [socket] );
+		const game = new Game( gameId, [socket], GameMode.Singleplayer );
 
 		game.addPlayer( Location.Left, id );
 		game.addPlayer( Location.Right, id );
@@ -107,7 +107,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	// Helper for creating tournament games
 	const createMultiplayerSession = ( player1: PlayerConnection, player2: PlayerConnection ) => {
 		const gameId: GameId = Date.now().toString();
-		const game = new Game( gameId, [player1.socket, player2.socket] );
+		const game = new Game( gameId, [player1.socket, player2.socket], GameMode.Tournament );
 
 		game.addPlayer( Location.Left, player1.userId );
 		game.addPlayer( Location.Right, player2.userId );
@@ -220,7 +220,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			// Moves the player based on their userId.
 			if ( data.type === "move" && game )
 			{
-				game.movePlayer( userId, data.dx, data.dy );
+				game.movePlayer( userId, data.dy );
 
 				const gameState = game.getState(); // Get game state
 				const payload = JSON.stringify( gameState ); // Serialize the game state
@@ -262,7 +262,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		} );
 	} );
 
-		server.get( "/game/singleplayer",
+	server.get( "/game/singleplayer",
 		{ websocket: true, preHandler: authenticate },
 		async ( socket: WebSocket, request: FastifyRequest ) =>
 	{
@@ -291,7 +291,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			// Moves the player based on their userId.
 			if ( data.type === "move" && game )
 			{
-				game.movePlayer( data.id, data.dx, data.dy );
+				game.movePlayer( data.id, data.dy );
 
 				const gameState = game.getState(); // Get game state
 				const payload = JSON.stringify( gameState ); // Serialize the game state

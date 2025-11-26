@@ -5,6 +5,8 @@ class Player
 	x: number;
 	y: number;
 	points: number;
+	lastMoveTimestamp: number;
+
 
 	/**
 	 * @param location Which paddle is controlled by the player
@@ -19,12 +21,13 @@ class Player
 		this.x = x;
 		this.y = y;
 		this.points = 0;
+		this.lastMoveTimestamp = 0;
 	}
 
-	move( dx: number, dy: number )
+	move( direction: number )
 	{
-		this.x += dx;
-		this.y += dy;
+		this.y += direction;
+		this.lastMoveTimestamp = Date.now();
 	}
 
 	getState()
