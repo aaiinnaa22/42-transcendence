@@ -115,6 +115,11 @@ export const Game = () =>
 			{
 				console.log("You are already in a match.");
 			}
+			else if (data.type === "inactivity")
+			{
+				console.log("Game ended due to inactivity.");
+				console.log("Winner is player " + data.winner);
+			}
 			/* ADD ADDITIONAL STATES HERE */
 		};
 

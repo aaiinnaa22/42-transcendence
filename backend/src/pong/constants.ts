@@ -10,3 +10,7 @@ export const INITIAL_ELO_RANGE = 150;			// Starting search range
 export const ELO_RANGE_INCREASE = 50;			// How much to increase the search range
 export const RANGE_INCREASE_INTERVAL = 5000;	// How often to increase the range
 export const MAX_ELO_RANGE = 1000;				// Hard cap on the search range
+
+// Inactivity timout
+export const INACTIVITY_TIMEOUT = 60000; // 1 minute
+

@@ -1,5 +1,6 @@
 class Player
 {
+	userName: string;
 	userId: string;
 	location: number;
 	x: number;
@@ -12,13 +13,14 @@ class Player
 	 * @param x Horizontal player position
 	 * @param y vertical player position
 	 */
-	constructor( location: number, userId: string, x = 0, y = 0 )
+	constructor( location: number, userId: string, x = 0, y = 0, userName: string)
 	{
 		this.userId = userId ? userId : ""; // Avoid exposing this!!!
 		this.location = location;
 		this.x = x;
 		this.y = y;
 		this.points = 0;
+		this.userName = userName;
 	}
 
 	move( dx: number, dy: number )
