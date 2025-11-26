@@ -50,8 +50,10 @@ export const authenticate = async ( request: FastifyRequest, reply: FastifyReply
 		});
 
 		if (!user) {
-		reply.code(404).send({ error: "User not found" });
-		return;
+			reply.clearCookie("accessToken", { path: "/", httpOnly: true, sameSite: "strict", secure: process.env.NODE_ENV === "production", signed: true });
+			reply.clearCookie("refreshToken", { path: "/", httpOnly: true, sameSite: "strict", secure: process.env.NODE_ENV === "production", signed: true });
+			reply.code(401).send({ error: "User not found" });
+			return;
 		}
 
 		const newAccess = request.server.jwt.sign

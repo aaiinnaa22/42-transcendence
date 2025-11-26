@@ -412,7 +412,6 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			const qrCode = await QRCode.toDataURL(otpauth);
 
 			reply.send({
-			secret,
 			qrCode,
 			message: "2FA secret generated. Please scan QR code."
 			});
@@ -498,7 +497,6 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			where: { id: userId },
 			data: {
 				twoFAEnabled: false,
-				twoFASecret: null
 			}
 			});
 
