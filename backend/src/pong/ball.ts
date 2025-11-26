@@ -1,3 +1,4 @@
+
 import { WIDTH, HEIGHT } from "./constants.ts";
 
 class Ball

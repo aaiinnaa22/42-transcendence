@@ -68,6 +68,42 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		matchmakingLoop();
 	};
 
+	// Helper for starting single player games
+	const startSinglePlayerGame = async ( id: UserId, socket: WebSocket ) => {
+		const stats = await server.prisma.playerStats.findUnique( {
+			where: { userId: id },
+			select: { eloRating: true }
+		} );
+
+		const eloRating = stats?.eloRating ?? 1200;
+		const joinedAt = Date.now();
+
+		const playerConnection: PlayerConnection = {
+			userId: id,
+			socket,
+			gameId: null,
+			eloRating,
+			joinedAt
+		};
+
+		activePlayers.set( id, playerConnection );
+
+		const gameId: GameId = Date.now().toString();
+		const game = new Game( gameId, [socket] );
+
+		game.addPlayer( Location.Left, id );
+		game.addPlayer( Location.Right, id );
+
+		playerConnection.gameId = gameId;
+
+		games[gameId] = game;
+
+		// Game begins
+		const gameState = game.getState();
+		const payload = JSON.stringify( gameState );
+		socket.send( payload );
+	};
+
 	// Helper for creating tournament games
 	const createMultiplayerSession = ( player1: PlayerConnection, player2: PlayerConnection ) => {
 		const gameId: GameId = Date.now().toString();
@@ -208,6 +244,76 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				// TODO: Send message to the winner and loser
 
 				// Clean up the session
+				server.log.info( `Game: Player disconnect, ending session ${game.id}` );
+				endGame( game );
+			}
+			else
+			{
+				// Remove inactive player from the activePlayers map
+				playerConnection?.socket.close();
+				activePlayers.delete( userId );
+
+				// Remove inactive player from the queue
+				const index = playerQueue.findIndex( p => p.userId === userId );
+				if ( index > -1 ) playerQueue.splice( index, 1 );
+
+				server.log.info( `Game: Player ${userId} was removed from the queue.` );
+			}
+		} );
+	} );
+
+		server.get( "/game/singleplayer",
+		{ websocket: true, preHandler: authenticate },
+		async ( socket: WebSocket, request: FastifyRequest ) =>
+	{
+        const { userId } = request.user as { userId: string };
+
+		// Check if the player is already in a match
+		if ( activePlayers.has( userId ) )
+		{
+			socket.send(JSON.stringify( {
+				type: "error",
+				message: "Already in a match"
+			} ));
+			socket.close();
+			return;
+		}
+
+		await startSinglePlayerGame( userId, socket );
+
+		socket.on( "message", ( message: any ) =>
+		{
+			const data = JSON.parse( message.toString() );
+			const playerConnection = activePlayers.get( userId );
+			if ( !playerConnection?.gameId ) return;
+			const game = games[playerConnection.gameId];
+
+			// Moves the player based on their userId.
+			if ( data.type === "move" && game )
+			{
+				game.movePlayer( data.id, data.dx, data.dy );
+
+				const gameState = game.getState(); // Get game state
+				const payload = JSON.stringify( gameState ); // Serialize the game state
+				socket.send( payload );
+			}
+
+			// TODO: Figure out a fair win condition
+		});
+
+		socket.on( "close", () =>
+		{
+			const playerConnection = activePlayers.get( userId );
+
+			// Was the player in a game or were they queueing
+			if (playerConnection?.gameId)
+			{
+				const game = games[playerConnection.gameId];
+				if ( !game ) return;
+
+				// Single player -> no elo calculations needed
+				// Clean up the session
+				activePlayers.delete( userId );
 				server.log.info( `Game: Player disconnect, ending session ${game.id}` );
 				endGame( game );
 			}
