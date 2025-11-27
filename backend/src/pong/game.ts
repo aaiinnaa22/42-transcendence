@@ -21,6 +21,8 @@ class Game
 	sockets: WebSocket[] = [];
 	loop!: NodeJS.Timeout;
 	mode: GameMode;
+	starttimer: number;
+	countdown: number;
 
 	constructor( id: string , sockets: WebSocket[], mode: GameMode = GameMode.Singleplayer )
 	{
@@ -31,6 +33,8 @@ class Game
 		this.sockets = sockets.slice();
 		this.mode = mode;
 		this.loop = setInterval(() => this.update(), 1000 / 60);
+		this.starttimer = Date.now();
+		this.countdown = 3;
 	}
 
 	/**
@@ -101,7 +105,11 @@ class Game
 
 	public update() : void
 	{
-		this.moveBall();
+		const now = Date.now();
+		if ( (now - this.starttimer) > 3100)
+			this.moveBall();
+		else
+			this.countdown = 3 - Math.floor((now - this.starttimer) / 1000);
 		for (const socket of this.sockets)
 		{
 			socket.send(JSON.stringify(this.getState()));
@@ -189,7 +197,9 @@ class Game
 
 		const ballState : BallState = this.ball.getState();
 
-		return gameStateMessage( playersState, ballState );
+		const countdown : number = this.countdown;
+
+		return gameStateMessage( playersState, ballState, countdown );
 	}
 
 	public destroy() : void

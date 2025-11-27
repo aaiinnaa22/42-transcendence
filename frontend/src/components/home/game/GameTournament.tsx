@@ -11,7 +11,7 @@ export const GameTournament = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+    const ball = useRef<{ x: number; y: number; countdown: Number;}>({ x: 0, y: 0 , countodwn: 3 });
 
     // sends move command to backend server when player wants to move
     const sendMove = (id: number, dx: number, dy: number) => {
@@ -78,6 +78,11 @@ export const GameTournament = () =>
             ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
         }
 
+		// Draw countdown
+		if (ball.countdown >  0){
+			ctx.font = "100px Arial";
+			ctx.fillText(`${ball.countdown}`,WIDTH/2,HEIGHT/2 - 100);}
+
         // Draw ball
 		const scaledBallX = ball.current.x * scaleX;
 		const scaledBallY = ball.current.y * scaleY;
@@ -108,7 +113,8 @@ export const GameTournament = () =>
 			{
                 players.current = data.players;
                 ball.current = data.ball;
-        	}
+				ball.countdown = data.countdown;        	
+}
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue.");
