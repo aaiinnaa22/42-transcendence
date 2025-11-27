@@ -19,4 +19,8 @@ export const RANGE_INCREASE_INTERVAL = 5000;	// How often to increase the range
 export const MAX_ELO_RANGE = 1000;				// Hard cap on the search range
 
 // Rate limiting
-export const RATE_LIMIT_MS = 20;
+export const RATE_LIMIT_MS = 20;				// 20 ms
+
+// Inactivity timout
+export const INACTIVITY_TIMEOUT = 60000;		// 1 minute
+

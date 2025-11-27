@@ -36,10 +36,10 @@ class Game
 	 * @param location The side of the screen which the player occupies
 	 * @param userid The unique identifier of the player (can be empty string if not tracking score)
 	 */
-	public addPlayer( location: Location, userid: string ) : void
+	public addPlayer( location: Location, userid: string, userName: string ) : void
 	{
 		const horizontal = location == 1 ? 20 : 1570;
-		const player = new Player( location, userid, horizontal, HEIGHT / 2 );
+		const player = new Player( location, userid, horizontal, HEIGHT / 2, userName );
 		this.players.push( player );
 	}
 

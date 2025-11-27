@@ -2,18 +2,21 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import Game, { GameMode, Location } from "./game.ts";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import type { WebSocket } from "@fastify/websocket";
-import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL } from "./constants.ts";
+import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT } from "./constants.ts";
 
 
 type UserId = string;
 type GameId = string;
+type UserName = string;
 
 type PlayerConnection = {
+	userName: UserName;
 	userId: UserId;
 	socket: WebSocket;
 	gameId: GameId | null;
 	eloRating: number;
 	joinedAt: number;
+	lastActivityAt: number;
 };
 
 type WaitingPlayer = {
@@ -34,19 +37,22 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	const queuePlayerForTournament = async ( id: UserId, socket: WebSocket ) => {
 		const stats = await server.prisma.playerStats.findUnique( {
 			where: { userId: id },
-			select: { eloRating: true }
+			select: { eloRating: true, user: { select: { username: true }} },
 		} );
 
 		const eloRating = stats?.eloRating ?? 1200;
+		const userName = stats?.user?.username ?? "Unknown";
 		const joinedAt = Date.now();
 
 		// Create player connection profile
 		const playerConnection: PlayerConnection = {
+			userName,
 			userId: id,
 			socket,
 			gameId: null,
 			eloRating,
-			joinedAt
+			joinedAt,
+			lastActivityAt: joinedAt
 		};
 		const waitingPlayer: WaitingPlayer = {
 			userId: id,
@@ -58,7 +64,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		activePlayers.set( id, playerConnection );
 		playerQueue.push( waitingPlayer );
 
-		server.log.info( `Game: Player ${id} with elo ${eloRating} joined the queue.`);
+		server.log.info( `Game: Player ${userName} with elo ${eloRating} joined the queue.`);
 		socket.send( JSON.stringify({
 			type: "waiting",
 			position: playerQueue.length,
@@ -70,20 +76,23 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 	// Helper for starting single player games
 	const startSinglePlayerGame = async ( id: UserId, socket: WebSocket ) => {
-		const stats = await server.prisma.playerStats.findUnique( {
+			const stats = await server.prisma.playerStats.findUnique( {
 			where: { userId: id },
-			select: { eloRating: true }
+			select: { eloRating: true, user: { select: { username: true }} },
 		} );
 
 		const eloRating = stats?.eloRating ?? 1200;
+		const userName = stats?.user?.username ?? "Unknown";
 		const joinedAt = Date.now();
 
 		const playerConnection: PlayerConnection = {
+			userName,
 			userId: id,
 			socket,
 			gameId: null,
 			eloRating,
-			joinedAt
+			joinedAt,
+			lastActivityAt: joinedAt
 		};
 
 		activePlayers.set( id, playerConnection );
@@ -91,8 +100,8 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		const gameId: GameId = Date.now().toString();
 		const game = new Game( gameId, [socket], GameMode.Singleplayer );
 
-		game.addPlayer( Location.Left, id );
-		game.addPlayer( Location.Right, id );
+		game.addPlayer( Location.Left, id, playerConnection.userName);
+		game.addPlayer( Location.Right, id, playerConnection.userName);
 
 		playerConnection.gameId = gameId;
 
@@ -109,11 +118,13 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		const gameId: GameId = Date.now().toString();
 		const game = new Game( gameId, [player1.socket, player2.socket], GameMode.Tournament );
 
-		game.addPlayer( Location.Left, player1.userId );
-		game.addPlayer( Location.Right, player2.userId );
+		game.addPlayer( Location.Left, player1.userId, player1.userName );
+		game.addPlayer( Location.Right, player2.userId, player2.userName );
 
 		player1.gameId = gameId;
 		player2.gameId = gameId;
+		player1.lastActivityAt = Date.now();
+        player2.lastActivityAt = Date.now();
 
 		games[gameId] = game;
 
@@ -185,6 +196,48 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		// Remove any matched players from the waiting queue
 		playerQueue.splice( 0, playerQueue.length, ...playerQueue.filter( p => !matched.has( p.userId ) ));
 	};
+
+	// Inactivity checker
+    const checkInactivity = () => {
+        const now = Date.now();
+		let winnerName: UserName | string = "tie";
+
+        for (const [gameId, game] of Object.entries(games)) {
+            let hasInactivePlayer = false;
+
+            // Check each player in the game
+            game.players.forEach(player => {
+                const playerConnection = activePlayers.get(player.userId);
+                if (playerConnection) {
+                    const inactiveTime = now - playerConnection.lastActivityAt;
+                    if (inactiveTime > INACTIVITY_TIMEOUT) {
+                        hasInactivePlayer = true;
+                        server.log.warn(`Game: Player ${player.userId} inactive for ${Math.floor(inactiveTime / 1000)}s in game ${gameId}`);
+                    }
+					else
+					{
+						winnerName = player.userName;
+					}
+                }
+            });
+
+            // End game if any player is inactive
+            if (hasInactivePlayer) {
+                server.log.info(`Game: Ending game ${gameId} due to player inactivity`);
+				//Message players about game ending due to inactivity
+				game.sockets.forEach( socket => {
+					socket.send( JSON.stringify( {
+						type: "inactivity",
+						message: "Game ended due to inactivity",
+						winner: winnerName
+					} ) );
+				} );
+                endGame(game);
+            }
+        }
+    };
+
+	const inactivityCheckInterval = setInterval(checkInactivity, 30000);
 	const matchmakingInterval = setInterval( matchmakingLoop, 2000 /* Interval when to check */ );
 
 	// Multiplayer game handler with matchmaking
@@ -215,6 +268,9 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 			// Fetch the active game
 			if ( !playerConnection?.gameId ) return;
+			// Update last activity time
+            playerConnection.lastActivityAt = Date.now();
+
 			const game = games[playerConnection.gameId];
 
 			// Moves the player based on their userId.
@@ -288,6 +344,9 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			if ( !playerConnection?.gameId ) return;
 			const game = games[playerConnection.gameId];
 
+			// Update last activity time
+            playerConnection.lastActivityAt = Date.now();
+
 			// Moves the player based on their userId.
 			if ( data.type === "move" && game )
 			{
@@ -344,6 +403,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	};
 
 	server.addHook( "onClose", () => {
+		clearInterval( inactivityCheckInterval );
 		clearInterval( matchmakingInterval );
 	});
 };
