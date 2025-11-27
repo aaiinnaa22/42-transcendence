@@ -1,8 +1,9 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import Game, { Location } from "./game.ts";
+import Game, { GameMode, Location } from "./game.ts";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import type { WebSocket } from "@fastify/websocket";
 import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT } from "./constants.ts";
+import type { GameState } from "../schemas/game.states.schema.ts";
 
 
 type UserId = string;
@@ -98,7 +99,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		activePlayers.set( id, playerConnection );
 
 		const gameId: GameId = Date.now().toString();
-		const game = new Game( gameId, [socket] );
+		const game = new Game( gameId, [socket], GameMode.Singleplayer );
 
 		game.addPlayer( Location.Left, id, playerConnection.userName);
 		game.addPlayer( Location.Right, id, playerConnection.userName);
@@ -108,7 +109,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		games[gameId] = game;
 
 		// Game begins
-		const gameState = game.getState();
+		const gameState: GameState = game.getState();
 		const payload = JSON.stringify( gameState );
 		socket.send( payload );
 	};
@@ -116,7 +117,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	// Helper for creating tournament games
 	const createMultiplayerSession = ( player1: PlayerConnection, player2: PlayerConnection ) => {
 		const gameId: GameId = Date.now().toString();
-		const game = new Game( gameId, [player1.socket, player2.socket] );
+		const game = new Game( gameId, [player1.socket, player2.socket], GameMode.Tournament );
 
 		game.addPlayer( Location.Left, player1.userId, player1.userName );
 		game.addPlayer( Location.Right, player2.userId, player2.userName );
@@ -124,12 +125,12 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		player1.gameId = gameId;
 		player2.gameId = gameId;
 		player1.lastActivityAt = Date.now();
-        player2.lastActivityAt = Date.now(); 
+        player2.lastActivityAt = Date.now();
 
 		games[gameId] = game;
 
 		// Game begins (Alternatively send a message with a type taht announces the game start)
-		const gameState = game.getState();				// Get game state
+		const gameState : GameState = game.getState();				// Get game state
 		const payload = JSON.stringify( gameState );	// Serialize the game state
 		player1.socket.send( payload );
 		player2.socket.send( payload );
@@ -200,7 +201,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	// Inactivity checker
     const checkInactivity = () => {
         const now = Date.now();
-		let winnerId: UserName | string = "tie";
+		let winnerName: UserName | string = "tie";
 
         for (const [gameId, game] of Object.entries(games)) {
             let hasInactivePlayer = false;
@@ -214,8 +215,9 @@ const gameComponent = async ( server: FastifyInstance ) =>
                         hasInactivePlayer = true;
                         server.log.warn(`Game: Player ${player.userId} inactive for ${Math.floor(inactiveTime / 1000)}s in game ${gameId}`);
                     }
-					else{
-						winnerId = player.userName;
+					else
+					{
+						winnerName = player.userName;
 					}
                 }
             });
@@ -228,7 +230,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					socket.send( JSON.stringify( {
 						type: "inactivity",
 						message: "Game ended due to inactivity",
-						winner: winnerId 
+						winner: winnerName
 					} ) );
 				} );
                 endGame(game);
@@ -275,10 +277,10 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			// Moves the player based on their userId.
 			if ( data.type === "move" && game )
 			{
-				game.movePlayer( userId, data.dx, data.dy );
+				game.movePlayer( userId, data.dy );
 
-				const gameState = game.getState(); // Get game state
-				const payload = JSON.stringify( gameState ); // Serialize the game state
+				const gameState : GameState = game.getState();				// Get game state
+				const payload = JSON.stringify( gameState );	// Serialize the game state
 				socket.send( payload );
 			}
 
@@ -317,7 +319,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		} );
 	} );
 
-		server.get( "/game/singleplayer",
+	server.get( "/game/singleplayer",
 		{ websocket: true, preHandler: authenticate },
 		async ( socket: WebSocket, request: FastifyRequest ) =>
 	{
@@ -349,9 +351,9 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			// Moves the player based on their userId.
 			if ( data.type === "move" && game )
 			{
-				game.movePlayer( data.id, data.dx, data.dy );
+				game.movePlayer( data.id, data.dy );
 
-				const gameState = game.getState(); // Get game state
+				const gameState: GameState = game.getState(); // Get game state
 				const payload = JSON.stringify( gameState ); // Serialize the game state
 				socket.send( payload );
 			}
