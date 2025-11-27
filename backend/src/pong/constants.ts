@@ -18,9 +18,14 @@ export const ELO_RANGE_INCREASE = 50;			// How much to increase the search range
 export const RANGE_INCREASE_INTERVAL = 5000;	// How often to increase the range
 export const MAX_ELO_RANGE = 1000;				// Hard cap on the search range
 
+// Elo adjustment
+export const ELO_K_FACTOR = 32;
+
 // Rate limiting
 export const RATE_LIMIT_MS = 20;				// 20 ms
 
 // Inactivity timout
 export const INACTIVITY_TIMEOUT = 60000;		// 1 minute
 
+// Win conditions
+export const TOURNAMENT_WIN_CONDITION = 20;

@@ -1,6 +1,6 @@
 import Player from "./player.ts";
 import Ball from "./ball.ts";
-import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH, RATE_LIMIT_MS, MOVE_SPEED, MIN_BALL_SPEED, MAX_BALL_SPEED } from "./constants.ts";
+import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH, RATE_LIMIT_MS, MOVE_SPEED, MIN_BALL_SPEED, MAX_BALL_SPEED, TOURNAMENT_WIN_CONDITION } from "./constants.ts";
 import { gameStateMessage, type BallState, type GameState, type PlayerState } from "../schemas/game.states.schema.ts";
 
 export enum Location {
@@ -11,7 +11,17 @@ export enum Location {
 export enum GameMode {
 	Singleplayer = "singleplayer",
 	Tournament = "tournament"
-}
+};
+
+export type GameEndReason = "win" | "disconnect" | "inactivity";
+
+export type GameEndData = {
+	reason: GameEndReason;
+	winner: Player | null;
+	loser: Player | null;
+};
+
+export type GameEndCallback = ( data: GameEndData ) => void;
 
 class Game
 {
@@ -19,10 +29,17 @@ class Game
 	players: Player[];
 	ball: Ball;
 	sockets: WebSocket[] = [];
-	loop!: NodeJS.Timeout;
 	mode: GameMode;
+	hasEnded: boolean;
+	loop!: NodeJS.Timeout;
 
-	constructor( id: string , sockets: WebSocket[], mode: GameMode = GameMode.Singleplayer )
+	private onGameEndCallback: GameEndCallback | undefined;
+
+	constructor(
+		id: string,
+		sockets: WebSocket[],
+		mode: GameMode = GameMode.Singleplayer,
+		onGameEnd: GameEndCallback | undefined )
 	{
 		this.id = id;
 		this.players = [];
@@ -30,6 +47,8 @@ class Game
 
 		this.sockets = sockets.slice();
 		this.mode = mode;
+		this.onGameEndCallback = onGameEnd;
+		this.hasEnded = false;
 		this.loop = setInterval(() => this.update(), 1000 / 60);
 	}
 
@@ -99,8 +118,61 @@ class Game
 			player.move( direction );
 	}
 
+	// Handler for stopping games and calling the callback function for multiplayer games
+	private endGame( reason: GameEndReason ) : void
+	{
+		if ( this.hasEnded ) return;
+
+		this.hasEnded = true;
+		clearInterval(this.loop);
+
+		const [ leftPlayer, rightPlayer ] = this.players;
+		if ( !leftPlayer || !rightPlayer ) return;
+
+		let winnerPlayer: Player | null = null;
+		let loserPlayer: Player | null = null;
+
+		if ( leftPlayer.points > rightPlayer.points )
+		{
+			winnerPlayer = leftPlayer;
+			loserPlayer = rightPlayer;
+		}
+		else if ( leftPlayer.points < rightPlayer.points )
+		{
+			winnerPlayer = rightPlayer;
+			loserPlayer = leftPlayer;
+		}
+
+		if ( !winnerPlayer || !loserPlayer ) return;
+
+		const endData: GameEndData = {
+			reason,
+			winner: winnerPlayer,
+			loser: loserPlayer
+		};
+
+		if ( this.onGameEndCallback ) this.onGameEndCallback(endData);
+	}
+
 	public update() : void
 	{
+		// Check if win condition was met
+		if ( this.hasEnded ) return;
+
+		const [ leftPlayer, rightPlayer ] = this.players;
+		if ( leftPlayer && rightPlayer )
+		{
+			// Alternatively check gamemmode for custom limits
+			if ( ( leftPlayer.points >= TOURNAMENT_WIN_CONDITION
+				|| rightPlayer.points >= TOURNAMENT_WIN_CONDITION )
+				&& leftPlayer.points !== rightPlayer.points )
+			{
+				this.endGame( "win" );
+				return;
+			}
+		}
+
+		// Send updates
 		this.moveBall();
 		for (const socket of this.sockets)
 		{
@@ -197,7 +269,7 @@ class Game
 		this.sockets.forEach(socket => {
 			socket.close();
 		});
-        clearInterval(this.loop);
+		if ( this.loop ) clearInterval(this.loop);
     }
 }
 

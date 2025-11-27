@@ -1,9 +1,10 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import Game, { GameMode, Location } from "./game.ts";
+import Game, { GameMode, Location, type GameEndData } from "./game.ts";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import type { WebSocket } from "@fastify/websocket";
-import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT } from "./constants.ts";
+import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT, ELO_K_FACTOR } from "./constants.ts";
 import type { GameState } from "../schemas/game.states.schema.ts";
+import type Player from "./player.ts";
 
 
 type UserId = string;
@@ -41,7 +42,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			select: { eloRating: true, user: { select: { username: true }} },
 		} );
 
-		const eloRating = stats?.eloRating ?? 1200;
+		const eloRating = stats?.eloRating ?? 1000;
 		const userName = stats?.user?.username ?? "Unknown";
 		const joinedAt = Date.now();
 
@@ -99,7 +100,11 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		activePlayers.set( id, playerConnection );
 
 		const gameId: GameId = Date.now().toString();
-		const game = new Game( gameId, [socket], GameMode.Singleplayer );
+		const game = new Game(
+			gameId,
+			[socket],
+			GameMode.Singleplayer,
+			(data) => handleGameEnd( gameId, data ) );
 
 		game.addPlayer( Location.Left, id, playerConnection.userName);
 		game.addPlayer( Location.Right, id, playerConnection.userName);
@@ -117,7 +122,11 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	// Helper for creating tournament games
 	const createMultiplayerSession = ( player1: PlayerConnection, player2: PlayerConnection ) => {
 		const gameId: GameId = Date.now().toString();
-		const game = new Game( gameId, [player1.socket, player2.socket], GameMode.Tournament );
+		const game = new Game(
+			gameId,
+			[player1.socket, player2.socket],
+			GameMode.Tournament,
+			(data) => handleGameEnd( gameId, data ) );
 
 		game.addPlayer( Location.Left, player1.userId, player1.userName );
 		game.addPlayer( Location.Right, player2.userId, player2.userName );
@@ -201,40 +210,43 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	// Inactivity checker
     const checkInactivity = () => {
         const now = Date.now();
-		let winnerName: UserName | string = "tie";
 
         for (const [gameId, game] of Object.entries(games)) {
+			if (game.hasEnded) continue;
+
             let hasInactivePlayer = false;
+			let loserPlayer : Player | undefined;
 
             // Check each player in the game
-            game.players.forEach(player => {
+            game.players.forEach( player => {
                 const playerConnection = activePlayers.get(player.userId);
                 if (playerConnection) {
                     const inactiveTime = now - playerConnection.lastActivityAt;
                     if (inactiveTime > INACTIVITY_TIMEOUT) {
                         hasInactivePlayer = true;
+						loserPlayer = player;
                         server.log.warn(`Game: Player ${player.userId} inactive for ${Math.floor(inactiveTime / 1000)}s in game ${gameId}`);
                     }
-					else
-					{
-						winnerName = player.userName;
-					}
                 }
             });
 
             // End game if any player is inactive
-            if (hasInactivePlayer) {
+            if (hasInactivePlayer && loserPlayer )
+			{
                 server.log.info(`Game: Ending game ${gameId} due to player inactivity`);
 				//Message players about game ending due to inactivity
-				game.sockets.forEach( socket => {
-					socket.send( JSON.stringify( {
-						type: "inactivity",
-						message: "Game ended due to inactivity",
-						winner: winnerName
-					} ) );
-				} );
-                endGame(game);
-            }
+
+				const winnerPlayer = game.players[0]?.userId !== loserPlayer.userId
+					? game.players[0] : game.players[1];
+
+				const data : GameEndData = {
+					reason: "inactivity",
+					winner: winnerPlayer ?? null,
+					loser: loserPlayer
+				};
+				handleGameEnd(game.id, data);
+			}
+            endGame(game);
         }
     };
 
@@ -269,17 +281,19 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 			// Fetch the active game
 			if ( !playerConnection?.gameId ) return;
+
+			const game = games[playerConnection.gameId];
+			if ( !game || game.hasEnded ) return;
+
 			// Update last activity time
             playerConnection.lastActivityAt = Date.now();
 
-			const game = games[playerConnection.gameId];
-
 			// Moves the player based on their userId.
-			if ( data.type === "move" && game )
+			if ( data.type === "move" )
 			{
 				game.movePlayer( userId, data.dy );
 
-				const gameState : GameState = game.getState();				// Get game state
+				const gameState : GameState = game.getState();	// Get game state
 				const payload = JSON.stringify( gameState );	// Serialize the game state
 				socket.send( payload );
 			}
@@ -344,53 +358,124 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			const playerConnection = activePlayers.get( userId );
 			if ( !playerConnection?.gameId ) return;
 			const game = games[playerConnection.gameId];
+			if ( !game || game.hasEnded ) return;
 
 			// Update last activity time
             playerConnection.lastActivityAt = Date.now();
 
 			// Moves the player based on their userId.
-			if ( data.type === "move" && game )
+			if ( data.type === "move" )
 			{
 				game.movePlayer( data.id, data.dy );
 
-				const gameState: GameState = game.getState(); // Get game state
-				const payload = JSON.stringify( gameState ); // Serialize the game state
+				const gameState: GameState = game.getState();	// Get game state
+				const payload = JSON.stringify( gameState );	// Serialize the game state
 				socket.send( payload );
 			}
-
-			// TODO: Figure out a fair win condition
 		});
 
 		socket.on( "close", () =>
 		{
+			// Single player -> no elo calculations needed
 			const playerConnection = activePlayers.get( userId );
 
-			// Was the player in a game or were they queueing
-			if (playerConnection?.gameId)
-			{
-				const game = games[playerConnection.gameId];
-				if ( !game ) return;
-
-				// Single player -> no elo calculations needed
-				// Clean up the session
+			// Remove disconnected player
+			if ( activePlayers.has( userId ))
 				activePlayers.delete( userId );
+
+			if ( !playerConnection?.gameId ) return;
+			const game = games[playerConnection.gameId];
+			if ( game )
+			{
 				server.log.info( `Game: Player disconnect, ending session ${game.id}` );
 				endGame( game );
 			}
-			else
-			{
-				// Remove inactive player from the activePlayers map
-				playerConnection?.socket.close();
-				activePlayers.delete( userId );
-
-				// Remove inactive player from the queue
-				const index = playerQueue.findIndex( p => p.userId === userId );
-				if ( index > -1 ) playerQueue.splice( index, 1 );
-
-				server.log.info( `Game: Player ${userId} was removed from the queue.` );
-			}
 		} );
 	} );
+
+	// ============= GAME END =============
+
+	// Hanler for recalculating elo rating and ending the game
+	const handleGameEnd = async ( gameId: GameId, data: GameEndData ) => {
+		const game = games[gameId];
+		if ( !game ) return;
+
+		if ( game.mode === GameMode.Tournament && data.winner && data.loser )
+		{
+			// TODO: Recalculate elo and message the users about their new elo
+			try
+			{
+				const winnerConnection = activePlayers.get(data.winner.userId);
+				const loserConnection = activePlayers.get(data.loser.userId);
+
+				if ( winnerConnection && loserConnection )
+				{
+					// Mathematically symmetrical score calculation
+					const expectedScore = 1 / (1 + Math.pow(10,
+						(loserConnection.eloRating - winnerConnection.eloRating) / 400));
+
+					const eloChange = ELO_K_FACTOR * (1 - expectedScore);
+
+					// Update winner rating
+					const updatedWinner = await server.prisma.playerStats.update({
+						where: { userId: data.winner.userId },
+						data: {
+							eloRating: { increment: eloChange },
+							wins: { increment: 1 },
+							playedGames: { increment: 1 }
+						},
+						select: { eloRating: true }
+					});
+
+					// Update loser rating
+					const updatedLoser = await server.prisma.playerStats.update({
+						where: { userId: data.loser.userId },
+						data: {
+							eloRating: { decrement: eloChange },
+							losses: { increment: 1 },
+							playedGames: { increment: 1 }
+						},
+						select: { eloRating: true }
+					});
+
+					// Coulld optionally pack the user avatars
+					const endStateMessage = {
+						type: "end",
+						winner: winnerConnection.userName,
+						loser: loserConnection.userName,
+						elo: {
+							winnerElo:updatedWinner.eloRating,
+							loserElo: updatedLoser.eloRating
+						},
+						oldElo: {
+							winner: winnerConnection.eloRating,
+							loser: loserConnection.eloRating
+						},
+						score: {
+							winner: data.winner.points,
+							loser: data.loser.points
+						},
+						message: `${winnerConnection.userName} won!`
+					}
+
+					if ( data.reason === "inactivity" )
+					{
+						endStateMessage.message = "Game ended due to inactivity";
+					}
+
+					// Message the players
+					winnerConnection.socket.send( JSON.stringify(endStateMessage) );
+					loserConnection.socket.send( JSON.stringify(endStateMessage) );
+				}
+			}
+			catch (error)
+			{
+				server.log.error( `Game: Elo update failed: ${error}` );
+			}
+		}
+
+		endGame(game);
+	};
 
 	const endGame = ( game: Game ) => {
 		// Remove players from the active players
