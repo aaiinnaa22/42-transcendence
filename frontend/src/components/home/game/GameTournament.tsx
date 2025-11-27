@@ -62,8 +62,8 @@ export const GameTournament = () =>
 			const scaledWidth = PADDLE_WIDTH * scaleX;
 			const scaledHeight = PADDLE_LEN * scaleY;
 
-			const pointsRight = PointsRef.current;
-			const pointsLeft = PointsRef2.current;
+			const pointsLeft = PointsRef.current;
+			const pointsRight = PointsRef2.current;
 
             if (player.id === 1)
 			{
