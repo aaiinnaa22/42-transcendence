@@ -1,6 +1,7 @@
 import Player from "./player.ts";
 import Ball from "./ball.ts";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH, RATE_LIMIT_MS, MOVE_SPEED, MIN_BALL_SPEED, MAX_BALL_SPEED } from "./constants.ts";
+import { gameStateMessage, type BallState, type GameState, type PlayerState } from "../schemas/game.states.schema.ts";
 
 export enum Location {
 	Left = 1,
@@ -177,20 +178,18 @@ class Game
 		}
 	}
 
-	public getState()
+	public getState() : GameState
 	{
-		const playersState: Record<string, any> = {};
+		const playersState: Record<string, PlayerState> = {};
 
 		this.players.forEach( player =>
 		{
 			playersState[player.location] = player.getState();
 		} );
 
-		return {
-			type: "state",
-			players: playersState,
-			ball: this.ball.getState(),
-		};
+		const ballState : BallState = this.ball.getState();
+
+		return gameStateMessage( playersState, ballState );
 	}
 
 	public destroy() : void

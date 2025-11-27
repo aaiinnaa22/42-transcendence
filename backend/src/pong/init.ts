@@ -3,6 +3,7 @@ import Game, { GameMode, Location } from "./game.ts";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import type { WebSocket } from "@fastify/websocket";
 import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT } from "./constants.ts";
+import type { GameState } from "../schemas/game.states.schema.ts";
 
 
 type UserId = string;
@@ -108,7 +109,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		games[gameId] = game;
 
 		// Game begins
-		const gameState = game.getState();
+		const gameState: GameState = game.getState();
 		const payload = JSON.stringify( gameState );
 		socket.send( payload );
 	};
@@ -129,7 +130,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		games[gameId] = game;
 
 		// Game begins (Alternatively send a message with a type taht announces the game start)
-		const gameState = game.getState();				// Get game state
+		const gameState : GameState = game.getState();				// Get game state
 		const payload = JSON.stringify( gameState );	// Serialize the game state
 		player1.socket.send( payload );
 		player2.socket.send( payload );
@@ -278,8 +279,8 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			{
 				game.movePlayer( userId, data.dy );
 
-				const gameState = game.getState(); // Get game state
-				const payload = JSON.stringify( gameState ); // Serialize the game state
+				const gameState : GameState = game.getState();				// Get game state
+				const payload = JSON.stringify( gameState );	// Serialize the game state
 				socket.send( payload );
 			}
 
@@ -352,7 +353,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			{
 				game.movePlayer( data.id, data.dy );
 
-				const gameState = game.getState(); // Get game state
+				const gameState: GameState = game.getState(); // Get game state
 				const payload = JSON.stringify( gameState ); // Serialize the game state
 				socket.send( payload );
 			}
