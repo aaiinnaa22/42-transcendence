@@ -64,6 +64,7 @@ export type GameState = {
 		2: PlayerState;
 	};
 	ball: BallState;
+	countdown: number;
 };
 
 // ========= FUNCTIONS ========
