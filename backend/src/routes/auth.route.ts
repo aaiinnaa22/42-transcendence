@@ -136,9 +136,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				{
 					// Step 4.b: Email from the provider already in use
 					const loginRedirectUrl = process.env.CLIENT_LOGIN_REDIRECT_URL || "http://localhost:8080/login";
-					return reply.code( 409 )
-								.send( { error: "User with that email already exists" } )
-								.redirect( loginRedirectUrl );
+					throw ConflictError("User with that email already exists");
 				}
 				else
 				{
@@ -204,11 +202,21 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		{
 			const { userId } = request.user as { userId: string };
 
-			const user = await server.prisma.user.findUnique( {
+			const user = await server.prisma.user.findUnique({
 				where: { id: userId },
-				include: { playerStats: true }
-			} );
-
+					select: {
+						id: true,
+						email: true,
+						username: true,
+						avatar: true,
+						avatarType: true,
+						twoFAEnabled: true,
+						createdAt: true,
+						lastLogin: true,
+						playerStats: true,
+					},
+			});
+			
 			if ( !user ) throw NotFoundError( "User not found" );
 			reply.send( user );
 		}
@@ -235,8 +243,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		{
 			if (isLoggedIn(request)) 
 			{
-				const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
-				return reply.redirect(clientRedirectUrl);
+				throw ConflictError("Already logged in");
 			}
 			const { email, password, username } = request.body as {
         		email: string;
@@ -284,7 +291,15 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			reply.send( {
 				message: "Registration successful",
-				user,
+				//user: {
+				//	id: user.id,
+				//	email: user.email,
+				//	username: user.username,
+				//	avatar: user.avatar,
+				//	avatarType: user.avatarType,
+				//	twoFAEnabled: user.twoFAEnabled,
+				//	createdAt: user.createdAt,
+				//},
 			} );
 
 		}
@@ -302,8 +317,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		{
 			if (isLoggedIn(request)) 
 			{
-				const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
-				return reply.redirect(clientRedirectUrl);
+				throw ConflictError("Already logged in");
 			}
 			const { email, password } = request.body as { email: string; password: string };
 
@@ -354,7 +368,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			reply.send( {
 				message: "Login successful",
-				user,
+				//user,
 			} );
 		}
 		catch ( err: any )
@@ -364,7 +378,6 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 	} );
 
-	// TO DO: /auth/refresh route
 	server.post( "/auth/refresh", async ( request: FastifyRequest, reply: FastifyReply ) =>
 	{
 		try
@@ -481,7 +494,17 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			setAuthCookies(reply, accessToken, refreshToken);
 
-			reply.send({ message: "2FA login successful", user });
+			reply.send({ 
+				message: "2FA login successful", 
+				/*user: {
+					id: user.id,
+					email: user.email,
+					username: user.username,
+					twoFAEnabled: user.twoFAEnabled,
+					avatar: user.avatar,
+					avatarType: user.avatarType,
+				},*/
+			});
 
 		} catch (err: any) {
 			server.log.error("2FA login error:", err);
