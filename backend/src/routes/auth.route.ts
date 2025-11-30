@@ -171,11 +171,9 @@ const authRoutes = async ( server: FastifyInstance ) =>
 					{ expiresIn: "5m" }
 				);
 
-				return reply.send({
-					status: "TWO_FA_REQUIRED",
-					tempToken,
-					message: "Two-factor authentication is required to complete login."
-				});
+				  return reply.redirect(
+					`http://localhost:8080/login?twoFA=1&token=${tempToken}`
+				);
 			}
 
 			// Step 5: Signing app JWT with JWT plugin

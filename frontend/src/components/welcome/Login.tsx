@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TwoFALoginModal } from "./TwoFALoginModal";
 
@@ -9,6 +9,22 @@ export const Login = () => {
 	const [twoFATempToken, setTwoFATempToken] = useState<string | null>(null);
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const navigate = useNavigate();
+	
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search);
+
+		if (params.get("twoFA") === "1") {
+			const token = params.get("token");
+
+			if (token) {
+			setTwoFATempToken(token);
+			setIsTwoFAModalOpen(true);
+			}
+
+			// 🔐 remove token from URL
+			window.history.replaceState({}, "", "/login");
+		}
+	}, []);
 
 	const handleLogin = async (e: React.FormEvent) =>
 	{
