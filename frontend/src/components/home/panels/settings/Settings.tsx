@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import {LanguageSelector} from "./LanguageSelector"
 import { TwoFAModal } from "./TwoFAModal";
@@ -7,7 +7,35 @@ export const Settings = () =>
 {
 	const [error, setError] = useState("");
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
+	const [isTwoFAEnabled, setIsTwoFAEnabled] = useState<boolean | null>(null);
 	const navigate = useNavigate();
+    
+	useEffect(() => {
+		const loadTwoFAStatus = async () => {
+			try {
+				const res = await fetch("http://localhost:4241/auth/me", {
+					credentials: "include",
+				});
+
+				if (!res.ok) return;
+
+				const user = await res.json();
+				setIsTwoFAEnabled(Boolean(user.twoFAEnabled));
+			} catch {
+				// silently fail
+			}
+		};
+
+		loadTwoFAStatus();
+	}, []);
+	
+	const handleTwoFAStatusChange = (enabled: boolean) => {
+        setIsTwoFAEnabled(enabled);
+    };
+
+	if (isTwoFAEnabled === null) {
+    	return null;
+	}
 
 	const handleLogOut = async (e: React.FormEvent) =>
 	{
@@ -43,8 +71,11 @@ export const Settings = () =>
 				<div className={"flex flex-col gap-2 text-center"}>
 					<button
 						className="text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
-						onClick={() => setIsTwoFAModalOpen(true)}>
-						Enable two-factor authentication
+						onClick={() => setIsTwoFAModalOpen(true)}
+					>
+						{isTwoFAEnabled
+							? "Disable two-factor authentication"
+							: "Enable two-factor authentication"}
 					</button>
 					<button
 						className="text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
@@ -54,10 +85,12 @@ export const Settings = () =>
 					<button className="text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">Delete account</button>
 				</div>
 			</div>
-			<TwoFAModal
-				isOpen={isTwoFAModalOpen}
-				onClose={() => setIsTwoFAModalOpen(false)}
-			/>
+            <TwoFAModal
+                isOpen={isTwoFAModalOpen}
+                mode={isTwoFAEnabled ? "disable" : "enable"}
+                onClose={() => setIsTwoFAModalOpen(false)}
+                onStatusChange={handleTwoFAStatusChange}
+            />
 		</>
 	);
 }

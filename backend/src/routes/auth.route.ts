@@ -492,12 +492,24 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	server.post("/auth/2fa/disable", { preHandler: authenticate }, async (request, reply) => {
 		try {
 			const { userId } = request.user as { userId: string };
+			const { code } = request.body as { code: string };
+
+			const user = await server.prisma.user.findUnique({ where: { id: userId } });
+			if (!user?.twoFASecret) throw BadRequestError("2FA not set up");
+
+			const isValid = authenticator.verify({
+				token: code,
+				secret: user.twoFASecret,
+			});
+
+			if (!isValid) throw UnauthorizedError("Invalid 2FA code");
 
 			await server.prisma.user.update({
-			where: { id: userId },
-			data: {
-				twoFAEnabled: false,
-			}
+				where: { id: userId },
+				data: {
+					twoFAEnabled: false,
+					twoFASecret: null,
+				},
 			});
 
 			reply.send({ message: "2FA disabled" });
