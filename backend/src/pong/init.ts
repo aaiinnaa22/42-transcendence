@@ -69,7 +69,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		socket.send( JSON.stringify({
 			type: "waiting",
 			position: playerQueue.length,
-			eloRating
+			elo: eloRating
 		}));
 
 		matchmakingLoop();
@@ -459,8 +459,8 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						endStateMessage = {
 							type: "end",
 							mode: "singleplayer",
-							winner: winnerPlayer.location === Location.Left ? "Left" : "Right",
-							loser: loserPlayer.location === Location.Left ? "Left" : "Right",
+							winner: winnerPlayer.location === Location.Left ? "left" : "right",
+							loser: loserPlayer.location === Location.Left ? "left" : "right",
 							score: {
 								winner: winnerPlayer.points,
 								loser: loserPlayer.points

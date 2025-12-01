@@ -112,6 +112,7 @@ export const GameTournament = () =>
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue.");
+				console.log();
 			}
 			else if (data.type === "error")
 			{
@@ -122,6 +123,12 @@ export const GameTournament = () =>
 				console.log("Game ended due to inactivity.");
 				console.log("Winner is player " + data.winner);
 			}
+			else if (data.type === "end")
+			{
+				console.log( data.message );
+				console.log( "The winner's new elo is " + data.elo.winner );
+			}
+
 			/* ADD ADDITIONAL STATES HERE */
 		};
 

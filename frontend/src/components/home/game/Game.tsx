@@ -123,6 +123,14 @@ export const Game = () =>
 				console.log("Game ended due to inactivity.");
 				console.log("Winner is player " + data.winner);
 			}
+			else if (data.type === "end")
+			{
+				console.log( data.message );
+				if ( data.winner )
+				{
+					console.log( "The winner was the " + data.winner + " player with " + data.score.winner + " points!" );
+				}
+			}
 			/* ADD ADDITIONAL STATES HERE */
 		};
 
