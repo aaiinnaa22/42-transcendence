@@ -19,7 +19,7 @@ export default async function chatComponent(server: FastifyInstance) {
 		req.user = { userId: Math.floor(Math.random() * 10000) }; 
 		// or: req.user = { userId: 123 };
 
-		const userId = req.user.userId;
+		const userId = (req.user as { userId: number }).userId;
 		console.log(`User ${userId} connected to chat.`);
 		clients.add(socket);
 		
