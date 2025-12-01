@@ -31,8 +31,8 @@ export const NavBar = ({currentPage, onNavigate, currentPanel, onTogglePanel}: N
 					);
 				})}
 			</div>
-			<div className="flex items-center justify-center gap-3">
-				<div className="hidden relative xl:flex items-center justify-center group">
+			<div className="flex items-center justify-center gap-5">
+				<div className="relative flex items-center justify-center group">
 					<span className={"absolute top-1.25 w-[1.2em] h-[1.25em] bg-transparent " + (currentPanel === "chat" ? "!bg-transcendence-white" : "group-hover:bg-transcendence-white")}></span>
 					<button
 						className="relative material-symbols-outlined !text-3xl cursor-pointer"

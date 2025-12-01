@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Chat } from '../components/home/panels/chat/Chat';
 import { NavBar } from "../components/home/NavBar";
 import { PlayButton } from "../components/home/PlayButton";
@@ -83,7 +83,18 @@ export const Home = () => {
 				return <Discussion onExitClick={() => setCurrentChat("chat")}/>
 		}
 	}
+	const [screenIsLarge, setScreenIsLarge] = useState(() => window.innerWidth >= 1280);
 
+	useEffect(() => {
+		const handleResize = () => {
+		setScreenIsLarge(window.innerWidth >= 1280);
+		};
+
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
+	}, []);
+
+	console.log("Home currentPanel:", currentPanel, "SideTab isOpen:", currentPanel === "chat", "PopUp isOpen:", currentPanel === "menu");
 	return (
 		<div className="bg-transcendence-black min-h-screen w-full flex flex-col">
 			<NavBar
@@ -93,12 +104,15 @@ export const Home = () => {
 				onTogglePanel={togglePanel}
 			/>
 			{renderPage()}
-			{<SideTab isOpen={currentPanel === "chat"}>{renderChat()}</SideTab>}
-			{<PopUp isOpen={currentPanel === "menu"}>
+			{screenIsLarge &&
+				<SideTab isOpen={currentPanel === "chat"}>{renderChat()}</SideTab>}
+			{!screenIsLarge &&
+				<PopUp isOpen={currentPanel === "chat"}>{renderChat()}</PopUp>}
+			<PopUp isOpen={currentPanel === "menu"}>
 				<Menu
 					currentPage={currentPage}
 					onNavigate={(page) => {setCurrentPage(page); setCurrentPanel(null);}}/>
-			</PopUp>}
+			</PopUp>
 		</div>
 	)
 };
