@@ -1,4 +1,5 @@
-import { WIDTH, HEIGHT } from "./constants.ts";
+
+import { WIDTH, HEIGHT, MAX_BALL_SPEED, MIN_BALL_SPEED } from "./constants.ts";
 
 class Ball
 {
@@ -16,15 +17,19 @@ class Ball
 		this.resetBall();
 	}
 
-	resetBall()
+	public resetBall() : void
 	{
 		this.x = WIDTH / 2;
 		this.y = HEIGHT / 2;
-		this.vx = Math.random() < 0.5 ? Math.random() * -6 - 9 : Math.random() * 6 + 9;;
-		this.vy = Math.floor(Math.random() * 8) - 4;
+
+		const speedX = MIN_BALL_SPEED + Math.random() * (MAX_BALL_SPEED - MIN_BALL_SPEED);
+		const speedY = (MIN_BALL_SPEED / 2) + Math.random() * (MAX_BALL_SPEED - (MIN_BALL_SPEED - 2));
+
+		this.vx = Math.random() < 0.5 ? -speedX : speedX;
+		this.vy = Math.random() < 0.5 ? -speedY : speedY;
 	}
 
-	getState()
+	public getState()
 	{
 		return { x: this.x, y: this.y };
 	}

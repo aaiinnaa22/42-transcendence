@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import {NavBar} from "../components/home/NavBar";
-import {PlayButton} from "../components/home/PlayButton";
-import {Leaderboard} from "../components/home/stats/Leaderboard";
-import {Profile} from "../components/home/Profile";
-import {Game} from "../components/home/game/Game";
 import { Chat } from '../components/home/panels/chat/Chat';
-import {Menu} from "../components/home/panels/Menu"
-import {SideTab} from "../components/home/utils/SideTab"
-import {PopUp} from "../components/home/utils/PopUp"
+import { NavBar } from "../components/home/NavBar";
+import { PlayButton } from "../components/home/PlayButton";
+import { Leaderboard } from "../components/home/stats/Leaderboard";
+import { Profile } from "../components/home/Profile";
+import { Game } from "../components/home/game/Game";
+import { GameTournament } from '../components/home/game/GameTournament';
+import { Menu } from "../components/home/panels/Menu"
+import { SideTab } from "../components/home/utils/SideTab"
+import { PopUp } from "../components/home/utils/PopUp"
 import { PersonalStats } from '../components/home/stats/PersonalStats';
 import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
 import { ExitTopLeft } from '../components/home/utils/ExitTopLeft';
@@ -15,14 +16,23 @@ import { Discussion } from '../components/home/panels/chat/Discussion';
 
 export const Home = () => {
 	type Page = "play" | "stats" | "profile";
+	type GameMode = "singleplayer" | "tournament";
+
 	const [currentPage, setCurrentPage] = useState<Page>("play");
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "chat" | null>(null);
 	const [isPersonalStats, setIsPersonalStats] = useState(true);
 	const [currentGamePage, setCurrentGamePage] = useState<"playButton" | "chooseGame" | "gamePlay">("playButton");
 	const [currentChat, setCurrentChat] = useState<"chat" | "discussion">("chat");
+	const [gameMode, setGameMode] = useState<GameMode>("singleplayer");
 
 	const togglePanel = (panel: "chat" | "menu") => {
 		setCurrentPanel(currentPanel === panel ? null : panel);
+	};
+
+	const selectGameMode = (mode: GameMode) =>
+	{
+		setGameMode(mode);
+		setCurrentGamePage("gamePlay");
 	};
 
 	const renderGame = () =>
@@ -30,9 +40,19 @@ export const Home = () => {
 		switch (currentGamePage)
 		{
 			case "chooseGame":
-				return <ExitTopLeft onExitClick={() => setCurrentGamePage("playButton")}><ChooseGameMode onGameChoose={() => setCurrentGamePage("gamePlay")}/></ExitTopLeft>;
+				return (
+					<ExitTopLeft onExitClick={() => setCurrentGamePage("playButton")}>
+					<ChooseGameMode
+						onSinglePlayerChoose = {() => selectGameMode("singleplayer")}
+						onTournamentChoose = {() => selectGameMode("tournament")}
+					/></ExitTopLeft>
+				);
 			case "gamePlay":
-				return <ExitTopLeft onExitClick={() => setCurrentGamePage("playButton")}><Game/></ExitTopLeft>;
+				return (
+					<ExitTopLeft onExitClick={() => setCurrentGamePage("playButton")}>
+						{ gameMode === "singleplayer" ? <Game/> : <GameTournament/> }
+					</ExitTopLeft>
+				);
 			default:
 				return <PlayButton onButtonClick={() => setCurrentGamePage("chooseGame")}/>;
 		}
