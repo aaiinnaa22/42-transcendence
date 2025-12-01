@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from 'react'
-import {Settings} from "./panels/settings/Settings"
+import {Settings} from "./settings/Settings"
 
 export const Profile = () => {
 	const [profilePic, setProfilePic] = useState<string | null>(null);

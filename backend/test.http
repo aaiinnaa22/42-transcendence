@@ -6,10 +6,6 @@ GET http://127.0.0.1:4241/ HTTP/1.1
 GET http://127.0.0.1:4241/healthcheck HTTP/1.1
 Accept: application/json
 
-### Test seeded users in database. Check console for UUID.
-GET http://127.0.0.1:4241/test/<UUID> HTTP/1.1
-Accept: application/json
-
 ### test local register
 POST http://localhost:4241/auth/register
 Content-Type: application/json
@@ -17,17 +13,7 @@ Content-Type: application/json
 {
   "username": "rich",
   "email": "rich@example.com",
-  "password": "12345678"
-}
-
-### test local login
-POST http://localhost:4241/auth/login
-Content-Type: application/json
-
-{
-  "username": "dog chi is the best",
-  "email": "rich11@example.com",
-  "password": "12345678"
+  "password": "Rich123"
 }
 
 ### test logout
@@ -44,7 +30,7 @@ Content-Type: application/json
 {
   "username": "rich",
   "email": "rich@example.com",
-  "password": "12345678"
+  "password": "Rich123"
 }
 
 POST http://localhost:4241/auth/logout
@@ -54,11 +40,23 @@ Content-Type: application/json
 }
 
 ### test stats retrieval
-GET http://localhost:4241/stats/user/TrashMan
+GET http://localhost:4241/stats/user/Trashman
 Content-Type: application/json
 
 {
   "username": "rich",
   "email": "rich@example.com",
-  "password": "12345678"
+  "password": "Rich123"
+
 }
+
+GET http://localhost:4241/auth/login
+Content-Type: application/json
+
+{
+	"username": "The Wildcard",
+	"email": "wildcard@example.com",
+	"password": "wildCard456"
+
+}
+

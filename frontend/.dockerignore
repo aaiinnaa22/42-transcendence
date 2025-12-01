@@ -1,0 +1,27 @@
+# Prevent miscellanious files and directories from being copied into the Docker container
+*.md
+.env
+.dockerignore
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+coverage
+*.local
+
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+*.tsbuildinfo
+.eslintcache

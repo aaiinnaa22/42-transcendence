@@ -1,0 +1,47 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: development
+    container_name: tr_backend
+    ports:
+      - "4241:4241"
+      - "5555:5555"
+    env_file:
+      - ./backend/.env
+    networks:
+      - transcendence_net
+    volumes:
+      - ./backend/src:/app/src        # Mount source code, allows for live reload of changes
+      - ./backend/prisma:/app/prisma  # Mount prisma directory for persistent database
+      - /app/node_modules             # Preserve modules
+    environment:
+      NODE_ENV: "development"
+      HOSTNAME: "0.0.0.0"
+      PORT: "4241"
+      DATABASE_URL: "file:./dev.db"
+      PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    container_name: tr_frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src:ro    # Live reload mount supported by vite
+      - /app/node_modules             # Preserve modules
+    environment:
+      VITE_API_URL: "http://backend:4241"
+      HOST: "0.0.0.0"
+      PORT: 8080
+      CHOKIDAR_USEPOLLING: "true"
+    networks:
+      - transcendence_net
+
+networks:
+  transcendence_net:
+    driver: bridge
