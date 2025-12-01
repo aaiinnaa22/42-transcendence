@@ -27,6 +27,7 @@ coverage
 # Development database
 backend/prisma/migrations
 backend/prisma/dev.db
+backend/prisma/.seeded
 
 # Environmental variable file
 .env
