@@ -1,0 +1,23 @@
+type Friend = {
+	username: string;
+	profile: string;
+	online: boolean;
+	lastMessage?: string;
+}
+
+type ChatProfileProps = {
+	friend: Friend;
+}
+
+export const ChatProfilePic = ({friend}: ChatProfileProps) =>
+{
+	return (
+		<div className="relative inline-block h-12 w-12">
+			{friend.profile != ""
+			? <img className="ml-1 mt-1 w-10 h-10 rounded-full object-cover" src="/testimage.png"></img>
+			: <span className="!text-5xl material-symbols-outlined">account_circle</span>
+			}
+			<div className={"absolute top-1 left-1 border-[1.5px] rounded-full w-3 h-3 " + (friend.online ? "bg-purple-500" : "bg-white")}></div>
+		</div>
+	);
+}

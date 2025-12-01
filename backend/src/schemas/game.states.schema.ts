@@ -64,15 +64,17 @@ export type GameState = {
 		2: PlayerState;
 	};
 	ball: BallState;
+	countdown: number;
 };
 
 // ========= FUNCTIONS ========
 
-export const gameStateMessage = ( players: Record<string, PlayerState>, ball: BallState ) : GameState => {
+export const gameStateMessage = ( players: Record<string, PlayerState>, ball: BallState, countdown: number ) : GameState => {
 	return {
 		type: 'state',
 		players: players as { 1: PlayerState; 2: PlayerState },
-		ball
+		ball,
+		countdown
 	};
 };
 

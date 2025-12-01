@@ -32,6 +32,8 @@ class Game
 	mode: GameMode;
 	hasEnded: boolean;
 	loop!: NodeJS.Timeout;
+	starttimer: number;
+	countdown: number;
 
 	private onGameEndCallback: GameEndCallback | undefined;
 
@@ -50,6 +52,8 @@ class Game
 		this.onGameEndCallback = onGameEnd;
 		this.hasEnded = false;
 		this.loop = setInterval(() => this.update(), 1000 / 60);
+		this.starttimer = Date.now();
+		this.countdown = 3;
 	}
 
 	/**
@@ -173,7 +177,11 @@ class Game
 		}
 
 		// Send updates
-		this.moveBall();
+		const now = Date.now();
+		if ( (now - this.starttimer) > 3100)
+			this.moveBall();
+		else
+			this.countdown = 3 - Math.floor((now - this.starttimer) / 1000);
 		for (const socket of this.sockets)
 		{
 			socket.send(JSON.stringify(this.getState()));
@@ -261,7 +269,9 @@ class Game
 
 		const ballState : BallState = this.ball.getState();
 
-		return gameStateMessage( playersState, ballState );
+		const countdown : number = this.countdown;
+
+		return gameStateMessage( playersState, ballState, countdown );
 	}
 
 	public destroy() : void
