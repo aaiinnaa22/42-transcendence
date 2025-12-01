@@ -55,6 +55,9 @@ export const Discussion = ({onExitClick}: DiscussionProps) =>
 		}
 	}
 
+	//idea for the game invite: in top corner a button to invite the friend. If click, an invitation will be sent as a message to the friend. If friend accepts, a text back
+	//that says "friend accepted and joined the game room", and below a button to join it aswell
+
 	return (
 		<div className="flex flex-col h-full">
 
@@ -63,6 +66,13 @@ export const Discussion = ({onExitClick}: DiscussionProps) =>
 				<button onClick={onExitClick} className="material-symbols-outlined !text-md">arrow_back_ios_new</button>
 				<h2 className="font-semibold">{friend.username}</h2>
 				<ChatProfilePic friend={friend}/>
+			</div>
+			<div className="self-end p-3">
+				<button className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer">
+				<p className="text-sm">Invite {friend.username} to a game</p>
+				<div className="!text-3xl material-symbols-outlined">
+				sports_esports</div>
+				</button>
 			</div>
 
 			{/* Messages */}
