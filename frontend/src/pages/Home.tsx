@@ -94,7 +94,11 @@ export const Home = () => {
 			/>
 			{renderPage()}
 			{<SideTab isOpen={currentPanel === "chat"}>{renderChat()}</SideTab>}
-			{<PopUp isOpen={currentPanel === "menu"}><Menu currentPage={currentPage} onNavigate={setCurrentPage}/></PopUp>}
+			{<PopUp isOpen={currentPanel === "menu"}>
+				<Menu
+					currentPage={currentPage}
+					onNavigate={(page) => {setCurrentPage(page); setCurrentPanel(null);}}/>
+			</PopUp>}
 		</div>
 	)
 };
