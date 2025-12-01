@@ -15,7 +15,7 @@ export const NavBar = ({currentPage, onNavigate, currentPanel, onTogglePanel}: N
 	return (
 		<div className="z-10 border-b-4 border-transcendence-black flex flex-row items-center justify-between h-18 lg:h-32 bg-transcendence-beige px-5 lg:px-10">
 			<h1 className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]">PONG</h1>
-			<div className="hidden h-full xl:flex flex-row sm:gap-5 md:gap-10 lg:gap-20 2xl:gap-30 font-transcendence-two text-2xl">
+			<div className="hidden h-full lg:flex flex-row sm:gap-5 md:gap-10 lg:gap-20 2xl:gap-30 font-transcendence-two text-2xl">
 				{navItems.map((item) => {
 					const isActive = currentPage === item;
 					return (
@@ -41,7 +41,7 @@ export const NavBar = ({currentPage, onNavigate, currentPanel, onTogglePanel}: N
 					</button>
 				</div>
 				<button
-					className="xl:!hidden material-symbols-outlined !text-3xl cursor-pointer"
+					className="lg:!hidden material-symbols-outlined !text-3xl cursor-pointer"
 					onClick={() => onTogglePanel("menu")}>
 						menu
 				</button>

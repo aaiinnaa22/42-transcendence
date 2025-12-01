@@ -83,11 +83,11 @@ export const Home = () => {
 				return <Discussion onExitClick={() => setCurrentChat("chat")}/>
 		}
 	}
-	const [screenIsLarge, setScreenIsLarge] = useState(() => window.innerWidth >= 1280);
+	const [screenIsLarge, setScreenIsLarge] = useState(() => window.innerWidth >= 1024);
 
 	useEffect(() => {
 		const handleResize = () => {
-		setScreenIsLarge(window.innerWidth >= 1280);
+		setScreenIsLarge(window.innerWidth >= 1024);
 		};
 
 		window.addEventListener('resize', handleResize);
@@ -96,7 +96,7 @@ export const Home = () => {
 
 	console.log("Home currentPanel:", currentPanel, "SideTab isOpen:", currentPanel === "chat", "PopUp isOpen:", currentPanel === "menu");
 	return (
-		<div className="bg-transcendence-black min-h-screen w-full flex flex-col">
+		<div className="bg-transcendence-black min-h-screen w-full flex flex-col md:shadow-transcendence-beige">
 			<NavBar
 				currentPage={currentPage}
 				onNavigate={setCurrentPage}
