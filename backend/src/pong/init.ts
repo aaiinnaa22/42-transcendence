@@ -5,9 +5,6 @@ import type { WebSocket } from "@fastify/websocket";
 import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT, ELO_K_FACTOR } from "./constants.ts";
 import type { GameState } from "../schemas/game.states.schema.ts";
 import type Player from "./player.ts";
-import { servicesVersion } from "typescript";
-import { disconnect } from "process";
-
 
 type UserId = string;
 type GameId = string;
