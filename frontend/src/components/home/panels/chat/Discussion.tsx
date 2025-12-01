@@ -48,11 +48,18 @@ export const Discussion = ({onExitClick}: DiscussionProps) =>
 		setMessage(e.target.value);
 	};
 
+	const handleEnterKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (e.key === 'Enter' && !e.shiftKey) {
+			e.preventDefault();
+			handleMessageSubmit(e as any); //as any?
+		}
+	}
+
 	return (
 		<div className="flex flex-col h-full">
 
 			{/* Header */}
-			<div className="flex flex-row justify-between items-center bg-white w-full rounded-tl-xl p-2 border-b-2">
+			<div className="flex flex-row justify-between items-center bg-white w-full lg:rounded-tl-xl  p-2 border-b-2">
 				<button onClick={onExitClick} className="material-symbols-outlined !text-md">arrow_back_ios_new</button>
 				<h2 className="font-semibold">{friend.username}</h2>
 				<ChatProfilePic friend={friend}/>
@@ -73,11 +80,12 @@ export const Discussion = ({onExitClick}: DiscussionProps) =>
 			{/* Input bar */}
 			<div className="p-4">
 				<form onSubmit={handleMessageSubmit} className="flex gap-2 w-full justify-center">
-				<div className="bg-white rounded-lg border min-h-8 max-h-40 overflow-y-auto w-[50%] xl:w-full">
+				<div className="bg-white rounded-lg border min-h-8 max-h-40 overflow-y-auto w-[70%] xl:w-full">
 					<textarea
 					ref={textAreaRef}
 					value={message}
 					onChange={handleMessageInput}
+					onKeyDown={handleEnterKey}
 					placeholder="Chat with your friend"
 					rows={1}
 					className="focus:outline-none w-full resize-none p-2"
