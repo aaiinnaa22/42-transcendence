@@ -8,7 +8,7 @@
     "format": "npx eslint \"src/**/*.ts\" --fix",
     "build": "tsc -p tsconfig.json",
     "dev": "NODE_ENV=development nodemon --watch src --exec tsx src/index.ts",
-    "dev-db-build": "NODE_ENV=development npx prisma migrate dev --name init",
+    "dev-db-build": "NODE_ENV=development DATABASE_URL=file:./dev.db npx prisma migrate dev --name init",
     "dev-db-seed": "NODE_ENV=development npx prisma db seed",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
     "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",

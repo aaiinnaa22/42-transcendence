@@ -246,10 +246,12 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			const { email, password, username } = request.body as {
         		email: string;
         		password: string;
-        		username?: string;
+        		username: string;
       		};
 
 			// Validate email format and confirm minimum password strength requirements
+			if ( !username || username === undefined ) throw BadRequestError( "Username missing" );
+			if ( username.length < 3 ) throw BadRequestError( "Username too short" );
 			if ( !checkEmailFormat( email ) ) throw BadRequestError( "Invalid email" );
 			if ( !checkPasswordStrength( password ) ) throw BadRequestError( "Password too weak" );
 

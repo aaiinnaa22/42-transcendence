@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 
 
-export const Game = () =>
+export const GameTournament = () =>
 {
     // I am using useRef instead of useState so things persist when components load again and things wont't rerender
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -93,8 +93,7 @@ export const Game = () =>
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
-        const ws = new WebSocket('ws://localhost:4241/game/singleplayer');
-
+        const ws = new WebSocket('ws://localhost:4241/game/multiplayer');
         wsRef.current = ws;
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
@@ -114,8 +113,8 @@ export const Game = () =>
 			{
                 players.current = data.players;
                 ball.current = data.ball;
-				ball.countdown = data.countdown;
-        	}
+				ball.countdown = data.countdown;        	
+}
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue.");
