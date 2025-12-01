@@ -47,7 +47,7 @@ export const Discussion = ({onExitClick}: DiscussionProps) =>
 		e.target.style.height = `${Math.min(e.target.scrollHeight, 5 * 24)}px`; // 24px ≈ line-height
 		setMessage(e.target.value);
 	};
-	
+
 	return (
 		<div className="flex flex-col h-full">
 
@@ -72,8 +72,8 @@ export const Discussion = ({onExitClick}: DiscussionProps) =>
 
 			{/* Input bar */}
 			<div className="p-4">
-				<form onSubmit={handleMessageSubmit} className="flex gap-2 w-full">
-				<div className="bg-white rounded-lg border min-h-8 max-h-40 overflow-y-auto">
+				<form onSubmit={handleMessageSubmit} className="flex gap-2 w-full justify-center">
+				<div className="bg-white rounded-lg border min-h-8 max-h-40 overflow-y-auto w-[50%] xl:w-full">
 					<textarea
 					ref={textAreaRef}
 					value={message}
