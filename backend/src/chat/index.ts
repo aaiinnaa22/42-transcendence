@@ -23,6 +23,12 @@ export default async function chatComponent(server: FastifyInstance) {
 		console.log(`User ${userId} connected to chat.`);
 		clients.add(socket);
 		
+		const welcomePayload = JSON.stringify({
+			type: "welcome",
+			userId
+		});
+		socket.send(welcomePayload);
+
 		// 1. AUTHENTICATE USER
 		// try {
 		// 	const signed = req.cookies.accessToken;
