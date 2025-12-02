@@ -26,15 +26,83 @@ type WaitingPlayer = {
 	joinedAt: number;
 };
 
+type WaitingFriend = {
+	userId: UserId;
+	eloRating: number;
+	joinedAt: number;
+	friendName: UserName;
+	userName: UserName;
+};
+
 const gameComponent = async ( server: FastifyInstance ) =>
 {
 	// This stores the game rooms (should be let)
 	const games : Record<GameId, Game>  = {};
 	const activePlayers: Map<UserId, PlayerConnection> = new Map();
 	const playerQueue: WaitingPlayer[] = [];
+	const friendQueue: WaitingFriend[] = [];
 
 
 	// Helper for queueing new players
+	const checkInvitation = async ( id: UserId, socket: WebSocket, friend: UserName ) => {
+		const stats = await server.prisma.playerStats.findUnique( {
+			where: { userId: id },
+			select: { eloRating: true, user: { select: { username: true }} },
+		} );
+
+		const eloRating = stats?.eloRating ?? 1000;
+		const userName = stats?.user?.username ?? "Unknown";
+		const joinedAt = Date.now();
+
+		// Create player connection profile
+		const playerConnection: PlayerConnection = {
+			userName,
+			userId: id,
+			socket,
+			gameId: null,
+			eloRating,
+			joinedAt,
+			lastActivityAt: joinedAt
+		};
+		const waitingFriend: WaitingFriend = {
+			userId: id,
+			eloRating,
+			joinedAt,
+			friendName: friend,
+			userName: userName,
+		};
+
+		// Store connection info and queue the player
+		activePlayers.set( id, playerConnection );
+		friendQueue.push( waitingFriend );
+
+		server.log.info( `Game: Player ${userName} waiting ${friend} to join the game.`);
+		socket.send( JSON.stringify({
+			type: "waiting",
+			elo: eloRating
+		}));
+
+		friendcheckingLoop();
+	};
+
+	const friendcheckingLoop = () => {
+		if (friendQueue.length < 2) return;
+
+		for ( let i = 0; i < friendQueue.length; ++i )
+		{
+			for ( let j = 0; j < friendQueue.length; ++j)
+			{
+				if (friendQueue[i]?.friendName == friendQueue[j]?.userName)
+				{
+					// const connection1 = activePlayers.get( friendQueue[i]?.userId );	
+					// const connection2 = activePlayers.get( friendQueue[j]?.userId );
+					// // call came making function
+				}	
+			}
+		}
+
+	}
+
 	const queuePlayerForTournament = async ( id: UserId, socket: WebSocket ) => {
 		const stats = await server.prisma.playerStats.findUnique( {
 			where: { userId: id },
@@ -425,6 +493,91 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				activePlayers.delete( userId );
 			}
 		});
+	} );
+
+	// ============================= INVITE GAME ===============================
+	server.get( "/game/chat",
+		{ websocket: true, preHandler: authenticate },
+		async ( socket: WebSocket, request: FastifyRequest ) =>
+	{
+        const { userId } = request.user as { userId: string };
+
+		// Check if the player is already in a match
+		if ( activePlayers.has( userId ) )
+		{
+			socket.send(JSON.stringify( {
+				type: "error",
+				message: "Already in a match"
+			} ));
+			socket.close();
+			return;
+		}
+
+		// check invitation status
+		await checkInvitation( userId, socket, "friendName" );
+
+		socket.on( "message", ( message: any ) =>
+		{
+			const data = JSON.parse( message.toString() );
+			const playerConnection = activePlayers.get( userId );
+
+			// Fetch the active game
+			if ( !playerConnection?.gameId ) return;
+
+			const game = games[playerConnection.gameId];
+			if ( !game || game.hasEnded ) return;
+
+			// Update last activity time
+            playerConnection.lastActivityAt = Date.now();
+
+			// Moves the player based on their userId.
+			if ( data.type === "move" )
+			{
+				game.movePlayer( userId, data.dy );
+
+				const gameState : GameState = game.getState();	// Get game state
+				const payload = JSON.stringify( gameState );	// Serialize the game state
+				socket.send( payload );
+			}
+		} );
+
+		socket.on( "close", () =>
+		{
+			const playerConnection = activePlayers.get( userId );
+
+			// Player was in game
+			if (playerConnection?.gameId)
+			{
+				const game = games[playerConnection.gameId];
+				if ( game && !game.hasEnded )
+				{
+					server.log.info( `Game: Player disconnect in game ${game.id}` );
+
+					const disconnectedPlayer = game.players.find( player => player.userId === userId );
+					const remainingPlayer = game.players.find( player => player.userId !== userId );
+
+					const data: GameEndData = {
+						reason: "disconnect",
+						winner: remainingPlayer ?? null,
+						loser: disconnectedPlayer ?? null
+					};
+
+					handleGameEnd( game.id, data );
+				}
+			}
+			// Player was in friend queue
+			else
+			{
+				// Remove inactive player from the activePlayers map
+				activePlayers.delete( userId );
+
+				// Remove inactive player from the queue
+				const index = friendQueue.findIndex( p => p.userId === userId );
+				if ( index > -1 ) friendQueue.splice( index, 1 );
+
+				server.log.info( `Game: Player ${userId} was removed from the friend queue.` );
+			}
+		} );
 	} );
 
 	// ============= GAME END =============

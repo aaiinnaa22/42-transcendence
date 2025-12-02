@@ -112,7 +112,7 @@ export const Game = () =>
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
-        const ws = new WebSocket('ws://localhost:4241/game/singleplayer');
+        const ws = new WebSocket('ws://localhost:4241/game/chat');
 
         wsRef.current = ws;
 
