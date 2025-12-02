@@ -91,12 +91,15 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		for ( let i = 0; i < friendQueue.length; ++i )
 		{
 			for ( let j = 0; j < friendQueue.length; ++j)
-			{
-				if (friendQueue[i]?.friendName == friendQueue[j]?.userName)
+			{	
+				// when the invitation happens who invited who is going to be stored there.
+				if (friendQueue.length == 2) //if (friendQueue[i]?.friendName == friendQueue[j]?.userName)
 				{
-					// const connection1 = activePlayers.get( friendQueue[i]?.userId );	
-					// const connection2 = activePlayers.get( friendQueue[j]?.userId );
-					// // call came making function
+					const connection1 = activePlayers.get( friendQueue[0]?.userId );	
+					const connection2 = activePlayers.get( friendQueue[1]?.userId );
+					server.log.info(`Creating friendly game between ${friendQueue[0]?.userName} and ${friendQueue[1]?.userName}`);
+					createMultiplayerSession(connection1,connection2);
+					friendQueue.splice(0,2);
 				}	
 			}
 		}
