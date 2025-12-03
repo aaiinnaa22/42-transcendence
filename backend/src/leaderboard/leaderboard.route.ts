@@ -41,7 +41,7 @@ const leaderboardComponent = async ( server: FastifyInstance ) =>
 				const { page } = request.params as { page: string };
 				const pageNumber = parseInt(page, 10);
 
-				if ( isNaN(pageNumber) || pageNumber < 0 || pageNumber > 9 )
+				if ( isNaN(pageNumber) || pageNumber < 1 || pageNumber > 10 )
 					throw BadRequestError("Invalid page number");
 
 				const entries = leaderboard.getCache(pageNumber);
