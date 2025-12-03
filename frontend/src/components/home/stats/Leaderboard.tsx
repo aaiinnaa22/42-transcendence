@@ -7,8 +7,12 @@ type LeaderboardProps =
 
 type User =
 {
+	rank: number;
 	name: string;
 	rating: number;
+	wins: number;
+	losses: number;
+	ratio: number;
 };
 
 //TODO: import global stats
@@ -19,8 +23,8 @@ export const Leaderboard = ({switchStats}: LeaderboardProps) => {
 	const [users, setUsers] = useState<User[]>([]);
 	useEffect(() => {
 		setUsers([
-		{ name: "Aina", rating: 100 },
-		{ name: "RL", rating: 90 },
+		{ rank: 1, name: "Aina", rating: 1300, wins: 10, losses: 0, ratio: 1 },
+		{ rank: 2, name: "RL", rating: 900, wins: 3, losses: 6, ratio: 0.5 },
 		]);
 	}, []);
 	return (
