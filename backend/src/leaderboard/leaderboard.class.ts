@@ -39,7 +39,7 @@ export default class LeaderboardService
 	 * @param page Which set of 10 players to return. 0 returns all enntries.
 	 * @returns Array of leaderboard entries or null if page is missing
 	 */
-	public async getCache( page: number = 1 ) : Promise<LeaderboardEntry[] | null>
+	public getCache( page: number = 1 ) : LeaderboardEntry[] | null
 	{
 		if ( !this.cache ) return null;
 
