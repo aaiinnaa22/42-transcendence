@@ -94,9 +94,27 @@ export const Home = () => {
 		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
+	useEffect(() => {
+		function setVhVw() {
+		const vh = window.innerHeight * 0.01;
+		const vw = window.innerWidth * 0.01;
+		document.documentElement.style.setProperty('--vh', `${vh}px`);
+		document.documentElement.style.setProperty('--vw', `${vw}px`);
+		}
+
+		setVhVw();
+		window.addEventListener('resize', setVhVw);
+
+		return () => window.removeEventListener('resize', setVhVw);
+}, []);
+
+
 	console.log("Home currentPanel:", currentPanel, "SideTab isOpen:", currentPanel === "chat", "PopUp isOpen:", currentPanel === "menu");
 	return (
-		<div className="bg-transcendence-black min-h-screen w-full flex flex-col md:shadow-transcendence-beige">
+		<div className="bg-transcendence-black w-[100vw] flex flex-col md:shadow-transcendence-beige"
+		        style={{
+    height: 'calc(var(--vh, 1vh) * 100)',
+  }}>
 			<NavBar
 				currentPage={currentPage}
 				onNavigate={setCurrentPage}
