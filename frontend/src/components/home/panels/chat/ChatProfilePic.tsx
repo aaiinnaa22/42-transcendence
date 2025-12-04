@@ -1,7 +1,7 @@
 type Friend = {
 	username: string;
 	profile: string;
-	online: boolean;
+	online?: boolean;
 	lastMessage?: string;
 }
 

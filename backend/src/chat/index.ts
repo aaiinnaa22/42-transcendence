@@ -1,7 +1,9 @@
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "@fastify/websocket";
 
-
+import { addUser, removeUser } from "./presence.ts";
+import { sendDM } from "./directMessage.ts";
+import { onlineUsers } from "./state.ts"; 
 //const wsChat = new WebSocket('ws://localhost:4241/chat');
 
 // a map mapping user id to websocket
@@ -10,84 +12,64 @@ import type { WebSocket } from "@fastify/websocket";
 // a map for global chat implementation
 //const globalChatSockets = new Set<WebSocket>();
 
-const clients = new Set<WebSocket>();
+const clients = new Map<WebSocket, number>();
 
+// TO DO: add prehandler authenticate (?)
 export default async function chatComponent(server: FastifyInstance) {
 	server.get("/chat", { websocket: true }, (socket, req) => {
-		console.log("WS: Upgrade happened correctly");
-		// temporary auth bypass
-		req.user = { userId: Math.floor(Math.random() * 10000) }; 
-		// or: req.user = { userId: 123 };
+			
+			let userId: string;
+			try 
+			{
+				const signed = req.cookies.accessToken;
+				if (!signed) {
+					socket.close();
+					return;
+				}
 
-		const userId = (req.user as { userId: number }).userId;
-		console.log(`User ${userId} connected to chat.`);
-		clients.add(socket);
-		
-		const welcomePayload = JSON.stringify({
-			type: "welcome",
-			userId
-		});
-		socket.send(welcomePayload);
+				const unsign = req.unsignCookie(signed);
+				if (!unsign.valid) {
+					socket.close();
+					return;
+				}
 
-		// 1. AUTHENTICATE USER
-		// try {
-		// 	const signed = req.cookies.accessToken;
-		// 	if (!signed) {
-		// 		console.log("Not signed");
-		// 		socket.close();
-		// 		return;
-		// 	}
+				const payload = server.jwt.verify(unsign.value) as { userId: string };
 
-		// 	const unsign = req.unsignCookie(signed);
-		// 	if (!unsign.valid) {
-		// 		console.log("Unsign fail")
-		// 		socket.close();
-		// 		return;
-		// 	}
-
-		// 	const user = server.jwt.verify(unsign.value) as { userId: number; };
-
-		// 	req.user = user;
-		// } catch (err) {
-		// 	socket.close();
-		// 	return;
-		// }
-
-		// console.log(`User ${userId} connected to chat.`);
-		// clients.add(socket);
-
-
-		// 2. HANDLE INCOMING MESSAGES
-		socket.on("message", ( message: any )=> {
-			console.log("MESSAGE RECEIVED:", message.toString());
-			let data;
-			try {
-				data = JSON.parse(message.toString());
-			} catch (e) {
+				req.user = payload;
+				userId = payload.userId;
+			} 
+			catch (err) 
+			{
+				socket.close();
 				return;
 			}
 
-			if (data.type === "chat") {
-				console.log(`Broadcasting from ${userId}:`, data.message);
-				const payload = JSON.stringify({
-					type: "chat",
-					from: userId,
-					message: data.message
-				});
+			console.log("WS authenticated user:", userId);
+			addUser(userId, socket);
 
-				// broadcast to every connected client
-				for (const client of clients) {
-					if (client.readyState === client.OPEN) {
-						client.send(payload);
-					}
+			// initial presence list
+			socket.send(JSON.stringify({
+				type: "presence:list",
+				users: [...onlineUsers.keys()]
+			}));
+
+			socket.on("message", (message: any) => {
+				let data;
+				try {
+					data = JSON.parse(message.toString());
+				} catch {
+					return;
 				}
-			}
-		});
+
+				if (data.type === "dm") {
+					sendDM(userId, data.to, data.message);
+				}
+			});
 
 		// 3. ON DISCONNECT
 		socket.on("close", () => {
 			console.log(`User ${userId} disconnected.`);
-			clients.delete(socket);
+			removeUser(userId, socket);
 		});
 	});
 }

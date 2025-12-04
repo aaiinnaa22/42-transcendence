@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Chat } from '../components/home/panels/chat/Chat';
 import { NavBar } from "../components/home/NavBar";
 import { PlayButton } from "../components/home/PlayButton";
 import { Leaderboard } from "../components/home/stats/Leaderboard";
@@ -12,7 +11,7 @@ import { PopUp } from "../components/home/utils/PopUp"
 import { PersonalStats } from '../components/home/stats/PersonalStats';
 import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
 import { ExitTopLeft } from '../components/home/utils/ExitTopLeft';
-import { Discussion } from '../components/home/panels/chat/Discussion';
+import { ChatContainer } from '../components/home/panels/chat/ChatContainer';
 
 export const Home = () => {
 	type Page = "play" | "stats" | "profile";
@@ -22,7 +21,6 @@ export const Home = () => {
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "chat" | null>(null);
 	const [isPersonalStats, setIsPersonalStats] = useState(true);
 	const [currentGamePage, setCurrentGamePage] = useState<"playButton" | "chooseGame" | "gamePlay">("playButton");
-	const [currentChat, setCurrentChat] = useState<"chat" | "discussion">("chat");
 	const [gameMode, setGameMode] = useState<GameMode>("singleplayer");
 
 	const togglePanel = (panel: "chat" | "menu") => {
@@ -73,16 +71,7 @@ export const Home = () => {
 		}
 	}
 
-	const renderChat = () =>
-	{
-		switch (currentChat)
-		{
-			case "chat":
-				return <Chat onChatClick={() => setCurrentChat("discussion")}/>
-			case "discussion":
-				return <Discussion onExitClick={() => setCurrentChat("chat")}/>
-		}
-	}
+	const renderChat = () => <ChatContainer />;
 
 	return (
 		<div className="bg-transcendence-black min-h-screen w-full flex flex-col">
@@ -93,7 +82,7 @@ export const Home = () => {
 				onTogglePanel={togglePanel}
 			/>
 			{renderPage()}
-			{<SideTab isOpen={currentPanel === "chat"}>{renderChat()}</SideTab>}
+			{<SideTab isOpen={currentPanel === "chat"}><ChatContainer /></SideTab>}
 			{<PopUp isOpen={currentPanel === "menu"}><Menu currentPage={currentPage} onNavigate={setCurrentPage}/></PopUp>}
 		</div>
 	)

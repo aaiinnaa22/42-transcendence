@@ -8,6 +8,7 @@ import jwtPlugin from "./plugins/jwt.ts";
 import fastifyCookie from "@fastify/cookie";
 import gameComponent from "./pong/init.ts";
 import chatComponent from "./chat/index.ts";
+import chatUsersComponent from "./chat/usersRoute.ts";
 
 const server : FastifyInstance = Fastify( {
 	logger: true
@@ -72,6 +73,8 @@ const start = async () =>
 		} );
 
 		await server.register( gameComponent );
+
+		await server.register( chatUsersComponent );
 
 		await server.register( chatComponent );
 
