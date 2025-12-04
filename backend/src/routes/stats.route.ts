@@ -12,7 +12,10 @@ const statsRoutes = async ( server: FastifyInstance ) =>
 		{
 			const { userId } = request.user as { userId: string };
 
-			const playerStats = await server.prisma.playerStats.findUnique( { where: { userId } } );
+			const playerStats = await server.prisma.playerStats.findUnique( {
+				where: { userId },
+				omit: { userId: true }
+			} );
 			if ( !playerStats ) throw NotFoundError( "Statistics not found" );
 
 			reply.send( playerStats );

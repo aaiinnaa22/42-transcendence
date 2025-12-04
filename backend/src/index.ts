@@ -8,7 +8,10 @@ import jwtPlugin from "./plugins/jwt.ts";
 import fastifyCookie from "@fastify/cookie";
 import gameComponent from "./pong/init.ts";
 import chatComponent from "./chat/index.ts";
+<<<<<<< HEAD
 import chatUsersComponent from "./chat/usersRoute.ts";
+=======
+>>>>>>> main
 
 const server : FastifyInstance = Fastify( {
 	logger: true
