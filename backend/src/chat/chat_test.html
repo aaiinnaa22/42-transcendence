@@ -1,0 +1,69 @@
+<body style="background:#222; color:#eee; font-family:sans-serif;">
+
+<p id="status">Connecting...</p>
+
+<div id="messages" style="
+  height:150px; overflow-y:auto; background:#111;
+  border:1px solid #555; padding:10px; width:400px; margin:auto;">
+</div>
+
+<div style="display:flex; width:400px; margin:10px auto;">
+  <input id="messageBox" style="flex:1; padding:8px; background:#333; border:none; color:#eee;">
+  <button id="sendBtn" style="padding:8px 12px; background:#444; border:none; color:#eee;">Send</button>
+</div>
+
+<script>
+  // Get DOM elements explicitly (fixes your issue)
+  const statusEl   = document.getElementById("status");
+  const messagesEl = document.getElementById("messages");
+  const messageBox = document.getElementById("messageBox");
+  const sendBtn    = document.getElementById("sendBtn");
+
+  // Connect to your websocket
+  const ws = new WebSocket('ws://localhost:4241/chat');
+
+  ws.onopen = () => {
+    statusEl.textContent = "Connected!";
+  };
+
+  ws.onclose = () => {
+    statusEl.textContent = "Disconnected!";
+  };
+
+  ws.onerror = (e) => {
+    console.log("WebSocket ERROR", e);
+    statusEl.textContent = "Error connecting.";
+  };
+
+  ws.onmessage = (e) => {
+    let d;
+    try { d = JSON.parse(e.data); }
+    catch { return; }
+
+    if (d.type === "chat") {
+      add(d.username || "Player", d.message);
+    }
+  };
+
+  function add(user, msg) {
+    const div = document.createElement('div');
+    div.textContent = `${user}: ${msg}`;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  sendBtn.onclick = send;
+  messageBox.onkeypress = (e) => {
+    if (e.key === "Enter") send();
+  };
+
+  function send() {
+    const text = messageBox.value.trim();
+    if (!text) return;
+
+    ws.send(JSON.stringify({ type: "chat", message: text }));
+    messageBox.value = "";
+  }
+</script>
+
+</body>
