@@ -123,7 +123,7 @@ export default class LeaderboardService
 	{
 		const now = Date.now();
 
-		if ( this.cache && this.lastUpdate - now < this.REFRESH_INTERVAL ) return;
+		if ( this.cache && now - this.lastUpdate < this.REFRESH_INTERVAL ) return;
 
 		try
 		{
@@ -153,6 +153,7 @@ export default class LeaderboardService
 			}));
 
 			this.lastUpdate = now;
+			console.log("Leaderboard cached successfully");
 		}
 		catch (error)
 		{
