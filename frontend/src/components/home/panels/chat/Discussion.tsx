@@ -25,7 +25,64 @@ export const Discussion = ({onExitClick}: DiscussionProps) =>
 	const discussionEndRef = useRef<HTMLDivElement | null>(null);
 	const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
+	const wsRef = useRef<WebSocket | null>(null);
+	const myUserIdRef = useRef<number | null>(null);
+
 	const friend: Friend = {username: "Susan", profile:"bla", online:true};
+
+	useEffect(() => {
+		const ws = new WebSocket("ws://localhost:4241/chat");
+		wsRef.current = ws;
+
+		ws.onopen = () => {
+			console.log("WS connected");
+		};
+
+		ws.onmessage = (event) => {
+			let data;
+			try {
+				data = JSON.parse(event.data);
+			} catch (e) {
+				console.error("Failed to parse WS message", e);
+				return;
+			}
+
+			// Handle the welcome message (get my userId)
+			if (data.type === "welcome") {
+				myUserIdRef.current = data.userId;
+				console.log("My userId:", data.userId);
+				return;
+			}
+
+			// Handle chat messages
+			if (data.type === "chat") {
+				const sender: "me" | "friend" =
+					data.from === myUserIdRef.current ? "me" : "friend";
+
+				const newMessage: Message = {
+					id: Date.now(),
+					text: data.message,
+					sender
+				};
+
+				setMessages(prev => [...prev, newMessage]);
+			}
+		};
+
+		ws.onclose = () => {
+			console.log("WS disconnected");
+			wsRef.current = null;
+		};
+
+		ws.onerror = (err) => {
+			console.error("WS error", err);
+		};
+
+		// Cleanup on unmount
+		return () => {
+			ws.close();
+		};
+	}, []);
 
 	useEffect(() => {
 		discussionEndRef.current?.scrollIntoView({behavior: "smooth"});
@@ -34,9 +91,18 @@ export const Discussion = ({onExitClick}: DiscussionProps) =>
 	const handleMessageSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (message.trim() === "")
-			return ;
-		const newMessage: Message = {id: Date.now(), text: message, sender:"friend"};
-		setMessages(prev => [...prev, newMessage]);
+			return;
+
+		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+			console.warn("WebSocket not connected");
+			return;
+		}
+
+		wsRef.current.send(JSON.stringify({
+			type: "chat",
+			message
+		}));
+
 		setMessage("");
 		if (textAreaRef.current)
 			textAreaRef.current.style.height = "auto";
