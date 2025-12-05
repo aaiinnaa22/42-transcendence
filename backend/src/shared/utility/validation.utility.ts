@@ -9,6 +9,8 @@ import { BadRequestError } from "./error.utility.ts";
  *		request.headers
  */
 
+// Utility checks for recurring fields
+
 export const emailField = z.email({message: "Invalid email format"})
 	.trim()
 	.min(6, {message: "Email too short"})
@@ -64,6 +66,8 @@ export const leaderboardPageField = z.string()
 	.refine((num) => num >= 1 && num <= 10, {message: "Page must be between 1 and 10"});
 
 
+// Verification function
+
 /**
  * @brief Validates request data against a Zod schema
  * @param schema Zod schema to validate
@@ -85,37 +89,4 @@ export const validateRequest = <Schema extends z.ZodTypeAny>(schema: Schema, dat
 	}
 
 	return result.data;
-};
-
-// TODO: Remove the old functions below
-
-/**
- * @brief Checks the strength of the password.
- * Requires at least one digit, one lowercase and one uppercase letter.
- * Minimum length is set to five.
- * @param password
- * @returns boolean
- */
-export const checkPasswordStrength = ( password: string ): boolean =>
-{
-	const passwordRegex: RegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{5,}$/;
-
-	const valid: boolean = passwordRegex.test( password );
-
-	return valid;
-};
-
-/**
- * @brief Confirms the validity of the email format.
- * Does not validate whether or not the email address exists.
- * @param email
- * @returns boolean
- */
-export const checkEmailFormat = ( email: string ): boolean =>
-{
-	const emailRegex: RegExp = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-	const valid: boolean = emailRegex.test( email );
-
-	return valid;
 };

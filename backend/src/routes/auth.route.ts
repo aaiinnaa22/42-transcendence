@@ -3,7 +3,7 @@ import fastifyOauth2, { type OAuth2Namespace } from "@fastify/oauth2";
 import { OAuth2Client } from "google-auth-library";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import bcrypt from "bcrypt";
-import { checkPasswordStrength, checkEmailFormat, validateRequest } from "../shared/utility/validation.utility.ts";
+import { validateRequest } from "../shared/utility/validation.utility.ts";
 import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReply, NotFoundError, ConflictError, UnauthorizedError } from "../shared/utility/error.utility.ts";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
