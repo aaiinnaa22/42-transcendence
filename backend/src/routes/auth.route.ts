@@ -3,10 +3,11 @@ import fastifyOauth2, { type OAuth2Namespace } from "@fastify/oauth2";
 import { OAuth2Client } from "google-auth-library";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import bcrypt from "bcrypt";
-import { checkPasswordStrength, checkEmailFormat } from "../shared/utility/validation.utility.ts";
+import { checkPasswordStrength, checkEmailFormat, validateRequest } from "../shared/utility/validation.utility.ts";
 import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReply, NotFoundError, ConflictError, UnauthorizedError } from "../shared/utility/error.utility.ts";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
+import { LoginSchema, RegisterSchema, TwoFADisableSchema, TwoFALoginSchema, TwoFAVerifySchema } from "../schemas/auth.schema.ts";
 
 // Augment Fastify instance with oauth2 namespace added by the plugin
 declare module "fastify" {
@@ -244,17 +245,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			{
 				throw ConflictError("Already logged in");
 			}
-			const { email, password, username } = request.body as {
-        		email: string;
-        		password: string;
-        		username: string;
-      		};
 
-			// Validate email format and confirm minimum password strength requirements
-			if ( !username || username === undefined ) throw BadRequestError( "Username missing" );
-			if ( username.length < 3 ) throw BadRequestError( "Username too short" );
-			if ( !checkEmailFormat( email ) ) throw BadRequestError( "Invalid email" );
-			if ( !checkPasswordStrength( password ) ) throw BadRequestError( "Password too weak" );
+			const { email, password, username } = validateRequest(RegisterSchema, request.body);
 
 			// Check if email is already in use
 			if ( await server.prisma.user.findUnique( { where: { email } } ) )
@@ -320,7 +312,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			{
 				throw ConflictError("Already logged in");
 			}
-			const { email, password } = request.body as { email: string; password: string };
+
+			const { email, password } = validateRequest(LoginSchema, request.body);
 
 			// Find user
 			const user = await server.prisma.user.findUnique( {
@@ -437,7 +430,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 	server.post("/auth/2fa/verify", { preHandler: authenticate }, async (request, reply) => {
 		try {
-			const { code } = request.body as { code: string };
+			const { code } = validateRequest(TwoFAVerifySchema, request.body);
 			const { userId } = request.user as { userId: string };
 
 			const user = await server.prisma.user.findUnique({
@@ -469,10 +462,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 	server.post("/auth/2fa/login", async (request, reply) => {
 		try {
-			const { code, tempToken } = request.body as {
-			code: string;
-			tempToken: string;
-			};
+			const { code, tempToken } = validateRequest(TwoFALoginSchema, request.body);
 
 			// Validate temp token (5 min expiration)
 			const decoded = server.jwt.verify(tempToken) as { userId: string };
@@ -516,7 +506,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	server.post("/auth/2fa/disable", { preHandler: authenticate }, async (request, reply) => {
 		try {
 			const { userId } = request.user as { userId: string };
-			const { code } = request.body as { code: string };
+			const { code } = validateRequest(TwoFADisableSchema, request.body);
 
 			const user = await server.prisma.user.findUnique({ where: { id: userId } });
 			if (!user?.twoFASecret) throw BadRequestError("2FA not set up");
