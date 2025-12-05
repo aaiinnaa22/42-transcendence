@@ -299,6 +299,9 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			const data = JSON.parse( message.toString() );
 			const playerConnection = activePlayers.get( userId );
 
+			// TODO: Implement a strict schema for checking user messages
+			if (!data) return;
+
 			// Fetch the active game
 			if ( !playerConnection?.gameId ) return;
 
@@ -380,6 +383,10 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		socket.on( "message", ( message: any ) =>
 		{
 			const data = JSON.parse( message.toString() );
+
+			// TODO: Implement a strict schema for checking user messages
+			if (!data) return;
+
 			const playerConnection = activePlayers.get( userId );
 			if ( !playerConnection?.gameId ) return;
 			const game = games[playerConnection.gameId];

@@ -7,6 +7,7 @@ import prismaPlugin from "./plugins/prisma.ts";
 import jwtPlugin from "./plugins/jwt.ts";
 import fastifyCookie from "@fastify/cookie";
 import gameComponent from "./pong/init.ts";
+import leaderboardComponent from "./leaderboard/leaderboard.route.ts";
 import chatComponent from "./chat/index.ts";
 
 const server : FastifyInstance = Fastify( {
@@ -72,7 +73,7 @@ const start = async () =>
 		} );
 
 		await server.register( gameComponent );
-
+		await server.register( leaderboardComponent );
 		await server.register( chatComponent );
 
 		// Grab the configuration from env
