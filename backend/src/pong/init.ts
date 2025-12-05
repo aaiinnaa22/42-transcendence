@@ -385,7 +385,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			const data = JSON.parse( message.toString() );
 
 			// TODO: Implement a strict schema for checking user messages
-			if (!data) return;
+			if (!data || !data.type) return;
 
 			const playerConnection = activePlayers.get( userId );
 			if ( !playerConnection?.gameId ) return;

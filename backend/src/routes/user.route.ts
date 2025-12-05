@@ -3,6 +3,8 @@ import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
+import { validateRequest } from "../shared/utility/validation.utility.ts";
+import { UpdateUserSchema } from "../schemas/user.schema.ts";
 
 const userRoutes = async (server: FastifyInstance) => {
     // Get user profile (protected route)
@@ -30,13 +32,7 @@ const userRoutes = async (server: FastifyInstance) => {
         try
         {
             const { userId } = request.user as { userId: string };
-
-            const { username, avatar, email, password } = request.body as {
-                username?: string;
-                avatar?: string;
-                email?: string;
-                password?: string;
-            };
+            const { username, avatar, email, password } = validateRequest(UpdateUserSchema, request.body);
 
             // Prepare the data to update only provided fields
             const dataToUpdate: Record<string, any> = {};

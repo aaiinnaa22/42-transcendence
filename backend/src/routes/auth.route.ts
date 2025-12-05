@@ -199,7 +199,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			const { userId } = request.user as { userId: string };
+			const { userId } = request.user as { userId: string }; // Validated with JWT
 
 			const user = await server.prisma.user.findUnique({
 				where: { id: userId },
