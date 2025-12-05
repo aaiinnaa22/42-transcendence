@@ -2,7 +2,7 @@ import { type FastifyInstance } from "fastify";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
+import { HttpError, NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
 import { validateRequest } from "../shared/utility/validation.utility.ts";
 import { UpdateUserSchema } from "../schemas/user.schema.ts";
 
@@ -75,6 +75,9 @@ const userRoutes = async (server: FastifyInstance) => {
         }
         catch (err: any)
         {
+			if (err instanceof HttpError)
+				return sendErrorReply( reply, err );
+
             // Handle known Prisma errors for better UX
             if (err instanceof Prisma.PrismaClientKnownRequestError)
             {
