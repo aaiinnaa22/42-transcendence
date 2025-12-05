@@ -65,6 +65,15 @@ export const Leaderboard = ({switchStats}: LeaderboardProps) => {
 					credentials: "include"
 				});
 
+				// No eligible users on leaderboard
+				if (response.status === 404)
+				{
+					setUsers([]);
+					setHasMore(false);
+					setLoading(false);
+					return;
+				}
+
 				if (!response.ok) throw new Error("Failed to fetch leaderboard");
 
 				const data = await response.json();
@@ -102,7 +111,7 @@ export const Leaderboard = ({switchStats}: LeaderboardProps) => {
 				return;
 			}
 
-			if (!response.ok) throw new Error("Failed to more entries");
+			if (!response.ok) throw new Error("Failed to load more entries");
 
 			const data = await response.json();
 
@@ -295,9 +304,13 @@ export const Leaderboard = ({switchStats}: LeaderboardProps) => {
 					)}
 
 					{/* Leaderboard end */}
-					{!hasMore && users.length > 0 && (
+					{!hasMore && (
 						<div className='text-transcendence-black/40 py-4 text-center text-sm'>
-							End of leaderboard
+							{users.length === 0 ? (
+								<p>No ranked players yet</p>
+							) : (
+								<p>End of leaderboard</p>
+							)}
 						</div>
 					)}
 				</ul>
