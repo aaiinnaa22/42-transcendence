@@ -5,6 +5,8 @@ import type { WebSocket } from "@fastify/websocket";
 import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT, ELO_K_FACTOR } from "./constants.ts";
 import type { GameState } from "../schemas/game.states.schema.ts";
 import type Player from "./player.ts";
+import { validateWebSocketMessage } from "../shared/utility/websocket.utility.ts";
+import { MoveMessageSchema } from "../schemas/game.schema.ts";
 
 type UserId = string;
 type GameId = string;
@@ -340,7 +342,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		socket.on( "message", ( message: any ) =>
 		{
 			try {
-				const data = JSON.parse( message.toString() ); // TODO: Add strict schema validator
+				const data = validateWebSocketMessage(MoveMessageSchema, socket, message);
 				const playerConnection = activePlayers.get( userId );
 
 				if (!data) return;
@@ -437,7 +439,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		socket.on( "message", ( message: any ) =>
 		{
 			try {
-				const data = JSON.parse( message.toString() ); // TODO: Add strict schema validator
+				const data = validateWebSocketMessage(MoveMessageSchema, socket, message);
 				if ( !data ) return;
 
 				const playerConnection = activePlayers.get( userId );
