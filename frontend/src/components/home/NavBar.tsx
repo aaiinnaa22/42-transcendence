@@ -14,7 +14,8 @@ export const NavBar = ({onTogglePanel, currentPanel} :NavBarProps) =>
 	const isActive = (path:string) => location.pathname.startsWith(`/home/${path}`);
 	return (
 		<div className="z-10 border-b-4 border-transcendence-black flex flex-row items-center justify-between h-18 lg:h-32 bg-transcendence-beige px-5 lg:px-10">
-			<h1 className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]">PONG</h1>
+			<button className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]"
+				onClick={() => navigate("/home/play")}>PONG</button>
 			<div className="hidden h-full lg:flex flex-row sm:gap-5 md:gap-10 lg:gap-20 2xl:gap-30 font-transcendence-two text-2xl">
 				{navItems.map((item) => {
 					return (
