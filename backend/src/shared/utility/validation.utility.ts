@@ -55,7 +55,7 @@ export const avatarFilenameField = z.string()
 		{message: "Filename must contain a valid UUID"}
 	);
 
-export const avatarUrlField = z.url({message: "Avatar mmust be a valid URL"})
+export const avatarUrlField = z.url({message: "Avatar must be a valid URL"})
 	.max(512, {message: "Avatar URL too long"});
 
 export const leaderboardPageField = z.string()
