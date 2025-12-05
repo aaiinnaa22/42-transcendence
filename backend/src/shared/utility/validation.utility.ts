@@ -14,7 +14,7 @@ import { BadRequestError } from "./error.utility.ts";
 export const emailField = z.email({message: "Invalid email format"})
 	.trim()
 	.min(6, {message: "Email too short"})
-	.max(255, {message: "Emmail too long"})
+	.max(254, {message: "Email too long"})
 	.toLowerCase();
 
 export const usernameField = z.string()
