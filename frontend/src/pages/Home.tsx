@@ -13,77 +13,17 @@ import { PersonalStats } from '../components/home/stats/PersonalStats';
 import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
 import { ExitTopLeft } from '../components/home/utils/ExitTopLeft';
 import { Discussion } from '../components/home/panels/chat/Discussion';
+import {Routes, Route, useNavigate, Navigate} from "react-router-dom";
 
 export const Home = () => {
-	type Page = "play" | "stats" | "profile";
-	type GameMode = "singleplayer" | "tournament";
-
-	const [currentPage, setCurrentPage] = useState<Page>("play");
+	const navigate = useNavigate();
+	const [screenIsLarge, setScreenIsLarge] = useState(() => window.innerWidth >= 1024);
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "chat" | null>(null);
-	const [isPersonalStats, setIsPersonalStats] = useState(true);
-	const [currentGamePage, setCurrentGamePage] = useState<"playButton" | "chooseGame" | "gamePlay">("playButton");
-	const [currentChat, setCurrentChat] = useState<"chat" | "discussion">("chat");
-	const [gameMode, setGameMode] = useState<GameMode>("singleplayer");
+
 
 	const togglePanel = (panel: "chat" | "menu") => {
 		setCurrentPanel(currentPanel === panel ? null : panel);
 	};
-
-	const selectGameMode = (mode: GameMode) =>
-	{
-		setGameMode(mode);
-		setCurrentGamePage("gamePlay");
-	};
-
-	const renderGame = () =>
-	{
-		switch (currentGamePage)
-		{
-			case "chooseGame":
-				return (
-					<ExitTopLeft onExitClick={() => setCurrentGamePage("playButton")}>
-					<ChooseGameMode
-						onSinglePlayerChoose = {() => selectGameMode("singleplayer")}
-						onTournamentChoose = {() => selectGameMode("tournament")}
-					/></ExitTopLeft>
-				);
-			case "gamePlay":
-				return (
-					<ExitTopLeft onExitClick={() => setCurrentGamePage("playButton")}>
-						{ gameMode === "singleplayer" ? <Game/> : <GameTournament/> }
-					</ExitTopLeft>
-				);
-			default:
-				return <PlayButton onButtonClick={() => setCurrentGamePage("chooseGame")}/>;
-		}
-	}
-
-	const renderPage = () =>
-	{
-		switch (currentPage)
-		{
-			case "stats":
-				return isPersonalStats
-				? (<PersonalStats switchStats={() => setIsPersonalStats(false)}/>)
-				: (<Leaderboard switchStats={() => setIsPersonalStats(true)}/>)
-			case "profile":
-				return <Profile/>;
-			default:
-				return renderGame();
-		}
-	}
-
-	const renderChat = () =>
-	{
-		switch (currentChat)
-		{
-			case "chat":
-				return <Chat onChatClick={() => setCurrentChat("discussion")}/>
-			case "discussion":
-				return <Discussion onExitClick={() => setCurrentChat("chat")}/>
-		}
-	}
-	const [screenIsLarge, setScreenIsLarge] = useState(() => window.innerWidth >= 1024);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -108,29 +48,46 @@ export const Home = () => {
 		return () => window.removeEventListener('resize', setVhVw);
 }, []);
 
+	const [currentChat, setCurrentChat] = useState<"chat" | "discussion">("chat");
 
-	console.log("Home currentPanel:", currentPanel, "SideTab isOpen:", currentPanel === "chat", "PopUp isOpen:", currentPanel === "menu");
+	const renderChat = () =>
+	{
+		switch (currentChat)
+		{
+			case "chat":
+				return <Chat onChatClick={() => setCurrentChat("discussion")}/>
+			case "discussion":
+				return <Discussion onExitClick={() => setCurrentChat("chat")}/>
+		}
+	}
+
+
 	return (
 		<div className="bg-transcendence-black w-[100vw] flex flex-col md:shadow-transcendence-beige"
 		        style={{
     height: 'calc(var(--vh, 1vh) * 100)',
   }}>
-			<NavBar
-				currentPage={currentPage}
-				onNavigate={setCurrentPage}
-				currentPanel={currentPanel}
-				onTogglePanel={togglePanel}
-			/>
-			{renderPage()}
-			{screenIsLarge &&
-				<SideTab isOpen={currentPanel === "chat"}>{renderChat()}</SideTab>}
-			{!screenIsLarge &&
-				<PopUp isOpen={currentPanel === "chat"}>{renderChat()}</PopUp>}
-			<PopUp isOpen={currentPanel === "menu"}>
-				<Menu
-					currentPage={currentPage}
-					onNavigate={(page) => {setCurrentPage(page); setCurrentPanel(null);}}/>
-			</PopUp>
+			<NavBar currentPanel={currentPanel} onTogglePanel={togglePanel}/>
+			<Routes>
+				<Route index element={<Navigate to="play" replace/>}/>
+				<Route path="play" element={<PlayButton/>}/>
+				<Route path="play/choose" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}>
+					<ChooseGameMode/></ExitTopLeft>}/>
+				<Route path="play/single" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}>
+						<Game/></ExitTopLeft>}/>
+				<Route path="play/tournament" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}>
+						<GameTournament/></ExitTopLeft>}/>
+				<Route path="stats" element={<PersonalStats/>}/>
+				<Route path="stats/leaderboard" element={<Leaderboard/>}/>
+				<Route path="profile" element={<Profile/>}/>
+			</Routes>
+				{screenIsLarge &&
+					<SideTab isOpen={currentPanel === "chat"}>{renderChat()}</SideTab>}
+				{!screenIsLarge &&
+					<PopUp isOpen={currentPanel === "chat"}>{renderChat()}</PopUp>}
+				<PopUp isOpen={currentPanel === "menu"}>
+					<Menu onPageChoose={() => setCurrentPanel(null)}/>
+				</PopUp>
 		</div>
 	)
 };

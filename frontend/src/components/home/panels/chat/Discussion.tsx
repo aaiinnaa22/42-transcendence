@@ -1,10 +1,6 @@
 import { ChatProfilePic } from "./ChatProfilePic";
 import { useState, useRef, useEffect } from "react";
 
-type DiscussionProps = {
-	onExitClick: () => void;
-};
-
 type Friend = {
 	username: string;
 	profile: string;
@@ -17,6 +13,10 @@ type Message = {
 	text: string;
 	sender: "me" | "friend";
 };
+
+type DiscussionProps = {
+	onExitClick: () => void;
+}
 
 export const Discussion = ({onExitClick}: DiscussionProps) =>
 {
