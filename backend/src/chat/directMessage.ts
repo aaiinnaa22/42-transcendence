@@ -1,4 +1,5 @@
 import { onlineUsers } from "./state.ts";
+import WebSocket from "ws";
 
 export function sendDM(
 	from: string,
@@ -6,7 +7,11 @@ export function sendDM(
 	message: string
 ): boolean {
 	const targets = onlineUsers.get(to);
-	if (!targets) return false;
+	if (!targets) 
+	{
+		console.log("no online users found");
+		return false;
+	}
 
 	const payload = JSON.stringify({
 		type: "dm",
@@ -16,10 +21,10 @@ export function sendDM(
 
 	for (const socket of targets)
 	{
-		if (socket.readyState === socket.OPEN)
+		if (socket.readyState === WebSocket.OPEN)
 		{
 			socket.send(payload);
-		}
+			console.log("DM sent to", to, " sockets:", targets.size);		}
 	}
 
 	return true;
@@ -47,10 +52,10 @@ export function sendInvite(
 
 	for (const socket of targets)
 	{
-		if (socket.readyState === socket.OPEN)
+		if (socket.readyState === WebSocket.OPEN)
 		{
 			socket.send(payload);
-			console.log("did we get here?");
+			console.log("invite sent");
 		}
 	}
 
