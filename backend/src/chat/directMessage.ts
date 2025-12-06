@@ -1,4 +1,3 @@
-import type { WebSocket } from "@fastify/websocket";
 import { onlineUsers } from "./state.ts";
 
 export function sendDM(

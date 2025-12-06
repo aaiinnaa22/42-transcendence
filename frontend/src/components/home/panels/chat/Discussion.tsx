@@ -2,6 +2,7 @@ import { ChatProfilePic } from "./ChatProfilePic";
 import { useState, useRef, useEffect } from "react";
 import type { ChatUser } from "./ChatContainer";
 import type { Message } from "./ChatContainer";
+import { useNavigate } from "react-router-dom"; //to chat container
 
 type DiscussionProps = {
 	friend: ChatUser;
@@ -25,6 +26,7 @@ export const Discussion = ({
   const [message, setMessage] = useState("");
   const discussionEndRef = useRef<HTMLDivElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const navigate = useNavigate(); //to chat container
 
   useEffect(() => {
     discussionEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -97,7 +99,8 @@ export const Discussion = ({
 							<p className="break-words text-transcendence-white">{msg.text}</p>
 							<div className="flex flex-row justify-center items-center border-2 border-transcendence-white rounded-lg p-1 gap-2">
 								{inviteIsActive && <span className="text-transcendence-white font-bold">{formatTime(inviteTimeLeft)}</span>}
-								<button disabled={!inviteIsActive} className="text-white font-bold">{inviteIsActive ? "join the game" : "invite expired"}</button>
+								<button disabled={!inviteIsActive} className="text-white font-bold"
+									onClick={() => navigate("/home/play/tournament")}>{inviteIsActive ? "join the game" : "invite expired"}</button>
 							</div>
 						</div>
 					)
