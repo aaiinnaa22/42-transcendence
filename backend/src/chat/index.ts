@@ -4,13 +4,7 @@ import type { WebSocket } from "@fastify/websocket";
 import { addUser, removeUser } from "./presence.ts";
 import { sendDM, sendInvite } from "./directMessage.ts";
 import { onlineUsers } from "./state.ts";
-//const wsChat = new WebSocket('ws://localhost:4241/chat');
-
-// a map mapping user id to websocket
-//const connections = new Map<number, WebSocket>();
-
-// a map for global chat implementation
-//const globalChatSockets = new Set<WebSocket>();
+import { isBlocked, blockUser, unblockUser } from "./blocking.ts";
 
 const clients = new Map<WebSocket, number>();
 
@@ -53,7 +47,7 @@ export default async function chatComponent(server: FastifyInstance) {
 				users: [...onlineUsers.keys()]
 			}));
 
-			socket.on("message", (message: any) => {
+			socket.on("message", async (message: any) => {
 				let data;
 				try {
 					data = JSON.parse(message.toString());
@@ -62,6 +56,16 @@ export default async function chatComponent(server: FastifyInstance) {
 				}
 
 				if (data.type === "dm") {
+					const blocked = await isBlocked(server, userId, data.to);
+
+					if (blocked) 
+					{
+						socket.send(JSON.stringify({
+						type: "error",
+						reason: "blocked"
+						}));
+						return;
+					}
 					sendDM(userId, data.to, data.message);
 				}
 
@@ -87,15 +91,3 @@ export default async function chatComponent(server: FastifyInstance) {
 		});
 	});
 }
-
-// blocking
-// async function isBlocked(server: FastifyInstance, blockerId: number, senderId: number) {
-// 	try {
-// 		const entry = await server.prisma.block.findFirst({
-// 			where: { blockerId, blockedId: senderId }
-// 		});
-// 		return !!entry;
-// 	} catch (e) {
-// 		return false;
-// 	}
-// }

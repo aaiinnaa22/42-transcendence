@@ -131,6 +131,10 @@ export const ChatContainer = () => {
 			return next;
 		});
 		}
+
+		if (data.type === "error" && data.reason === "blocked") {
+			alert("You cannot message this user.");
+		}
     };
 
     ws.onclose = () => {
