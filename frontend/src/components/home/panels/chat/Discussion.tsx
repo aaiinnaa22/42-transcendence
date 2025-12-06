@@ -8,6 +8,9 @@ type DiscussionProps = {
 	messages: Message[];
 	onSendMessage: (text: string) => void;
 	onExitClick: () => void;
+	inviteIsActive: boolean;
+	inviteTimeLeft: number;
+	onSendInvite: () => void;
 };
 
 export const Discussion = ({
@@ -15,6 +18,9 @@ export const Discussion = ({
   messages,
   onSendMessage,
   onExitClick,
+  inviteIsActive,
+  inviteTimeLeft,
+  onSendInvite
 }: DiscussionProps) => {
   const [message, setMessage] = useState("");
   const discussionEndRef = useRef<HTMLDivElement | null>(null);
@@ -49,6 +55,12 @@ export const Discussion = ({
 		}
 	}
 
+	const formatTime = (seconds: number) => {
+		const minutes = Math.floor(seconds / 60);
+		const secs = seconds % 60;
+		return `${minutes}:${secs.toString().padStart(2, "0")}`;
+	};
+
 	return (
 		<div className="flex flex-col h-full">
 
@@ -59,8 +71,9 @@ export const Discussion = ({
 				<ChatProfilePic friend={friend}/>
 			</div>
 			<div className="self-end p-2">
-				<button className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer">
-				<p className="text-xs lg:text-sm">Invite {friend.username} to a game</p>
+				<button className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
+					disabled={inviteIsActive} onClick={onSendInvite}>
+				<p className="text-xs lg:text-sm text-left">{!inviteIsActive ? `Invite ${friend.username} to a game` : "You have a pending game invite"}</p>
 				<div className="!text-xl lg:!text-3xl material-symbols-outlined">
 				sports_esports</div>
 				</button>
@@ -68,13 +81,27 @@ export const Discussion = ({
 
 			{/* Messages */}
 			<div className="flex flex-col gap-3 p-3 overflow-y-auto flex-grow min-h-0">
-				{messages.map(msg => (
-					<div
-						key={msg.id}
-						className={"p-3 rounded-lg  max-w-[70%] bg-white " + (msg.sender === "me" ? "self-end" : "self-start")}>
-						<p className="break-words text-xs lg:text-md">{msg.text}</p>
-					</div>
-				))}
+				{messages.map(msg => {
+					if (!msg.isInvite)
+						return (
+							<div
+								key={msg.id}
+								className={"p-3 rounded-lg  max-w-[70%] bg-white " + (msg.sender === "me" ? "self-end" : "self-start")}>
+								<p className="break-words text-xs lg:text-md">{msg.text}</p>
+							</div>
+						)
+					return (
+						<div
+							key={msg.id}
+							className={"flex flex-col gap-3 p-3 rounded-lg  max-w-[70%] bg-purple-600 " + (msg.sender === "me" ? "self-end" : "self-start")}>
+							<p className="break-words text-transcendence-white">{msg.text}</p>
+							<div className="flex flex-row justify-center items-center border-2 border-transcendence-white rounded-lg p-1 gap-2">
+								{inviteIsActive && <span className="text-transcendence-white font-bold">{formatTime(inviteTimeLeft)}</span>}
+								<button disabled={!inviteIsActive} className="text-white font-bold">{inviteIsActive ? "join the game" : "invite expired"}</button>
+							</div>
+						</div>
+					)
+				})}
 				<div ref={discussionEndRef}></div>
 			</div>
 

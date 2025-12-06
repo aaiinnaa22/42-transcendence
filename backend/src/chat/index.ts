@@ -2,8 +2,8 @@ import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "@fastify/websocket";
 
 import { addUser, removeUser } from "./presence.ts";
-import { sendDM } from "./directMessage.ts";
-import { onlineUsers } from "./state.ts"; 
+import { sendDM, sendInvite } from "./directMessage.ts";
+import { onlineUsers } from "./state.ts";
 //const wsChat = new WebSocket('ws://localhost:4241/chat');
 
 // a map mapping user id to websocket
@@ -17,9 +17,9 @@ const clients = new Map<WebSocket, number>();
 // TO DO: add prehandler authenticate (?)
 export default async function chatComponent(server: FastifyInstance) {
 	server.get("/chat", { websocket: true }, (socket, req) => {
-			
+
 			let userId: string;
-			try 
+			try
 			{
 				const signed = req.cookies.accessToken;
 				if (!signed) {
@@ -37,8 +37,8 @@ export default async function chatComponent(server: FastifyInstance) {
 
 				req.user = payload;
 				userId = payload.userId;
-			} 
-			catch (err) 
+			}
+			catch (err)
 			{
 				socket.close();
 				return;
@@ -64,6 +64,20 @@ export default async function chatComponent(server: FastifyInstance) {
 				if (data.type === "dm") {
 					sendDM(userId, data.to, data.message);
 				}
+
+				if (data.type === "invite") {
+					console.log(`User ${userId} sent a game invite`);
+
+					sendInvite(userId, data.to, data.message, data.timestamp);
+
+
+				// broadcast TO EVERYONE EXCEPT THE SENDER
+				// for (const client of clients) {
+				// 	if (client !== socket && client.readyState === client.OPEN) {
+				// 		client.send(payload);
+				// 	}
+				// }
+			}
 			});
 
 		// 3. ON DISCONNECT

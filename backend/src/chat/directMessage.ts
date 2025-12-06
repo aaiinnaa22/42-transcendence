@@ -15,11 +15,43 @@ export function sendDM(
 		message
 	});
 
-	for (const socket of targets) 
+	for (const socket of targets)
 	{
-		if (socket.readyState === socket.OPEN) 
+		if (socket.readyState === socket.OPEN)
 		{
 			socket.send(payload);
+		}
+	}
+
+	return true;
+}
+
+export function sendInvite(
+	from: string,
+	to: string,
+	message: string,
+	timestamp: number
+): boolean {
+	const targets = onlineUsers.get(to);
+	if (!targets)
+	{
+		console.log("we failed for online users:(");
+		return false;
+	}
+
+	const payload = JSON.stringify({
+		type: "invite",
+		from,
+		message,
+		timestamp
+	});
+
+	for (const socket of targets)
+	{
+		if (socket.readyState === socket.OPEN)
+		{
+			socket.send(payload);
+			console.log("did we get here?");
 		}
 	}
 
