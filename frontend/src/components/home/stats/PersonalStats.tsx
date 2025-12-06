@@ -1,13 +1,10 @@
 import {CircleDiagram} from "../utils/CircleDiagram";
 import {useEffect, useState} from 'react';
+import { useNavigate } from "react-router-dom";
 
-type PersonalStatsProps =
+export const PersonalStats = () =>
 {
-	switchStats: () => void;
-};
-
-export const PersonalStats = ({switchStats}: PersonalStatsProps) =>
-{
+	const navigate = useNavigate();
 	const [playerStats, setPlayerStats] =	useState({
 		wins:  0,
 		losses: 0,
@@ -47,7 +44,7 @@ export const PersonalStats = ({switchStats}: PersonalStatsProps) =>
 			<button className="absolute text-transcendence-white font-transcendence-two tracking-[0.02em] flex items-center justify-center
 			top-5 left-5 xl:top-10 xl:left-10
 			text-xs xl:text-sm cursor-pointer"
-			onClick={switchStats}>
+			onClick={() => navigate("/home/stats/leaderboard")}>
 				<span className="material-symbols-outlined">arrow_forward</span>
 				<h3 className="h-full">Leaderboard</h3>
 			</button>
