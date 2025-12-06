@@ -100,7 +100,7 @@ export const Profile = () => {
 				<h2 className="text-transcendence-white font-transcendence-three tracking-[0.2em] font-semibold text-3xl">Hi {username}!</h2>
 				<div className="relative inline-block">
 					{profilePic
-					? <img className="h-35 w-35 rounded-full" src={profilePic}></img>
+					? <img className="h-35 w-35 rounded-full object-cover" src={profilePic}></img>
 					: <span className="material-symbols-outlined text-transcendence-white !text-9xl">account_circle</span>}
 					<button
 						className="absolute top-2 right-2 bg-transcendence-white w-8 h-8 rounded-full border-2 border-transcendence-black flex flex-col justify-center items-center cursor-pointer"
