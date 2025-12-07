@@ -15,7 +15,7 @@ if [ ! -d "/app/prisma/migrations" ] || [ -z "$(ls -A /app/prisma/migrations 2>/
 	echo "Creating initial migration"
 	npx prisma migrate dev --name init --skip-seed
 else
-	npx prisma migrate dev --skip-seed || echo "Migrations skipped..."
+	npx prisma migrate dev --name "migration_$(date +%Y%m%d_%H%M%S)" --skip-seed || echo "Migrations skipped..."
 fi
 
 SEED_MARKER="/app/prisma/.seeded"

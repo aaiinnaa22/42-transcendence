@@ -6,12 +6,42 @@
 	--color-transcendence-black: #000000;
 	--color-transcendence-beige: #E2DDB4;
 	--color-transcendence-white: #ffffff;
+	--color-transcendence-blue: #1e578c;
+
 
 	--font-transcendence-one: "Anton", sans-serif;
 	--font-transcendence-two: "Inclusive Sans", sans-serif;
 	--font-transcendence-three: "Bebas Neue", sans-serif;
 }
 
+@layer utilities {
+	.leaderboard-grid {
+		@apply grid gap-2 items-center;
+		grid-template-columns: 3rem minmax(0, 1fr) 4rem;
+		border-radius: 0.125rem;
+	}
+
+	@media (width >= 40rem /* Small screen */) {
+		.leaderboard-grid {
+			grid-template-columns: 3rem minmax(0, 1fr) 4rem 3.5rem;
+			border-radius: 0.25rem;
+		}
+	}
+
+	@media (width >= 48rem /* Medium screen*/) {
+		.leaderboard-grid {
+			grid-template-columns: 3rem minmax(0, 1fr) 4rem 3.5rem 3.5rem;
+			border-radius:  0.375rem;
+		}
+	}
+
+	@media (width >= 64rem /* Large screen*/) {
+		.leaderboard-grid {
+			grid-template-columns: 3rem minmax(0, 1fr) 4rem 3.5rem 3.5rem 3.5rem;
+			border-radius: 0.5rem;
+		}
+	}
+}
 
 @keyframes pingpongAnimation {
   0% {

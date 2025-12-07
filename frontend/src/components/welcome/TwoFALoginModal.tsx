@@ -45,8 +45,9 @@ export const TwoFALoginModal = ({ isOpen, tempToken, onSuccess, onClose }: TwoFA
             setSuccess(true);
             onSuccess();
 
-        } catch (err: any) {
-            setError(err.message || "Invalid 2FA code");
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Failed to load QR code";
+            setError(message);
         } finally {
             setVerifying(false);
         }
