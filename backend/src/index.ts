@@ -7,6 +7,7 @@ import prismaPlugin from "./plugins/prisma.ts";
 import jwtPlugin from "./plugins/jwt.ts";
 import fastifyCookie from "@fastify/cookie";
 import gameComponent from "./pong/init.ts";
+import leaderboardComponent from "./leaderboard/leaderboard.route.ts";
 import chatComponent from "./chat/index.ts";
 import chatUsersComponent from "./chat/usersRoute.ts";
 
@@ -76,6 +77,8 @@ const start = async () =>
 
 		await server.register( chatUsersComponent );
 
+		await server.register( leaderboardComponent );
+		
 		await server.register( chatComponent );
 
 		await server.register( import ( "./routes/friends.route.ts" ) );

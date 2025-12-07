@@ -3,6 +3,7 @@
 		"humao.rest-client",
 		"prisma.prisma",
 		"dbaeumer.vscode-eslint",
-		"qwtel.sqlite-viewer"
+		"qwtel.sqlite-viewer",
+		"bradlc.vscode-tailwindcss"
 	]
 }

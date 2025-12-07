@@ -16,6 +16,7 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
     const [error, setError] = useState<string | null>(null);
     const [verifying, setVerifying] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [countdown, setCountdown] = useState(5);
 
     // Reset when closed / reopen
     useEffect(() => {
@@ -49,13 +50,29 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
 
                 setQrCode(data.qrCode);
 
-            } catch (err: any) {
-                setError(err.message || "Failed to load QR code");
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : "Failed to load QR code";
+                setError(message);
             }
         };
 
         fetchQr();
     }, [isOpen, mode]);
+
+    useEffect(() => {
+        if (!success) return;
+
+        if (countdown <= 0) {
+            onClose();
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setCountdown((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [success, countdown, onClose]);
 
     const handleVerify = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,8 +107,7 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
             const newStatus = mode === "enable";
             onStatusChange?.(newStatus);
 
-            setTimeout(() => onClose(), 1500);
-
+            setCountdown(5); // Reset countdown on new success
         } catch (err: any) {
             setError(err.message || "Failed to verify 2FA code");
         } finally {
@@ -167,6 +183,7 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
                             {mode === "enable"
                                 ? "2FA enabled successfully!"
                                 : "2FA disabled successfully!"}
+                            {` Closing modal in ${countdown} second`}
                         </div>
                     )}
                 </form>

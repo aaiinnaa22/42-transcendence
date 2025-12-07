@@ -28,7 +28,7 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			sameSite: "strict",
 			secure: process.env.NODE_ENV === "production",
 			signed: true,
-			maxAge: 60 * 5, // temporary 5, remember to change back to 15
+			maxAge: 60 * 5, // TODO: temporary 5, remember to change back to 15
 		} )
 		.setCookie( "refreshToken", refreshToken, {
 			path: "/",
@@ -36,11 +36,12 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			sameSite: "strict",
 			secure: process.env.NODE_ENV === "production",
 			signed: true,
-			maxAge: 60 * 10, //  temporary 10, remember to change back to 15
+		//	maxAge: 60 * 60 * 24 * 7, // 7 days
+			maxAge: 60 * 10, // TODO: temporary 10, remember to change back to 15 (Did you mean 7 days? @huskyhania )
 		} );
 }
 // check if user is already logged in
-function isLoggedIn(request: FastifyRequest) 
+function isLoggedIn(request: FastifyRequest)
 {
   return Boolean(request.cookies?.refreshToken || request.cookies?.accessToken);
 }
@@ -68,7 +69,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		checkStateFunction: () => true,
 	} );
 
-	server.get("/auth/google", async (request, reply) => 
+	server.get("/auth/google", async (request, reply) =>
 	{
 		const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
 
@@ -87,7 +88,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		try
 		{
 			if ( !server.prisma ) throw ServiceUnavailableError();
-			
+
 			// Step 1: Use the plugin to exchange the code for tokens
 			const tokenResponse = await server.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow( request );
 
@@ -177,7 +178,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			}
 
 			// Step 5: Signing app JWT with JWT plugin
-			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, {expiresIn: "5m"} );
+			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, {expiresIn: "5m"} ); // TODO: Do these change based on your comment earlier? @huskyhania
 			const refreshToken = server.jwt.sign( { userId: user.id }, {expiresIn: "10m"} );
 			setAuthCookies( reply, accessToken, refreshToken );
 
@@ -214,7 +215,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 						playerStats: true,
 					},
 			});
-			
+
 			if ( !user ) throw NotFoundError( "User not found" );
 			reply.send( user );
 		}
@@ -239,7 +240,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			if (isLoggedIn(request)) 
+			if (isLoggedIn(request))
 			{
 				throw ConflictError("Already logged in");
 			}
@@ -315,7 +316,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			if (isLoggedIn(request)) 
+			if (isLoggedIn(request))
 			{
 				throw ConflictError("Already logged in");
 			}
@@ -345,9 +346,9 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				where: { id: user.id },
 				data: { lastLogin: new Date() }
 			} );
-			
+
 			// 2FA check
-			if (user.twoFAEnabled) 
+			if (user.twoFAEnabled)
 			{
 				// Create short-lived temporary token
 				const tempToken = generate2FATempToken(server, user.id);
@@ -405,7 +406,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 	} );
 
-	server.post("/auth/2fa/setup", { preHandler: authenticate }, async (request: FastifyRequest, reply: FastifyReply) => 
+	server.post("/auth/2fa/setup", { preHandler: authenticate }, async (request: FastifyRequest, reply: FastifyReply) =>
 	{
 		try {
 			const { userId } = request.user as { userId: string };
@@ -494,8 +495,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			setAuthCookies(reply, accessToken, refreshToken);
 
-			reply.send({ 
-				message: "2FA login successful", 
+			reply.send({
+				message: "2FA login successful",
 				/*user: {
 					id: user.id,
 					email: user.email,
