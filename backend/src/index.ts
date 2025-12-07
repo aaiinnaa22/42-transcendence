@@ -78,6 +78,8 @@ const start = async () =>
 
 		await server.register( chatComponent );
 
+		await server.register( import ( "./routes/friends.route.ts" ) );
+
 		// Grab the configuration from env
 		const host = process.env.HOST || process.env.HOSTNAME || "127.0.0.1";
 		const port = process.env.PORT ? parseInt( process.env.PORT, 10 ) : 4241;
