@@ -5,7 +5,7 @@ import { cleanEnv, str, port, num, host } from "envalid";
 
 // Environmental variables to validate
 const backendValidators = {
-	NODE_ENV: str({ choices: ["development", "production"] }),
+	NODE_ENV: str({ choices: ["development", "production", "test"] }),
 
 	// Prisma
 	DATABASE_URL: str({
