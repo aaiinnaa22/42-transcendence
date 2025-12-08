@@ -7,6 +7,8 @@ import prismaPlugin from "./plugins/prisma.ts";
 import jwtPlugin from "./plugins/jwt.ts";
 import fastifyCookie from "@fastify/cookie";
 import gameComponent from "./pong/init.ts";
+import leaderboardComponent from "./leaderboard/leaderboard.route.ts";
+import chatComponent from "./chat/index.ts";
 
 const server : FastifyInstance = Fastify( {
 	logger: true
@@ -65,17 +67,21 @@ const start = async () =>
 		await server.register( import( "./routes/stats.route.ts" ) );
 
 		// Game module initialization
+
 		await server.register( import( "@fastify/websocket" ), {
 	  		options: { maxPayload: 1048576 }
 		} );
 
 		await server.register( gameComponent );
+		await server.register( leaderboardComponent );
+		await server.register( chatComponent );
 
 		// Grab the configuration from env
 		const host = process.env.HOST || process.env.HOSTNAME || "127.0.0.1";
 		const port = process.env.PORT ? parseInt( process.env.PORT, 10 ) : 4241;
 
 		await server.listen( { port, host } );
+		console.log(server.printRoutes());
 	}
 	catch ( error )
 	{

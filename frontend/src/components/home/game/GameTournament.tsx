@@ -11,23 +11,21 @@ export const GameTournament = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number; countdown: Number;}>({ x: 0, y: 0 , countodwn: 3 });
+    const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
 
     // sends move command to backend server when player wants to move
-    const sendMove = (id: number, dx: number, dy: number) => {
+    const sendMove = (dy: number) => {
         const ws = wsRef.current;
         if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: "move", id, dx, dy }));
+            ws.send(JSON.stringify({ type: "move", dy }));
         }
     };
 
     //registers what key was pressed and call sendMove function
     const updateGame = () => {
         //Perform action based on the keypressed
-        if (keysPressed.current["ArrowUp"]) sendMove(2, 0, -10);
-        if (keysPressed.current["ArrowDown"]) sendMove(2, 0, 10);
-        if (keysPressed.current["w"]) sendMove(1, 0, -10);
-        if (keysPressed.current["s"]) sendMove(1, 0, 10);
+        if (keysPressed.current["ArrowUp"] || keysPressed.current["w"]) sendMove(-1);
+        if (keysPressed.current["ArrowDown"] || keysPressed.current["s"]) sendMove(1);
     };
 
 	const axisScale = () => {
@@ -78,17 +76,36 @@ export const GameTournament = () =>
             ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
         }
 
+		const displayCountdown = (ball.current.countdown !== undefined && ball.current.countdown > 0)
+
 		// Draw countdown
-		if (ball.countdown >  0){
-			ctx.font = "100px Arial";
-			ctx.fillText(`${ball.countdown}`,WIDTH/2,HEIGHT/2 - 100);}
+		if (displayCountdown)
+		{
+			const scaledFontSize = canvas.height * 0.125;
+
+			ctx.font = `${scaledFontSize}px Arial`;
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+
+			const scaleCenterX = (WIDTH / 2) * scaleX;
+			const scaleCenterY = (HEIGHT / 2) * scaleY;
+
+			ctx.fillText(`${ball.current.countdown}`, scaleCenterX, scaleCenterY);
+
+			// Reset alignment
+			ctx.textAlign = "left";
+			ctx.textBaseline = "alphabetic";
+		}
 
         // Draw ball
-		const scaledBallX = ball.current.x * scaleX;
-		const scaledBallY = ball.current.y * scaleY;
-		const scaledBallSize = BALL_SIZE * scaleX;
+		if (!displayCountdown)
+		{
+			const scaledBallX = ball.current.x * scaleX;
+			const scaledBallY = ball.current.y * scaleY;
+			const scaledBallSize = BALL_SIZE * scaleX;
 
-        ctx.fillRect(scaledBallX, scaledBallY, scaledBallSize, scaledBallSize);
+			ctx.fillRect(scaledBallX, scaledBallY, scaledBallSize, scaledBallSize);
+		}
     };
 
     useEffect(() => {
@@ -113,21 +130,28 @@ export const GameTournament = () =>
 			{
                 players.current = data.players;
                 ball.current = data.ball;
-				ball.countdown = data.countdown;        	
+				ball.current.countdown = data.countdown;
 }
 			else if (data.type === "waiting")
 			{
-				console.log("Waiting in queue.");
+				console.log("Waiting in queue. Position: ", data.position);
 			}
 			else if (data.type === "error")
 			{
-				console.log("You are already in a match.");
+				console.error("Error from server: ", data.message);
+				if (data.error) console.error("Validation errors: ", data.error);
 			}
 			else if (data.type === "inactivity")
 			{
 				console.log("Game ended due to inactivity.");
 				console.log("Winner is player " + data.winner);
 			}
+			else if (data.type === "end")
+			{
+				console.log( data.message );
+				console.log( "The winner's new elo is " + data.elo.winner );
+			}
+
 			/* ADD ADDITIONAL STATES HERE */
 		};
 

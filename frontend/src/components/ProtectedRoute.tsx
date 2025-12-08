@@ -1,6 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { fetchWithAuth } from "../api/fetchWithAuth";
 
 interface ProtectedRouteProps {
 	children: React.ReactNode;
@@ -16,30 +17,24 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
 	useEffect(() => {
 		const checkAuth = async () => {
-			try
-			{
-				const response = await fetch("http://localhost:4241/auth/me", {
-					method: "GET",
-					credentials: "include",
-				});
+			try {
+				const response = await fetchWithAuth("http://localhost:4241/auth/me");
 				setIsAuthenticated(response.ok);
 			}
-			catch
-			{
+			catch {
 				setIsAuthenticated(false);
 			}
 		};
 		checkAuth();
 	}, []);
-	if (isAuthenticated === null)
-		return (
-			<div className="w-screen h-screen bg-transcendence-black text-white font-transcendence-two text-center flex flex-col justify-center align-center">
-				<h1>Loading...</h1>
-			</div>
-		);
+
+	if (isAuthenticated === null) {
+    	return <div>Loading...</div>;
+  	}
+
 	if (!isAuthenticated) {
 		return <Navigate to="/" replace />;
 	}
 
-	return <>{children}</>
+	return <>{children}</>;
 };

@@ -56,10 +56,15 @@ export const Profile = () => {
 		const profilePicFile = event.target.files?.[0];
 		if (!profilePicFile) return;
 
+		
+		if (profilePic?.startsWith("blob:"))
+		{
+			URL.revokeObjectURL(profilePic);
+		}
+		
 		// Preview the uploaded image
 		const profileUrl = URL.createObjectURL(profilePicFile);
-		setProfilePic(profileUrl);
-
+    	setProfilePic(profileUrl);
 
 		try {
 			const formData = new FormData();
@@ -72,24 +77,15 @@ export const Profile = () => {
 				body: formData,
 			});
 
-			if (response.ok)
-			{
-				// Set image from backend
-				const avatarBlob = await response.blob();
-				const avatarUrl = URL.createObjectURL(avatarBlob);
-
-				// Prevent memory leak
-				if (profileUrl)
-				{
-					URL.revokeObjectURL(profileUrl);
-				}
-				setProfilePic(avatarUrl);
-			}
-
-
+			 if (!response.ok)
+			 {
+				throw new Error("Failed to upload profile picture");
+			 }
 		}
-		catch (err: any) {
-			console.error("Failed to store profile picture");
+		catch (err: unknown) {
+			console.error(err);
+
+			URL.revokeObjectURL(profileUrl);
 			setProfilePic(null);
 		};
 	};

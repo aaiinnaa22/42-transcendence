@@ -17,16 +17,16 @@ export const PersonalStats = () =>
 		const getStats = async () => {
 			try
 			{
-				const response = await fetch("http://localhost:4241/users/profile", {
+				const response = await fetch("http://localhost:4241/stats/me", {
 					method: "GET",
 					credentials: "include",
 				});
 				const data = await response.json();
 				setPlayerStats({
-					wins: data.playerStats?.wins ?? 0,
-					losses: data.playerStats?.losses ?? 0,
-					gamesPlayed: data.playerStats?.playedGames ?? 0,
-					rating: data.playerStats?.eloRating ?? 0
+					wins: data.wins ?? 0,
+					losses: data.losses ?? 0,
+					gamesPlayed: data.playedGames ?? 0,
+					rating: data.eloRating ?? 0
 				});
 
 			}

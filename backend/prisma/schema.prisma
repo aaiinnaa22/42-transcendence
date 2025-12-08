@@ -31,6 +31,21 @@ model User {
   // Friends relationships
   friendships     Friendship[] @relation("UserFriendships")
   friendOf        Friendship[] @relation("FriendFriendships")
+  
+  // 2FA
+  twoFAEnabled    Boolean    @default(false)
+  twoFASecret     String?    // null until user activates 2FA
+
+  // Blocking
+  blockedUsers Block[] @relation("BlockerRelation")
+  blockedBy    Block[] @relation("BlockedRelation")
+
+  // Game invites  
+  invitesSent     GameInvite[] @relation("InvitesSent")
+  invitesReceived GameInvite[] @relation("InvitesReceived")
+
+  // Tournament notifications
+  notifications Notification[]
 }
 
 // Authentication providers table (Google, GitHub, Facebook, etc)
@@ -80,4 +95,56 @@ model Friendship {
   @@unique([userId, friendId])
   @@index([userId])
   @@index([friendId])
+}
+
+// Blocking table for chat module
+model Block {
+  id        String  @id @default(uuid())
+  blockerId String
+  blockedId String
+
+  blocker   User @relation("BlockerRelation", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User @relation("BlockedRelation", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+// Invite system
+model GameInvite {
+  id        String      @id @default(uuid())
+  fromId    String
+  toId      String
+  status    InviteStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+
+  from      User         @relation("InvitesSent", fields: [fromId], references: [id], onDelete: Cascade)
+  to        User         @relation("InvitesReceived", fields: [toId], references: [id], onDelete: Cascade)
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+// Tournament notifications
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      NotificationType
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  TOURNAMENT
+  MATCH
+  SYSTEM
+  CHAT
 }
