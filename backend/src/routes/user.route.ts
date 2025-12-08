@@ -4,7 +4,6 @@ import { type FastifyInstance } from "fastify";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
 import { blockUser, unblockUser } from "../chat/blocking.ts";
 import { HttpError, NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
 import { validateRequest } from "../shared/utility/validation.utility.ts";
