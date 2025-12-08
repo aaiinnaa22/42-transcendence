@@ -1,12 +1,13 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import Game, { GameMode, Location, type GameEndData } from "./game.ts";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
-import type { WebSocket } from "@fastify/websocket";
+//import type { WebSocket } from "@fastify/websocket";
 import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT, ELO_K_FACTOR } from "./constants.ts";
 import type { GameState } from "../schemas/game.states.schema.ts";
 import type Player from "./player.ts";
 import { validateWebSocketMessage } from "../shared/utility/websocket.utility.ts";
 import { MoveMessageSchema } from "../schemas/game.schema.ts";
+import type { WebSocket as WsWebSocket } from "ws";
 
 type UserId = string;
 type GameId = string;
@@ -15,7 +16,7 @@ type UserName = string;
 type PlayerConnection = {
 	userName: UserName;
 	userId: UserId;
-	socket: WebSocket;
+	socket: WsWebSocket;
 	gameId: GameId | null;
 	eloRating: number;
 	joinedAt: number;
@@ -37,7 +38,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 
 	// Helper for queueing new players
-	const queuePlayerForTournament = async ( id: UserId, socket: WebSocket ) => {
+	const queuePlayerForTournament = async ( id: UserId, socket: WsWebSocket ) => {
 		try {
 			const stats = await server.prisma.playerStats.findUnique( {
 				where: { userId: id },
@@ -90,7 +91,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	};
 
 	// Helper for starting single player games
-	const startSinglePlayerGame = async ( id: UserId, socket: WebSocket ) => {
+	const startSinglePlayerGame = async ( id: UserId, socket: WsWebSocket ) => {
 		try {
 			const stats = await server.prisma.playerStats.findUnique( {
 				where: { userId: id },
@@ -321,28 +322,29 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	// Multiplayer game handler with matchmaking
 	server.get( "/game/multiplayer",
 		{ websocket: true, preHandler: authenticate },
-		async ( socket: WebSocket, request: FastifyRequest ) =>
+		async ( socket, request: FastifyRequest ) =>
 	{
+		const ws = socket as unknown as WsWebSocket;
         const { userId } = request.user as { userId: string };
 
 		// Check if the player is already in a match
 		if ( activePlayers.has( userId ) )
 		{
-			socket.send(JSON.stringify( {
+			ws.send(JSON.stringify( {
 				type: "error",
 				message: "Already in a match"
 			} ));
-			socket.close();
+			ws.close();
 			return;
 		}
 
 		// Queue the connected player
-		await queuePlayerForTournament( userId, socket );
+		await queuePlayerForTournament( userId, ws );
 
-		socket.on( "message", ( message: any ) =>
+		ws.on( "message", ( message: any ) =>
 		{
 			try {
-				const data = validateWebSocketMessage(MoveMessageSchema, socket, message);
+				const data = validateWebSocketMessage(MoveMessageSchema, ws, message);
 				const playerConnection = activePlayers.get( userId );
 
 				if (!data) return;
@@ -363,18 +365,18 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 					const gameState : GameState = game.getState();	// Get game state
 					const payload = JSON.stringify( gameState );	// Serialize the game state
-					socket.send( payload );
+					ws.send( payload );
 				}
 			} catch (error) {
 				server.log.error(`Game: Message handling error for ${userId}: ${error}`);
-				socket.send(JSON.stringify({
+				ws.send(JSON.stringify({
 					type: "error",
 					message: "Failed to process message"
 				}));
 			}
 		} );
 
-		socket.on( "close", () =>
+		ws.on( "close", () =>
 		{
 			try {
 				const playerConnection = activePlayers.get( userId );
@@ -419,27 +421,28 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 	server.get( "/game/singleplayer",
 		{ websocket: true, preHandler: authenticate },
-		async ( socket: WebSocket, request: FastifyRequest ) =>
+		async ( socket, request: FastifyRequest ) =>
 	{
+		const ws = socket as unknown as WsWebSocket;
         const { userId } = request.user as { userId: string };
 
 		// Check if the player is already in a match
 		if ( activePlayers.has( userId ) )
 		{
-			socket.send(JSON.stringify( {
+			ws.send(JSON.stringify( {
 				type: "error",
 				message: "Already in a match"
 			} ));
-			socket.close();
+			ws.close();
 			return;
 		}
 
-		await startSinglePlayerGame( userId, socket );
+		await startSinglePlayerGame( userId, ws );
 
-		socket.on( "message", ( message: any ) =>
+		ws.on( "message", ( message: any ) =>
 		{
 			try {
-				const data = validateWebSocketMessage(MoveMessageSchema, socket, message);
+				const data = validateWebSocketMessage(MoveMessageSchema, ws, message);
 				if ( !data ) return;
 
 				const playerConnection = activePlayers.get( userId );
@@ -463,18 +466,18 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 					const gameState: GameState = game.getState();	// Get game state
 					const payload = JSON.stringify( gameState );	// Serialize the game state
-					socket.send( payload );
+					ws.send( payload );
 				}
 			} catch (error) {
 				server.log.error(`Game: Message handling error for ${userId}: ${error}`);
-				socket.send(JSON.stringify({
+				ws.send(JSON.stringify({
 					type: "error",
 					message: "Failed to process message"
 				}));
 			}
 		});
 
-		socket.on( "close", () =>
+		ws.on( "close", () =>
 		{
 			try {
 				// Single player -> no elo calculations needed
