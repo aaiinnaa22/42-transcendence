@@ -2,6 +2,8 @@ import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fa
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import {} from "@prisma/client";
 import { NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
+import { validateRequest } from "../shared/utility/validation.utility.ts";
+import { GetStatsUsernameSchema } from "../schemas/stats.schema.ts";
 
 const statsRoutes = async ( server: FastifyInstance ) =>
 {
@@ -33,7 +35,7 @@ const statsRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			const { username } = request.params as { username: string };
+			const { username } = validateRequest(GetStatsUsernameSchema, request.params);
 
 			const playerStats = await server.prisma.user.findUnique( {
 				where: { username },
@@ -53,39 +55,6 @@ const statsRoutes = async ( server: FastifyInstance ) =>
 			return sendErrorReply( reply, err, "Failed to get player stats" );
 		}
 	} );
-
-	// Post new statistics
-	/*
-	server.post( "/stats/me", { preHandler: authenticate }, async ( request, response ) =>
-	{
-		try
-		{
-			const {userId} = request.user as {userId: string};
-
-			const playerStats = await server.prisma.playerStats.findUnique( {
-				where: { userId }
-			} );
-
-			if ( !playerStats )
-			{
-				return response.code( 404 ).send( { error: "statistics not found"} );
-			}
-
-			// TODO: Confirm that the user has finished the match and that we have match results for both players
-			// NOTE: Once we have the matchmaking logic then the updates should be handled serverside
-
-			// TODO: Respond with the newlly calculated Elo score along with the win-loss ratio
-			// NOTE: A disconnected match will be counted as a forfeit (loss)
-		}
-		catch ( error : any )
-		{
-			server.log.error( `Failed to post statistics: ${error?.message}` );
-			response.code( 500 ).send( {error: "Failed to post stats"} );
-		}
-	} );
-	*/
-
-	// Additional routes
 };
 
 export default statsRoutes;

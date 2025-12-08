@@ -1,24 +1,22 @@
-const userRequestSchema = {
-	type: 'object',
-	required: [ 'id' ],
-	properties: {
-		id: { type: 'string' }
-	},
-	additionalProperties: false
-};
+import { z } from "zod";
+import {
+	emailField,
+	usernameField,
+	passwordField,
+	avatarUrlField
+} from "../shared/utility/validation.utility.ts";
 
-const userResponseSchema = {
-	type: 'object',
-	required: [ 'id' ],
-	properties: {
-		id: { type: 'string' },
-		email: { type: ['string', 'null'], format: 'email' },
-		username: { type: ['string', 'null'] },
-		createdAt: { type: 'string', format: 'date-time' },
-		updatedAt: { type: 'string', format: 'date-time' },
-		lastLogin: { type: ['string', 'null'], format: 'date-time' },
-	},
-	additionalProperties: false
-};
+// Export user route schemas
 
-export default { userRequestSchema, userResponseSchema };
+export const UpdateUserSchema = z.object({
+	username: usernameField.optional(),
+	email: emailField.optional(),
+	password: passwordField.optional(),
+	avatar: avatarUrlField.optional()
+})
+.refine(
+	(data) => Object.values(data).some( value => value !== undefined ),
+	{ message: "At least one field must be provided" }
+);
+
+export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
