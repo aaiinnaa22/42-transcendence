@@ -1,3 +1,5 @@
+import { env } from "../config/environment.ts";
+
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import fastifyOauth2, { type OAuth2Namespace } from "@fastify/oauth2";
 import { OAuth2Client } from "google-auth-library";
@@ -27,7 +29,7 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			path: "/",
 			httpOnly: true,
 			sameSite: "strict",
-			secure: process.env.NODE_ENV === "production",
+			secure: env.NODE_ENV === "production",
 			signed: true,
 			maxAge: 60 * 5, // TODO: temporary 5, remember to change back to 15
 		} )
@@ -35,7 +37,7 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			path: "/",
 			httpOnly: true,
 			sameSite: "strict",
-			secure: process.env.NODE_ENV === "production",
+			secure: env.NODE_ENV === "production",
 			signed: true,
 		//	maxAge: 60 * 60 * 24 * 7, // 7 days
 			maxAge: 60 * 10, // TODO: temporary 10, remember to change back to 15 (Did you mean 7 days? @huskyhania )
@@ -54,8 +56,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		scope: ["openid", "email", "profile"],
 		credentials: {
 			client: {
-				id: process.env.GOOGLE_CLIENT_ID!,
-				secret: process.env.GOOGLE_CLIENT_SECRET!,
+				id: env.GOOGLE_CLIENT_ID,
+				secret: env.GOOGLE_CLIENT_SECRET,
 			},
 			auth: {
 				authorizeHost: "https://accounts.google.com",
@@ -64,7 +66,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				tokenPath: "/token",
 			},
 		},
-		callbackUri: process.env.GOOGLE_CALLBACK_URL || "http://localhost:4241/auth/google/callback",
+		callbackUri: env.GOOGLE_CALLBACK_URL,
 		// Must return a string; used for CSRF state parameter
 		generateStateFunction: () => Math.random().toString( 36 ).slice( 2 ),
 		checkStateFunction: () => true,
@@ -72,7 +74,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 	server.get("/auth/google", async (request, reply) =>
 	{
-		const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
+		const clientRedirectUrl = env.CLIENT_REDIRECT_URL;
 
 		// Prevent login if already logged in
 		if (request.cookies?.accessToken || request.cookies?.refreshToken) {
@@ -98,11 +100,11 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			if ( !token.id_token ) throw InternalServerError( "Missing ID token" );
 
 			// Step 2: Verifying ID token
-			const client = new OAuth2Client( process.env.GOOGLE_CLIENT_ID );
+			const client = new OAuth2Client( env.GOOGLE_CLIENT_ID );
 
 			const ticket = await client.verifyIdToken( {
 				idToken: token.id_token,
-				audience: process.env.GOOGLE_CLIENT_ID!,
+				audience: env.GOOGLE_CLIENT_ID,
 			} );
 
 			const payload = ticket.getPayload();
@@ -137,7 +139,6 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				if ( await server.prisma.user.findUnique( { where:{ email }} ) )
 				{
 					// Step 4.b: Email from the provider already in use
-					const loginRedirectUrl = process.env.CLIENT_LOGIN_REDIRECT_URL || "http://localhost:8080/login";
 					throw ConflictError("User with that email already exists");
 				}
 				else
@@ -184,7 +185,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			setAuthCookies( reply, accessToken, refreshToken );
 
 			// Step 6: redirect from google auth
-			const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
+			const clientRedirectUrl = env.CLIENT_REDIRECT_URL;
 			return reply.redirect( clientRedirectUrl );
 
 		}
@@ -260,7 +261,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			}
 
 			// Hash password
-			const salt_rounds = process.env.SALT_ROUNDS ? parseInt( process.env.SALT_ROUNDS, 10 ) : 10;
+			const salt_rounds = env.SALT_ROUNDS;
 			const hashedPassword = await bcrypt.hash( password, salt_rounds );
 
 			// Create user

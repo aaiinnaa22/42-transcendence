@@ -1,3 +1,5 @@
+import { env } from "../config/environment.ts";
+
 import { type FastifyInstance } from "fastify";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import { Prisma } from "@prisma/client";
@@ -45,7 +47,7 @@ const userRoutes = async (server: FastifyInstance) => {
             const user = await server.prisma.$transaction(async (tx) => {
                 if (password !== undefined)
                 {
-                    const salt_rounds = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS, 10) : 10;
+                    const salt_rounds = env.SALT_ROUNDS;
                     const hashedPassword = await bcrypt.hash(password, salt_rounds);
                     await tx.credential.upsert({
                         where: { userId },
