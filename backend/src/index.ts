@@ -9,7 +9,38 @@ import leaderboardComponent from "./leaderboard/leaderboard.route.ts";
 import chatComponent from "./chat/index.ts";
 
 const server : FastifyInstance = Fastify( {
-	logger: true
+	logger: env.NODE_ENV === "production"
+		? {
+			level: "warn",
+			redact: {
+				paths: [
+					'req.headers.authorization',
+					'req.headers.cookie',
+					'req.body.password',
+					'req.headers["set-cookie"]',
+				],
+				censor: "[REDACTED]"
+			}
+		}
+		: {
+			level: "debug",
+			transport: {
+				target: "pino-pretty",
+				options: {
+					translateTime: "SYS:HH:MM:ss Z",
+					ignore: "pid,hostname,reqId",
+					colorize: true,
+					levelFirst: true,
+					hideObject: true,
+					messageFormat: "{msg} {req.method} {req.url} {res.statusCode} {responseTime}"
+				}
+			},
+			serializers: {
+				responseTime(value) {
+					return typeof value === "number" ? `(${value.toFixed(2)}ms)` : value;
+				}
+			}
+		}
 } );
 
 // Main of the backend server

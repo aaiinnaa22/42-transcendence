@@ -21,6 +21,7 @@ services:
       PORT: "4241"
       DATABASE_URL: "file:./dev.db"
       PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
+      TZ: "Europe/Helsinki"
 
   frontend:
     build:

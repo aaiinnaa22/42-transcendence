@@ -29,6 +29,11 @@ const backendValidators = {
 		devDefault: 4241,
 		default: 4241
 	}),
+	TZ: str({
+		desc: "Timezone for server logs",
+		devDefault: "Europe/Helsinki",
+		default: "UTC"
+	}),
 
 	// Frontend config information
 	FRONTEND_HOST: host({
