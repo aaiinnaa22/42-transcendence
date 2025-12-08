@@ -148,7 +148,7 @@ describe('User routes (integration via server.inject + signed cookie)', () => {
       method: 'PUT',
       url: '/users/me',
       headers: { cookie },
-      payload: { username: 'new_name', password: 'secret123' },
+      payload: { username: 'new_name', password: 'Secret123' },
     });
 
     expect(res.statusCode).toBe(200);
@@ -163,6 +163,162 @@ describe('User routes (integration via server.inject + signed cookie)', () => {
       include: { playerStats: true },
     });
   });
+
+  describe('PUT /users/profile validation errors', () => {
+	it('rejects malformed password - without lowercase character', async () => {
+      const cookie = await getAuthCookie();
+      const res = await server.inject({
+        method: 'PUT',
+        url: '/users/me',
+        headers: { cookie },
+        payload: { password: 'SECRET123' },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = res.json();
+      expect(body.error).toContain('lowercase character');
+
+      // Expect the user table not to be updated
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+
+	it('rejects malformed password - without uppercase character', async () => {
+      const cookie = await getAuthCookie();
+      const res = await server.inject({
+        method: 'PUT',
+        url: '/users/me',
+        headers: { cookie },
+        payload: { password: 'secret123' },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = res.json();
+      expect(body.error).toContain('uppercase character');
+
+      // Expect the user table not to be updated
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+
+	it('rejects malformed password - without digit', async () => {
+      const cookie = await getAuthCookie();
+      const res = await server.inject({
+        method: 'PUT',
+        url: '/users/me',
+        headers: { cookie },
+        payload: { password: 'SECret' },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = res.json();
+      expect(body.error).toContain('digit');
+
+      // Expect the user table not to be updated
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+
+	it('rejects malformed password - too long', async () => {
+      const cookie = await getAuthCookie();
+      const res = await server.inject({
+        method: 'PUT',
+        url: '/users/me',
+        headers: { cookie },
+        payload: { password: 'S'.repeat(200) },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = res.json();
+      expect(body.error).toContain('Password too long');
+
+      // Expect the user table not to be updated
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+
+	it('rejects malformed password - too short', async () => {
+      const cookie = await getAuthCookie();
+      const res = await server.inject({
+        method: 'PUT',
+        url: '/users/me',
+        headers: { cookie },
+        payload: { password: 'ret' },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = res.json();
+      expect(body.error).toContain('Password must be at least 5 characters long');
+
+      // Expect the user table not to be updated
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+
+	it('rejects username with invalid characters', async () => {
+      const cookie = await getAuthCookie();
+      const res = await server.inject({
+        method: 'PUT',
+        url: '/users/me',
+        headers: { cookie },
+        payload: { username: 'new@name!' },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = res.json();
+      expect(body.error).toContain('Username may only contain');
+
+      // Expect the user table not to be updated
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+
+	it('rejects username with leading whitespaces', async () => {
+      const cookie = await getAuthCookie();
+      const res = await server.inject({
+        method: 'PUT',
+        url: '/users/me',
+        headers: { cookie },
+        payload: { username: ' new_name' },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = res.json();
+      expect(body.error).toContain('Username may not have');
+
+      // Expect the user table not to be updated
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+
+	it('rejects username with trailing whitespaces', async () => {
+      const cookie = await getAuthCookie();
+      const res = await server.inject({
+        method: 'PUT',
+        url: '/users/me',
+        headers: { cookie },
+        payload: { username: 'new_name ' },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = res.json();
+      expect(body.error).toContain('Username may not have');
+
+      // Expect the user table not to be updated
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+
+	it('rejects username with consecutive whitespaces', async () => {
+      const cookie = await getAuthCookie();
+      const res = await server.inject({
+        method: 'PUT',
+        url: '/users/me',
+        headers: { cookie },
+        payload: { username: 'new  name' },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = res.json();
+      expect(body.error).toContain('Username may not contain consecutive spaces');
+
+      // Expect the user table not to be updated
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+  });
+
 
   it('DELETE /users/profile deletes user and related data', async () => {
     mockPrisma.credential.deleteMany.mockResolvedValue({ count: 1 });

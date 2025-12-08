@@ -1,12 +1,15 @@
+import { env } from "../config/environment.ts";
+
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import fastifyOauth2, { type OAuth2Namespace } from "@fastify/oauth2";
 import { OAuth2Client } from "google-auth-library";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import bcrypt from "bcrypt";
-import { checkPasswordStrength, checkEmailFormat } from "../shared/utility/validation.utility.ts";
+import { validateRequest } from "../shared/utility/validation.utility.ts";
 import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReply, NotFoundError, ConflictError, UnauthorizedError } from "../shared/utility/error.utility.ts";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
+import { LoginSchema, RegisterSchema, TwoFADisableSchema, TwoFALoginSchema, TwoFAVerifySchema } from "../schemas/auth.schema.ts";
 
 // Augment Fastify instance with oauth2 namespace added by the plugin
 declare module "fastify" {
@@ -26,7 +29,7 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			path: "/",
 			httpOnly: true,
 			sameSite: "strict",
-			secure: process.env.NODE_ENV === "production",
+			secure: env.NODE_ENV === "production",
 			signed: true,
 			maxAge: 60 * 5, // TODO: temporary 5, remember to change back to 15
 		} )
@@ -34,7 +37,7 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			path: "/",
 			httpOnly: true,
 			sameSite: "strict",
-			secure: process.env.NODE_ENV === "production",
+			secure: env.NODE_ENV === "production",
 			signed: true,
 		//	maxAge: 60 * 60 * 24 * 7, // 7 days
 			maxAge: 60 * 10, // TODO: temporary 10, remember to change back to 15 (Did you mean 7 days? @huskyhania )
@@ -53,8 +56,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		scope: ["openid", "email", "profile"],
 		credentials: {
 			client: {
-				id: process.env.GOOGLE_CLIENT_ID!,
-				secret: process.env.GOOGLE_CLIENT_SECRET!,
+				id: env.GOOGLE_CLIENT_ID,
+				secret: env.GOOGLE_CLIENT_SECRET,
 			},
 			auth: {
 				authorizeHost: "https://accounts.google.com",
@@ -63,7 +66,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				tokenPath: "/token",
 			},
 		},
-		callbackUri: process.env.GOOGLE_CALLBACK_URL || "http://localhost:4241/auth/google/callback",
+		callbackUri: env.GOOGLE_CALLBACK_URL,
 		// Must return a string; used for CSRF state parameter
 		generateStateFunction: () => Math.random().toString( 36 ).slice( 2 ),
 		checkStateFunction: () => true,
@@ -71,7 +74,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 	server.get("/auth/google", async (request, reply) =>
 	{
-		const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
+		const clientRedirectUrl = env.CLIENT_REDIRECT_URL;
 
 		// Prevent login if already logged in
 		if (request.cookies?.accessToken || request.cookies?.refreshToken) {
@@ -97,11 +100,11 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			if ( !token.id_token ) throw InternalServerError( "Missing ID token" );
 
 			// Step 2: Verifying ID token
-			const client = new OAuth2Client( process.env.GOOGLE_CLIENT_ID );
+			const client = new OAuth2Client( env.GOOGLE_CLIENT_ID );
 
 			const ticket = await client.verifyIdToken( {
 				idToken: token.id_token,
-				audience: process.env.GOOGLE_CLIENT_ID!,
+				audience: env.GOOGLE_CLIENT_ID,
 			} );
 
 			const payload = ticket.getPayload();
@@ -136,7 +139,6 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				if ( await server.prisma.user.findUnique( { where:{ email }} ) )
 				{
 					// Step 4.b: Email from the provider already in use
-					const loginRedirectUrl = process.env.CLIENT_LOGIN_REDIRECT_URL || "http://localhost:8080/login";
 					throw ConflictError("User with that email already exists");
 				}
 				else
@@ -183,7 +185,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			setAuthCookies( reply, accessToken, refreshToken );
 
 			// Step 6: redirect from google auth
-			const clientRedirectUrl = process.env.CLIENT_REDIRECT_URL!;
+			const clientRedirectUrl = env.CLIENT_REDIRECT_URL;
 			return reply.redirect( clientRedirectUrl );
 
 		}
@@ -199,7 +201,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			const { userId } = request.user as { userId: string };
+			const { userId } = request.user as { userId: string }; // Validated with JWT
 
 			const user = await server.prisma.user.findUnique({
 				where: { id: userId },
@@ -244,17 +246,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			{
 				throw ConflictError("Already logged in");
 			}
-			const { email, password, username } = request.body as {
-        		email: string;
-        		password: string;
-        		username: string;
-      		};
 
-			// Validate email format and confirm minimum password strength requirements
-			if ( !username || username === undefined ) throw BadRequestError( "Username missing" );
-			if ( username.length < 3 ) throw BadRequestError( "Username too short" );
-			if ( !checkEmailFormat( email ) ) throw BadRequestError( "Invalid email" );
-			if ( !checkPasswordStrength( password ) ) throw BadRequestError( "Password too weak" );
+			const { email, password, username } = validateRequest(RegisterSchema, request.body);
 
 			// Check if email is already in use
 			if ( await server.prisma.user.findUnique( { where: { email } } ) )
@@ -268,7 +261,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			}
 
 			// Hash password
-			const salt_rounds = process.env.SALT_ROUNDS ? parseInt( process.env.SALT_ROUNDS, 10 ) : 10;
+			const salt_rounds = env.SALT_ROUNDS;
 			const hashedPassword = await bcrypt.hash( password, salt_rounds );
 
 			// Create user
@@ -320,7 +313,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			{
 				throw ConflictError("Already logged in");
 			}
-			const { email, password } = request.body as { email: string; password: string };
+
+			const { email, password } = validateRequest(LoginSchema, request.body);
 
 			// Find user
 			const user = await server.prisma.user.findUnique( {
@@ -437,7 +431,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 	server.post("/auth/2fa/verify", { preHandler: authenticate }, async (request, reply) => {
 		try {
-			const { code } = request.body as { code: string };
+			const { code } = validateRequest(TwoFAVerifySchema, request.body);
 			const { userId } = request.user as { userId: string };
 
 			const user = await server.prisma.user.findUnique({
@@ -469,10 +463,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 	server.post("/auth/2fa/login", async (request, reply) => {
 		try {
-			const { code, tempToken } = request.body as {
-			code: string;
-			tempToken: string;
-			};
+			const { code, tempToken } = validateRequest(TwoFALoginSchema, request.body);
 
 			// Validate temp token (5 min expiration)
 			const decoded = server.jwt.verify(tempToken) as { userId: string };
@@ -516,7 +507,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	server.post("/auth/2fa/disable", { preHandler: authenticate }, async (request, reply) => {
 		try {
 			const { userId } = request.user as { userId: string };
-			const { code } = request.body as { code: string };
+			const { code } = validateRequest(TwoFADisableSchema, request.body);
 
 			const user = await server.prisma.user.findUnique({ where: { id: userId } });
 			if (!user?.twoFASecret) throw BadRequestError("2FA not set up");

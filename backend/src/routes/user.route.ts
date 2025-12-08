@@ -1,9 +1,14 @@
+import { env } from "../config/environment.ts";
+
 import { type FastifyInstance } from "fastify";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
 import { blockUser, unblockUser } from "../chat/blocking.ts";
+import { HttpError, NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
+import { validateRequest } from "../shared/utility/validation.utility.ts";
+import { UpdateUserSchema } from "../schemas/user.schema.ts";
 
 const userRoutes = async (server: FastifyInstance) => {
     // Get user profile (protected route)
@@ -31,13 +36,7 @@ const userRoutes = async (server: FastifyInstance) => {
         try
         {
             const { userId } = request.user as { userId: string };
-
-            const { username, avatar, email, password } = request.body as {
-                username?: string;
-                avatar?: string;
-                email?: string;
-                password?: string;
-            };
+            const { username, avatar, email, password } = validateRequest(UpdateUserSchema, request.body);
 
             // Prepare the data to update only provided fields
             const dataToUpdate: Record<string, any> = {};
@@ -50,7 +49,7 @@ const userRoutes = async (server: FastifyInstance) => {
             const user = await server.prisma.$transaction(async (tx) => {
                 if (password !== undefined)
                 {
-                    const salt_rounds = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS, 10) : 10;
+                    const salt_rounds = env.SALT_ROUNDS;
                     const hashedPassword = await bcrypt.hash(password, salt_rounds);
                     await tx.credential.upsert({
                         where: { userId },
@@ -80,6 +79,9 @@ const userRoutes = async (server: FastifyInstance) => {
         }
         catch (err: any)
         {
+			if (err instanceof HttpError)
+				return sendErrorReply( reply, err );
+
             // Handle known Prisma errors for better UX
             if (err instanceof Prisma.PrismaClientKnownRequestError)
             {

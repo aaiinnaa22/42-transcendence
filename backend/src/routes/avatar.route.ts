@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 import fs from "fs/promises";
 import { BadRequestError, NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
+import { validateRequest } from "../shared/utility/validation.utility.ts";
+import { GetAvatarSchema } from "../schemas/avatar.schema.ts";
 
 const AVATAR_DIR = path.join( process.cwd(), "upload", "avatars" );
 const MAX_FILESIZE = 4 * 1024 * 1024; // 4MB
@@ -93,9 +95,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 		{
 			try
 			{
-				const { filename } = request.params as { filename: string };
-
-				if ( !/^[a-f0-9-]+\.webp$/i.test( filename ) ) throw BadRequestError( "Invalid filename" );
+				const { filename } = validateRequest(GetAvatarSchema, request.params);
 
 				// Check if the file exists
 				const filepath = path.join( AVATAR_DIR, filename );

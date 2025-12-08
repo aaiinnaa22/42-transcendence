@@ -1,8 +1,6 @@
-import * as dotenv from "dotenv";
-dotenv.config();
+import { env } from "./config/environment.ts" // IMPORTANT: validation happens first
 
 import Fastify, { type FastifyInstance } from "fastify";
-import { Server, IncomingMessage, ServerResponse } from "http"; // TODO: Change to https once viable
 import prismaPlugin from "./plugins/prisma.ts";
 import jwtPlugin from "./plugins/jwt.ts";
 import fastifyCookie from "@fastify/cookie";
@@ -12,7 +10,38 @@ import chatComponent from "./chat/index.ts";
 import chatUsersComponent from "./chat/usersRoute.ts";
 
 const server : FastifyInstance = Fastify( {
-	logger: true
+	logger: env.NODE_ENV === "production"
+		? {
+			level: "warn",
+			redact: {
+				paths: [
+					'req.headers.authorization',
+					'req.headers.cookie',
+					'req.body.password',
+					'req.headers["set-cookie"]',
+				],
+				censor: "[REDACTED]"
+			}
+		}
+		: {
+			level: "debug",
+			transport: {
+				target: "pino-pretty",
+				options: {
+					translateTime: "SYS:HH:MM:ss Z",
+					ignore: "pid,hostname,reqId",
+					colorize: true,
+					levelFirst: true,
+					hideObject: true,
+					messageFormat: "{msg} {req.method} {req.url} {res.statusCode} {responseTime}"
+				}
+			},
+			serializers: {
+				responseTime(value) {
+					return typeof value === "number" ? `(${value.toFixed(2)}ms)` : value;
+				}
+			}
+		}
 } );
 
 // Main of the backend server
@@ -22,21 +51,18 @@ const start = async () =>
 	{
 		// Register CORS plugin FIRST
 		await server.register( fastifyCookie, {
-			secret: process.env.COOKIE_SECRET!,
+			secret: env.COOKIE_SECRET,
 			parseOptions:{
 				sameSite: "strict",
 				httpOnly: true,
-				secure: process.env.NODE_ENV === "production",
+				secure: env.NODE_ENV === "production",
 			}
 		} );
 		await server.register( import( "@fastify/cors" ), {
 			origin: [
-				"http://localhost:8080",
-				"http://127.0.0.1:8080",
-				"http://frontend:8080", // Docker container name
-				"http://tr_frontend:8080", // Docker container name
-				"http://localhost:3000", // Alternative local port
-				"http://127.0.0.1:3000" // Alternative local port
+				`${env.HTTP_PROTO}${env.FRONTEND_HOST}:${env.FRONTEND_PORT}`,
+				`${env.HTTP_PROTO}localhost:${env.FRONTEND_PORT}`,
+				`${env.HTTP_PROTO}127.0.0.1:${env.FRONTEND_PORT}`,
 			],
 			credentials: true,
 			methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -84,8 +110,8 @@ const start = async () =>
 		await server.register( import ( "./routes/friends.route.ts" ) );
 
 		// Grab the configuration from env
-		const host = process.env.HOST || process.env.HOSTNAME || "127.0.0.1";
-		const port = process.env.PORT ? parseInt( process.env.PORT, 10 ) : 4241;
+		const host = env.HOSTNAME;
+		const port = env.PORT;
 
 		await server.listen( { port, host } );
 		console.log(server.printRoutes());
