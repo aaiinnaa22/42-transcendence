@@ -1,158 +1,133 @@
 import { ChatProfilePic } from "./ChatProfilePic";
 import { useState, useRef, useEffect } from "react";
+import type { ChatUser } from "./ChatContainer";
+import type { Message } from "./ChatContainer";
+import { useNavigate } from "react-router-dom"; //to chat container
 
 type DiscussionProps = {
+	friend: ChatUser;
+	messages: Message[];
+	onSendMessage: (text: string) => void;
 	onExitClick: () => void;
+	inviteIsActive: boolean;
+	inviteTimeLeft: number;
+	onSendInvite: () => void;
 };
 
-type Friend = {
-	username: string;
-	profile: string;
-	online: boolean;
-	lastMessage?: string;
-}
+export const Discussion = ({
+  friend,
+  messages,
+  onSendMessage,
+  onExitClick,
+  inviteIsActive,
+  inviteTimeLeft,
+  onSendInvite
+}: DiscussionProps) => {
+  const [message, setMessage] = useState("");
+  const discussionEndRef = useRef<HTMLDivElement | null>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const navigate = useNavigate(); //to chat container
 
-type Message = {
-	id: number;
-	text: string;
-	sender: "me" | "friend";
-};
+  useEffect(() => {
+    discussionEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-export const Discussion = ({onExitClick}: DiscussionProps) =>
-{
-	const [message, setMessage] = useState("");
-	const [messages, setMessages] = useState<Message[]>([]);
-	const discussionEndRef = useRef<HTMLDivElement | null>(null);
-	const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const handleMessageSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim()) return;
 
-	const wsRef = useRef<WebSocket | null>(null);
-	const myUserIdRef = useRef<number | null>(null);
+    onSendMessage(message);
+    setMessage("");
 
-	const friend: Friend = {username: "Susan", profile:"bla", online:true};
-
-	useEffect(() => {
-		const ws = new WebSocket("ws://localhost:4241/chat");
-		wsRef.current = ws;
-
-		ws.onopen = () => {
-			console.log("WS connected");
-		};
-
-		ws.onmessage = (event) => {
-			let data;
-			try {
-				data = JSON.parse(event.data);
-			} catch (e) {
-				console.error("Failed to parse WS message", e);
-				return;
-			}
-
-			// Handle the welcome message (get my userId)
-			if (data.type === "welcome") {
-				myUserIdRef.current = data.userId;
-				console.log("My userId:", data.userId);
-				return;
-			}
-
-			// Handle chat messages
-			if (data.type === "chat") {
-				const sender: "me" | "friend" =
-					data.from === myUserIdRef.current ? "me" : "friend";
-
-				const newMessage: Message = {
-					id: Date.now(),
-					text: data.message,
-					sender
-				};
-
-				setMessages(prev => [...prev, newMessage]);
-			}
-		};
-
-		ws.onclose = () => {
-			console.log("WS disconnected");
-			wsRef.current = null;
-		};
-
-		ws.onerror = (err) => {
-			console.error("WS error", err);
-		};
-
-		// Cleanup on unmount
-		return () => {
-			ws.close();
-		};
-	}, []);
-
-	useEffect(() => {
-		discussionEndRef.current?.scrollIntoView({behavior: "smooth"});
-	},[messages]);
-
-	const handleMessageSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (message.trim() === "")
-			return;
-
-		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-			console.warn("WebSocket not connected");
-			return;
-		}
-
-		wsRef.current.send(JSON.stringify({
-			type: "chat",
-			message
-		}));
-
-		setMessage("");
-		if (textAreaRef.current)
-			textAreaRef.current.style.height = "auto";
-	};
+    if (textAreaRef.current) {
+      textAreaRef.current.style.height = "auto";
+    }
+  };
 
 	const handleMessageInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		e.target.style.height = "auto";
 		e.target.style.height = `${Math.min(e.target.scrollHeight, 5 * 24)}px`; // 24px ≈ line-height
 		setMessage(e.target.value);
 	};
-	
+
+	const handleEnterKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (e.key === 'Enter' && !e.shiftKey) {
+			e.preventDefault();
+			handleMessageSubmit(e as any); //as any?
+		}
+	}
+
+	const formatTime = (seconds: number) => {
+		const minutes = Math.floor(seconds / 60);
+		const secs = seconds % 60;
+		return `${minutes}:${secs.toString().padStart(2, "0")}`;
+	};
+
 	return (
 		<div className="flex flex-col h-full">
 
 			{/* Header */}
-			<div className="flex flex-row justify-between items-center bg-white w-full rounded-tl-xl p-2 border-b-2">
-				<button onClick={onExitClick} className="material-symbols-outlined !text-md">arrow_back_ios_new</button>
-				<h2 className="font-semibold">{friend.username}</h2>
+			<div className="flex flex-row justify-between items-center bg-white w-full lg:rounded-tl-xl  p-2 border-b-2">
+				<button onClick={onExitClick} className="material-symbols-outlined !text-xs lg:!text-md">arrow_back_ios_new</button>
+				<h2 className="font-semibold text-sm lg:text-md">{friend.username}</h2>
 				<ChatProfilePic friend={friend}/>
+			</div>
+			<div className="self-end p-2">
+				<button className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
+					disabled={inviteIsActive} onClick={onSendInvite}>
+				<p className="text-xs lg:text-sm text-left">{!inviteIsActive ? `Invite ${friend.username} to a game` : "You have a pending game invite"}</p>
+				<div className="!text-xl lg:!text-3xl material-symbols-outlined">
+				sports_esports</div>
+				</button>
 			</div>
 
 			{/* Messages */}
 			<div className="flex flex-col gap-3 p-3 overflow-y-auto flex-grow min-h-0">
-				{messages.map(msg => (
-					<div
-						key={msg.id}
-						className={"p-3 rounded-lg  max-w-[70%] bg-white " + (msg.sender === "me" ? "self-end" : "self-start")}>
-						<p className="break-words">{msg.text}</p>
-					</div>
-				))}
+				{messages.map(msg => {
+					if (!msg.isInvite)
+						return (
+							<div
+								key={msg.id}
+								className={"p-3 rounded-lg  max-w-[70%] bg-white " + (msg.sender === "me" ? "self-end" : "self-start")}>
+								<p className="break-words text-xs lg:text-md">{msg.text}</p>
+							</div>
+						)
+					return (
+						<div
+							key={msg.id}
+							className={"flex flex-col gap-3 p-3 rounded-lg  max-w-[70%] bg-purple-600 " + (msg.sender === "me" ? "self-end" : "self-start")}>
+							<p className="break-words text-transcendence-white">{msg.text}</p>
+							<div className="flex flex-row justify-center items-center border-2 border-transcendence-white rounded-lg p-1 gap-2">
+								{inviteIsActive && <span className="text-transcendence-white font-bold">{formatTime(inviteTimeLeft)}</span>}
+								<button disabled={!inviteIsActive} className="text-white font-bold"
+									onClick={() => navigate("/home/play/tournament")}>{inviteIsActive ? "join the game" : "invite expired"}</button>
+							</div>
+						</div>
+					)
+				})}
 				<div ref={discussionEndRef}></div>
 			</div>
 
 			{/* Input bar */}
 			<div className="p-4">
-				<form onSubmit={handleMessageSubmit} className="flex gap-2 w-full">
-				<div className="bg-white rounded-lg border min-h-8 max-h-40 overflow-y-auto">
+				<form onSubmit={handleMessageSubmit} className="flex gap-2 w-full justify-center">
+				<div className="bg-white rounded-lg border min-h-8 max-h-40 overflow-y-auto w-[70%] xl:w-full text-xs lg:text-md">
 					<textarea
 					ref={textAreaRef}
 					value={message}
 					onChange={handleMessageInput}
-					placeholder="Chat with your friend"
+					onKeyDown={handleEnterKey}
+					placeholder={`Chat with ${friend.username}`} //placeholder changes when friend isnt online and u cant chat?
 					rows={1}
 					className="focus:outline-none w-full resize-none p-2"
+					disabled={!friend.online}
 					/>
 				</div>
-				<button type="submit" className="material-symbols-outlined self-end">send</button>
+				<button type="submit" className="material-symbols-outlined self-end"
+					disabled={!friend.online}>send</button>
 				</form>
 			</div>
 
-		</div>
-	);
-}
+    </div>
+  );
+};

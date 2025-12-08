@@ -92,9 +92,8 @@ describe('User routes (integration via server.inject + signed cookie)', () => {
 
   it('sanity: router includes GET/PUT/DELETE /users/me', () => {
     const tree = server.printRoutes();
-    // Fastify prints a tree like: "users/me (GET, HEAD, PUT, DELETE)"
-    expect(tree).toContain('users/me');
-    expect(/users\/me \([^)]*GET[^)]*PUT[^)]*DELETE[^)]*\)/.test(tree)).toBe(true);
+    expect(tree).toContain('users/');
+    expect(tree).toContain('me (GET, HEAD, PUT, DELETE)');
   });
 
   const getAuthCookie = async () => {
