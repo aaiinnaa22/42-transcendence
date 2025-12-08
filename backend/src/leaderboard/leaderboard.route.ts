@@ -2,6 +2,8 @@ import { type FastifyInstance, type FastifyRequest, type FastifyReply } from "fa
 import LeaderboardService from "./leaderboard.class.ts";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import { BadRequestError, NotFoundError, sendErrorReply, ServiceUnavailableError } from "../shared/utility/error.utility.ts";
+import { validateRequest } from "../shared/utility/validation.utility.ts";
+import { GetLeaderboardPageSchema } from "../schemas/leaderboard.schema.ts";
 
 const leaderboardComponent = async ( server: FastifyInstance ) =>
 {
@@ -38,19 +40,12 @@ const leaderboardComponent = async ( server: FastifyInstance ) =>
 		{
 			try
 			{
-				const { page } = request.params as { page: string };
-				const pageNumber = parseInt(page, 10);
+				const { page } = validateRequest(GetLeaderboardPageSchema, request.params);
+				const entries = leaderboard.getCache(page);
 
-				if ( isNaN(pageNumber) || pageNumber < 1 || pageNumber > 10 )
-					throw BadRequestError("Invalid page number");
-
-				const entries = leaderboard.getCache(pageNumber);
-
-				if ( !entries )
-					throw NotFoundError(`Page ${pageNumber} not found`);
+				if ( !entries ) throw NotFoundError(`Page ${page} not found`);
 
 				return reply.send(entries);
-
 			}
 			catch (error)
 			{

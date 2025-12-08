@@ -14,20 +14,20 @@ export const Game = () =>
     const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
 
     // sends move command to backend server when player wants to move
-    const sendMove = (id: number, dx: number, dy: number) => {
+    const sendMove = (id: number, dy: number) => {
         const ws = wsRef.current;
         if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: "move", id, dx, dy }));
+            ws.send(JSON.stringify({ type: "move", id, dy }));
         }
     };
 
     //registers what key was pressed and call sendMove function
     const updateGame = () => {
         //Perform action based on the keypressed
-        if (keysPressed.current["ArrowUp"]) sendMove(2, 0, -10);
-        if (keysPressed.current["ArrowDown"]) sendMove(2, 0, 10);
-        if (keysPressed.current["w"]) sendMove(1, 0, -10);
-        if (keysPressed.current["s"]) sendMove(1, 0, 10);
+        if (keysPressed.current["ArrowUp"]) sendMove(2, -1);
+        if (keysPressed.current["ArrowDown"]) sendMove(2, 1);
+        if (keysPressed.current["w"]) sendMove(1, -1);
+        if (keysPressed.current["s"]) sendMove(1, 1);
     };
 
 	const axisScale = () => {
@@ -141,7 +141,8 @@ export const Game = () =>
 			}
 			else if (data.type === "error")
 			{
-				console.log("You are already in a match.");
+				console.error("Error from server: ", data.message);
+				if (data.error) console.error("Validation errors: ", data.error);
 			}
 			else if (data.type === "inactivity")
 			{
