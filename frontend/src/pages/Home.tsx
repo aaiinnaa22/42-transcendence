@@ -13,6 +13,7 @@ import { PersonalStats } from '../components/home/stats/PersonalStats';
 import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
 import { ExitTopLeft } from '../components/home/utils/ExitTopLeft';
 import { Discussion } from '../components/home/panels/chat/Discussion';
+import { ChatProfile } from '../components/home/panels/chat/ChatProfile';
 
 export const Home = () => {
 	type Page = "play" | "stats" | "profile";
@@ -22,7 +23,8 @@ export const Home = () => {
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "chat" | null>(null);
 	const [isPersonalStats, setIsPersonalStats] = useState(true);
 	const [currentGamePage, setCurrentGamePage] = useState<"playButton" | "chooseGame" | "gamePlay">("playButton");
-	const [currentChat, setCurrentChat] = useState<"chat" | "discussion">("chat");
+	const [currentChat, setCurrentChat] = useState<"chat" | "discussion" | "chatProfile">("chat");
+	const [previousChat, setPreviousChat] = useState<"chat" | "discussion" | "chatProfile">("chat");
 	const [gameMode, setGameMode] = useState<GameMode>("singleplayer");
 
 	const togglePanel = (panel: "chat" | "menu") => {
@@ -78,9 +80,15 @@ export const Home = () => {
 		switch (currentChat)
 		{
 			case "chat":
-				return <Chat onChatClick={() => setCurrentChat("discussion")}/>
+				return <Chat
+					onChatClick={() => setCurrentChat("discussion")}
+					onProfileClick={() => {setCurrentChat("chatProfile"); setPreviousChat("chat")}}/>
 			case "discussion":
-				return <Discussion onExitClick={() => setCurrentChat("chat")}/>
+				return <Discussion
+					onExitClick={() => setCurrentChat("chat")}
+					onProfileClick={() => {setCurrentChat("chatProfile"); setPreviousChat("discussion")}}/>
+			case "chatProfile":
+				return <ChatProfile onExitClick={() => setCurrentChat(previousChat)}/>
 		}
 	}
 

@@ -7,12 +7,14 @@ type Friend = {
 
 type ChatProfileProps = {
 	friend: Friend;
+	onProfileClick: () => void;
 }
 
-export const ChatProfilePic = ({friend}: ChatProfileProps) =>
+export const ChatProfilePic = ({friend, onProfileClick}: ChatProfileProps) =>
 {
 	return (
-		<div className="relative inline-block h-12 w-12">
+		<div className="relative inline-block h-12 w-12 cursor-pointer"
+			onClick={onProfileClick}>
 			{friend.profile != ""
 			? <img className="ml-1 mt-1 w-10 h-10 rounded-full object-cover" src="/testimage.png"></img>
 			: <span className="!text-5xl material-symbols-outlined">account_circle</span>

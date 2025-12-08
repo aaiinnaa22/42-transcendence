@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 
 type DiscussionProps = {
 	onExitClick: () => void;
+	onProfileClick: () => void;
 };
 
 type Friend = {
@@ -18,7 +19,7 @@ type Message = {
 	sender: "me" | "friend";
 };
 
-export const Discussion = ({onExitClick}: DiscussionProps) =>
+export const Discussion = ({onExitClick, onProfileClick}: DiscussionProps) =>
 {
 	const [message, setMessage] = useState("");
 	const [messages, setMessages] = useState<Message[]>([]);
@@ -113,15 +114,15 @@ export const Discussion = ({onExitClick}: DiscussionProps) =>
 		e.target.style.height = `${Math.min(e.target.scrollHeight, 5 * 24)}px`; // 24px ≈ line-height
 		setMessage(e.target.value);
 	};
-	
+
 	return (
 		<div className="flex flex-col h-full">
 
 			{/* Header */}
-			<div className="flex flex-row justify-between items-center bg-white w-full rounded-tl-xl p-2 border-b-2">
+			<div className="flex flex-row justify-between items-center bg-white w-full rounded-tl-2xl p-2 border-b-2">
 				<button onClick={onExitClick} className="material-symbols-outlined !text-md">arrow_back_ios_new</button>
 				<h2 className="font-semibold">{friend.username}</h2>
-				<ChatProfilePic friend={friend}/>
+				<ChatProfilePic friend={friend} onProfileClick={onProfileClick}/>
 			</div>
 
 			{/* Messages */}
