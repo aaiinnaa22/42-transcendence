@@ -47,6 +47,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 		// Helper for queueing new players
 	const checkInvitation = async ( id: UserId, socket: WebSocket, friend: UserName ) => {
+		try{
 		const stats = await server.prisma.playerStats.findUnique( {
 			where: { userId: id },
 			select: { eloRating: true, user: { select: { username: true }} },
@@ -85,28 +86,60 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}));
 
 		friendcheckingLoop();
+	} catch (error) {
+			server.log.error(`Game: Failed to quee player to invite game ${id}: ${error}`);
+
+			const message: string = JSON.stringify({
+				type: "error",
+				message: "Failed to join queue"
+			});
+			socket.send(message);
+			socket.close();
+		}
 	};
 
 	const friendcheckingLoop = () => {
+		try{
 		if (friendQueue.length < 2) return;
+
+		let removeI: number | null = null;
+   		let removeJ: number | null = null;
 
 		for ( let i = 0; i < friendQueue.length; ++i )
 		{
-			for ( let j = 0; j < friendQueue.length; ++j)
+			for ( let j = i + 1; j < friendQueue.length; ++j)
 			{	
 				// when the invitation happens who invited who is going to be stored there.
 				if (friendQueue[i]?.friendName == friendQueue[j]?.userName && friendQueue[j]?.friendName ==  friendQueue[i]?.userName)
 				{
-					const connection1 = activePlayers.get( friendQueue[0]?.userId );	
-					const connection2 = activePlayers.get( friendQueue[1]?.userId );
-					server.log.info(`Creating friendly game between ${friendQueue[0]?.userName} and ${friendQueue[1]?.userName}`);
-					createMultiplayerSession(connection1,connection2, GameMode.Invite);
-					friendQueue.splice(0,2);
+					const connection1 = activePlayers.get( friendQueue[i]?.userId );	
+					const connection2 = activePlayers.get( friendQueue[j]?.userId );
+					if ( connection1 && connection2 )
+					{
+						server.log.info(`Creating friendly game between ${friendQueue[0]?.userName} and ${friendQueue[1]?.userName}`);
+						createMultiplayerSession(connection1,connection2, GameMode.Invite);
+					}
+					removeI = i;
+					removeJ = j;
+					break;
 				}	
 			}
+			if (removeI !== null) break;
 		}
+		if (removeI !== null && removeJ !== null) 
+		{
+        const first = Math.min(removeI, removeJ);
+        const second = Math.max(removeI, removeJ);
 
+        friendQueue.splice(second, 1);
+        friendQueue.splice(first, 1);
+    	}}
+		catch (error) {
+			server.log.error(`Game: Friendchecking loop error: ${error}`);
+			throw (error);
+		}
 	}
+
 
 	// Helper for queueing new players
 	const queuePlayerForTournament = async ( id: UserId, socket: WsWebSocket ) => {
@@ -210,7 +243,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				type: "error",
 				message: "Failed to start game"
 			});
-
 			socket.send(message);
 		}
 	};
@@ -397,7 +429,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	{
 		const ws = socket as unknown as WsWebSocket;
         const { userId } = request.user as { userId: string };
-
 		// Check if the player is already in a match
 		if ( activePlayers.has( userId ) )
 		{
@@ -607,6 +638,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 		ws.on( "message", ( message: any ) =>
 		{
+			try{
 			const data = JSON.parse( message.toString() );
 			const playerConnection = activePlayers.get( userId );
 
@@ -628,10 +660,18 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				const payload = JSON.stringify( gameState );	// Serialize the game state
 				socket.send( payload );
 			}
+		} catch (error) {
+				server.log.error(`Game: Message handling error for ${userId}: ${error}`);
+				ws.send(JSON.stringify({
+					type: "error",
+					message: "Failed to process message"
+		}));
+		}
 		} );
 
 		ws.on( "close", () =>
 		{
+			try{
 			const playerConnection = activePlayers.get( userId );
 
 			// Player was in game
@@ -666,6 +706,9 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 				server.log.info( `Game: Player ${userId} was removed from the friend queue.` );
 			}
+		}	catch(error) {
+			server.log.error(`Game: Unexpected error on socket close: ${error}`);
+		}
 		} );
 	} );
 	// ============= GAME END =============
