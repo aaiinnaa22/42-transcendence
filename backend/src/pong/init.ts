@@ -8,6 +8,7 @@ import type Player from "./player.ts";
 import { validateWebSocketMessage } from "../shared/utility/websocket.utility.ts";
 import { MoveMessageSchema } from "../schemas/game.schema.ts";
 import type { WebSocket as WsWebSocket } from "ws";
+import { sendDM } from "../chat/directMessage.ts";	
 
 type UserId = string;
 type GameId = string;
@@ -250,6 +251,10 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	// Helper for creating tournament games
 	const createMultiplayerSession = ( player1: PlayerConnection, player2: PlayerConnection, gamemode: GameMode ) => {
 		try {
+
+			const message = `A new multiplayer game started between ${player1.userName} elo ${player1.eloRating} and ${player2.userName} elo ${player2.eloRating} !`;
+			sendDM(player1.userId,player2.userId,message);
+			sendDM(player2.userId,player1.userId,message);
 			const gameId: GameId = Date.now().toString();
 			const game = new Game(
 				gameId,
@@ -382,7 +387,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					}
 				}
 				// Inactive player forfeits the game
-				else if ( game.mode === GameMode.Tournament )
+				else if ( game.mode === GameMode.Tournament || game.mode === GameMode.Invite )
 				{
 					// Find inactive player in tournament game
 					const loserPlayer = game.players.find( player => {
