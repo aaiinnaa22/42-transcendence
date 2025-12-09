@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
 
 export const SignUp = () => {
 	const [email, setEmail] = useState("");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
+	const {setAuthenticated} = useAuth();
 	const navigate = useNavigate();
 
 	const handleSignUp = async (e: React.FormEvent) =>
@@ -29,7 +31,10 @@ export const SignUp = () => {
 				throw new Error(data.error || "Signup failed. Please try again.");
 			}
 			if (data.message === "Registration successful")
+			{
+				setAuthenticated(true);
 				navigate("/home");
+			}
 			else if ( data.message === "Password too weak")
 				throw new Error("Password must include at least one capital and lowercase letter, digit and must be at least 5 characters long.");
 			else

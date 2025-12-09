@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TwoFALoginModal } from "./TwoFALoginModal";
+import { useAuth } from "../../auth/AuthContext";
 
 export const Login = () => {
 	const [email, setEmail] = useState("");
@@ -8,6 +9,7 @@ export const Login = () => {
 	const [error, setError] = useState("");
 	const [twoFATempToken, setTwoFATempToken] = useState<string | null>(null);
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
+	const {setAuthenticated} = useAuth();
 	const navigate = useNavigate();
 	
 	useEffect(() => {
@@ -62,6 +64,7 @@ export const Login = () => {
 			if (data.message === "Login successful")
 			{
 				console.log("Normal login successful, navigating to home");
+				setAuthenticated(true);
 				navigate("/home");
 			}
 			else

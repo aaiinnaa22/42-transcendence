@@ -1,56 +1,60 @@
-import {useState, useEffect, useRef} from 'react'
-import {Settings} from "./settings/Settings"
+import { useState, useEffect, useRef } from "react";
+import { Settings } from "./settings/Settings";
+import { useAuth } from "../../auth/AuthContext";
 
 export const Profile = () => {
-	const [profilePic, setProfilePic] = useState<string | null>(null);
-	const [username, setUsername] = useState("User");
-	const profilePicInputRef = useRef<HTMLInputElement | null>(null);
+  const { ready, authenticated } = useAuth();
+  const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [username, setUsername] = useState("User");
+  const [twoFAEnabled, setTwoFAEnabled] = useState<boolean>(false);
 
-	useEffect(() => {
-		const getUserInfo = async() => {
-			try {
-				const response = await fetch("http://localhost:4241/auth/me",
-				{
-					method: "GET",
-					credentials: "include",
-				});
-				const data = await response.json();
+  const profilePicInputRef = useRef<HTMLInputElement | null>(null);
 
-				setUsername(data.username || "User");
+  useEffect(() => {
+    const getUserInfo = async () => {
+	  if (!ready || !authenticated) return;
 
-				if (data.avatarType === "provider")
-				{
-					setProfilePic(profilePic || null);
-				}
-				else if (data.avatarType === "local")
-				{
-					const avatarResponse = await fetch("http://localhost:4241/users/avatar",
-					{
-						method: "GET",
-						credentials: "include",
-					});
+      try {
+        const response = await fetch("http://localhost:4241/auth/me", {
+          method: "GET",
+          credentials: "include",
+        });
 
-					if (avatarResponse.ok)
-					{
-						const avatarBlob = await avatarResponse.blob();
-						const avatarUrl = URL.createObjectURL(avatarBlob);
-						setProfilePic(avatarUrl);
-					}
-				}
-			}
-			catch (err: any) {
-				console.error("Failed to fetch user info");
-			};
-		};
-		getUserInfo();
+        if (!response.ok) return;
 
-		return () => {
-			if (profilePic && profilePic.startsWith("blob:"))
-			{
-				URL.revokeObjectURL(profilePic);
-			}
-		}
-	}, []);
+        const data = await response.json();
+
+        setUsername(data.username || "User");
+        setTwoFAEnabled(Boolean(data.twoFAEnabled));
+
+        if (data.avatarType === "provider") {
+          setProfilePic(data.avatar);
+        } 
+        else if (data.avatarType === "local") {
+          const avatarResponse = await fetch(
+            "http://localhost:4241/users/avatar",
+            { credentials: "include" }
+          );
+
+          if (avatarResponse.ok) {
+            const avatarBlob = await avatarResponse.blob();
+            const avatarUrl = URL.createObjectURL(avatarBlob);
+            setProfilePic(avatarUrl);
+          }
+        }
+      } catch {
+        console.error("Failed to fetch user info");
+      }
+    };
+
+    getUserInfo();
+
+    return () => {
+      if (profilePic?.startsWith("blob:")) {
+        URL.revokeObjectURL(profilePic);
+      }
+    };
+  }, []);
 
 	const handleProfilePicChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		const profilePicFile = event.target.files?.[0];

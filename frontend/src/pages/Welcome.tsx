@@ -1,23 +1,19 @@
 import GoogleSignIn from "../assets/googleSignIn.svg";
 import {useNavigate, useLocation, Outlet} from "react-router-dom";
-import { useEffect } from "react";
+import { useAuth } from "../auth/AuthContext";
 
 export const Welcome = () => {
-	const navigate = useNavigate();
-	const {pathname} = useLocation();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { ready, authenticated } = useAuth();
 
-	useEffect(() => {
-        fetch("http://localhost:4241/auth/me", {
-            method: "GET",
-            credentials: "include",
-        })
-        .then(res => {
-            if (res.ok) {
-                navigate("/home");
-            }
-        })
-        .catch(() => {});
-    }, [navigate]);
+  // If auth not resolved yet, wait
+  if (!ready) return null;
+
+  // If already logged in, don't show welcome
+  if (authenticated) {
+    return <Navigate to="/home" replace />;
+  }
 
 	return (
 		<div className="bg-transcendence-black h-screen w-screen
