@@ -2,6 +2,7 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile.dev
       target: development
     container_name: tr_backend
     ports:
@@ -26,6 +27,7 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile.dev
       target: development
     container_name: tr_frontend
     ports:

@@ -1,0 +1,21 @@
+#############################
+#	DEVELOPMENT STAGE		#
+#############################
+FROM node:20-alpine AS development
+
+WORKDIR /app
+
+# Check and install necessary dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy Prisma configuration
+COPY prisma.config.dev.ts ./prisma.config.ts
+
+# Entrypoint script
+COPY entrypoint.dev.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 4241 5555
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

@@ -1,0 +1,48 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+      target: production
+    container_name: tr_backend
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: "production"
+      HOSTNAME: "0.0.0.0"
+      PORT: 4241
+      DATABASE_URL: "file:/app/data/prod.db"
+      TZ: "Europe/Helsinki"
+    volumes:
+      - db-data:/app/data
+    networks:
+      - transcendence_net
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      target: production
+      args:
+        VITE_API_URL: /api
+        VITE_WS_URL: wss://localhost/
+    container_name: tr_frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: "production"
+    networks:
+      - transcendence_net
+    restart: unless-stopped
+
+volumes:
+  db-data:
+    driver: local
+
+networks:
+  transcendence_net:
+    driver: bridge
