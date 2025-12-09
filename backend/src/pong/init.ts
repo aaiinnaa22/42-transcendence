@@ -29,13 +29,84 @@ type WaitingPlayer = {
 	joinedAt: number;
 };
 
+type WaitingFriend = {
+	userId: UserId;
+	eloRating: number;
+	joinedAt: number;
+	friendName: UserName;
+	userName: UserName;
+};
+
 const gameComponent = async ( server: FastifyInstance ) =>
 {
 	// This stores the game rooms (should be let)
 	const games : Record<GameId, Game>  = {};
 	const activePlayers: Map<UserId, PlayerConnection> = new Map();
 	const playerQueue: WaitingPlayer[] = [];
+	const friendQueue: WaitingFriend[] = [];
 
+		// Helper for queueing new players
+	const checkInvitation = async ( id: UserId, socket: WebSocket, friend: UserName ) => {
+		const stats = await server.prisma.playerStats.findUnique( {
+			where: { userId: id },
+			select: { eloRating: true, user: { select: { username: true }} },
+		} );
+
+		const eloRating = stats?.eloRating ?? 1000;
+		const userName = stats?.user?.username ?? "Unknown";
+		const joinedAt = Date.now();
+
+		// Create player connection profile
+		const playerConnection: PlayerConnection = {
+			userName,
+			userId: id,
+			socket,
+			gameId: null,
+			eloRating,
+			joinedAt,
+			lastActivityAt: joinedAt
+		};
+		const waitingFriend: WaitingFriend = {
+			userId: id,
+			eloRating,
+			joinedAt,
+			friendName: friend,
+			userName: userName,
+		};
+
+		// Store connection info and queue the player
+		activePlayers.set( id, playerConnection );
+		friendQueue.push( waitingFriend );
+
+		server.log.info( `Game: Player ${userName} waiting ${friend} to join the game Invite game.`);
+		socket.send( JSON.stringify({
+			type: "waiting",
+			elo: eloRating
+		}));
+
+		friendcheckingLoop();
+	};
+
+	const friendcheckingLoop = () => {
+		if (friendQueue.length < 2) return;
+
+		for ( let i = 0; i < friendQueue.length; ++i )
+		{
+			for ( let j = 0; j < friendQueue.length; ++j)
+			{	
+				// when the invitation happens who invited who is going to be stored there.
+				if (friendQueue[i]?.friendName == friendQueue[j]?.userName && friendQueue[j]?.friendName ==  friendQueue[i]?.userName)
+				{
+					const connection1 = activePlayers.get( friendQueue[0]?.userId );	
+					const connection2 = activePlayers.get( friendQueue[1]?.userId );
+					server.log.info(`Creating friendly game between ${friendQueue[0]?.userName} and ${friendQueue[1]?.userName}`);
+					createMultiplayerSession(connection1,connection2, GameMode.Invite);
+					friendQueue.splice(0,2);
+				}	
+			}
+		}
+
+	}
 
 	// Helper for queueing new players
 	const queuePlayerForTournament = async ( id: UserId, socket: WsWebSocket ) => {
@@ -145,13 +216,13 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	};
 
 	// Helper for creating tournament games
-	const createMultiplayerSession = ( player1: PlayerConnection, player2: PlayerConnection ) => {
+	const createMultiplayerSession = ( player1: PlayerConnection, player2: PlayerConnection, gamemode: GameMode ) => {
 		try {
 			const gameId: GameId = Date.now().toString();
 			const game = new Game(
 				gameId,
 				[player1.socket, player2.socket],
-				GameMode.Tournament,
+				gamemode,
 				(data) => handleGameEnd( gameId, data ) );
 
 			game.addPlayer( Location.Left, player1.userId, player1.userName );
@@ -233,7 +304,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 					if ( connection1 && connection2 )
 					{
-						createMultiplayerSession( connection1, connection2 );
+						createMultiplayerSession( connection1, connection2, GameMode.Tournament );
 
 						matched.add( player1.userId );
 						matched.add( bestMatch.userId );
@@ -509,6 +580,94 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		});
 	} );
 
+		// ============================= INVITE GAME ===============================
+	server.get( "/game/chat",
+		{ websocket: true, preHandler: authenticate },
+		async ( socket: WebSocket, request: FastifyRequest ) =>
+	{
+		const ws = socket as unknown as WsWebSocket;
+        const { userId } = request.user as { userId: string };
+
+		// Check if the player is already in a match
+		if ( activePlayers.has( userId ) )
+		{
+			socket.send(JSON.stringify( {
+				type: "error",
+				message: "Already in a match"
+			} ));
+			socket.close();
+			return;
+		}
+
+
+		// check invitation status
+		const friendName = (request.query as any).friendName as string | undefined;
+		console.log(`Inviation ${friendName}`);
+		await checkInvitation( userId, socket, friendName ?? "unkown" );
+
+		ws.on( "message", ( message: any ) =>
+		{
+			const data = JSON.parse( message.toString() );
+			const playerConnection = activePlayers.get( userId );
+
+			// Fetch the active game
+			if ( !playerConnection?.gameId ) return;
+
+			const game = games[playerConnection.gameId];
+			if ( !game || game.hasEnded ) return;
+
+			// Update last activity time
+            playerConnection.lastActivityAt = Date.now();
+
+			// Moves the player based on their userId.
+			if ( data.type === "move" )
+			{
+				game.movePlayer( userId, data.dy );
+
+				const gameState : GameState = game.getState();	// Get game state
+				const payload = JSON.stringify( gameState );	// Serialize the game state
+				socket.send( payload );
+			}
+		} );
+
+		ws.on( "close", () =>
+		{
+			const playerConnection = activePlayers.get( userId );
+
+			// Player was in game
+			if (playerConnection?.gameId)
+			{
+				const game = games[playerConnection.gameId];
+				if ( game && !game.hasEnded )
+				{
+					server.log.info( `Game: Player disconnect in game ${game.id}` );
+
+					const disconnectedPlayer = game.players.find( player => player.userId === userId );
+					const remainingPlayer = game.players.find( player => player.userId !== userId );
+
+					const data: GameEndData = {
+						reason: "disconnect",
+						winner: remainingPlayer ?? null,
+						loser: disconnectedPlayer ?? null
+					};
+
+					handleGameEnd( game.id, data );
+				}
+			}
+			// Player was in friend queue
+			else
+			{
+				// Remove inactive player from the activePlayers map
+				activePlayers.delete( userId );
+
+				// Remove inactive player from the queue
+				const index = friendQueue.findIndex( p => p.userId === userId );
+				if ( index > -1 ) friendQueue.splice( index, 1 );
+
+				server.log.info( `Game: Player ${userId} was removed from the friend queue.` );
+			}
+		} );
+	} );
 	// ============= GAME END =============
 
 	// Hanler for recalculating elo rating and ending the game
@@ -518,7 +677,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			if ( !game ) return;
 
 			// Ending singleplayer game
-			if ( game.mode === GameMode.Singleplayer )
+			if ( game.mode === GameMode.Singleplayer)
 			{
 				const [ leftPlayer, rightPlayer ] = game.players;
 				if ( leftPlayer && rightPlayer )
@@ -669,6 +828,55 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				{
 					server.log.error( `Game ${gameId}: Elo update failed: ${error}` );
 				}
+			}
+
+			else if ( game.mode === GameMode.Invite )
+			{
+				if ( !data.winner || !data.loser )
+				{
+					server.log.warn( `Game ${gameId}: Missing winner or loser, game ended unexpectedly` );
+
+					game.players.forEach( player => {
+						const playerConnection = activePlayers.get( player.userId );
+						if ( playerConnection )
+						{
+							const endStateMessage = {
+								type: "end",
+								mode: "invite",
+								message: "Game ended unexpectedly"
+							};
+							playerConnection.socket.send( JSON.stringify( endStateMessage ) );
+						}
+					});
+
+					endGame(game);
+					return;
+				}
+					const winnerConnection = activePlayers.get(data.winner.userId);
+					const loserConnection = activePlayers.get(data.loser.userId);
+
+					if ( !winnerConnection || !loserConnection )
+					{
+						server.log.error( `Game ${gameId}: Missing connection info, skipping endStateMessage` );
+						endGame( game );
+						return;
+					}
+
+					const endStateMessage = {
+						type: "end",
+						mode: "invite",
+						winner: winnerConnection.userName,
+						loser: loserConnection.userName,
+						message: data.reason === "inactivity"
+							? `Inactive player ${loserConnection.userName} forfeited the game`
+							: data.reason === "disconnect"
+							? `Disconnected player ${loserConnection.userName} forfeited the game`
+							: `${winnerConnection.userName} won!`
+					}
+
+					// Message the players
+					winnerConnection.socket.send( JSON.stringify(endStateMessage) );
+					loserConnection.socket.send( JSON.stringify(endStateMessage) );
 			}
 
 			endGame(game);
