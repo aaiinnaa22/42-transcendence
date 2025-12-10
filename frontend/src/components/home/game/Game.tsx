@@ -1,5 +1,6 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
+import { VisualGame } from "./VisualGame.tsx";
 
 
 export const Game = () =>
@@ -12,6 +13,9 @@ export const Game = () =>
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
     const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
+	const [screenIsPortrait, setScreenIsPortrait] = useState<boolean>(
+		window.matchMedia("(orientation: portrait)").matches
+	);
 
     // sends move command to backend server when player wants to move
     const sendMove = (id: number, dy: number) => {
@@ -169,24 +173,33 @@ export const Game = () =>
         gameLoop();
 
 		// Handle resize
-		const handleResize = () => {
-			const canvas = canvasRef.current;
-			const isPortrait = window.innerHeight > window.innerWidth;
-			if (canvas)
-			{
-				if (isPortrait)
-				{
-					canvas.width = HEIGHT;
-					canvas.height = WIDTH;
-				}
-				else
-				{
-					canvas.width = WIDTH;
-					canvas.height = HEIGHT;
-				}
-			}
-		};
-		window.addEventListener("resize", handleResize);
+		// const handleResize = () => {
+		// 	const canvas = canvasRef.current;
+		// 	const isPortrait = window.innerHeight > window.innerWidth;
+		// 	if (canvas)
+		// 	{
+		// 		if (isPortrait)
+		// 		{
+		// 			canvas.width = HEIGHT;
+		// 			canvas.height = WIDTH;
+		// 		}
+		// 		else
+		// 		{
+		// 			canvas.width = WIDTH;
+		// 			canvas.height = HEIGHT;
+		// 		}
+		// 	}
+		// };
+
+		const getScreenOrientation = () => {
+			const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+			setScreenIsPortrait(isPortrait);
+		}
+
+		getScreenOrientation();
+		window.addEventListener("orientationchange", getScreenOrientation);
+		window.addEventListener("resize", getScreenOrientation);
+		//window.addEventListener("resize", handleResize);
 
         // Clean up things
         return () => {
@@ -195,36 +208,11 @@ export const Game = () =>
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
 			window.removeEventListener("blur", handleBlur);
-			window.removeEventListener("resize", handleResize);
+			//window.removeEventListener("resize", handleResize);
+			window.removeEventListener("orientationchange", getScreenOrientation);
+			window.removeEventListener("resize", getScreenOrientation);
         };
     },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
 
-    // Aina's stuff after this line
-	const screenIsPortrait = window.innerHeight > window.innerWidth;
-
-    return (
-		<div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
-		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
-		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
-			<span ref={PointsRef}
-				className="text-transcendence-white font-transcendence-three text-4xl
-					col-start-1 row-start-1 text-right self-center
-					portrait:self-end portrait:text-right">0</span>
-			<span ref={PointsRef2}
-				className="text-transcendence-white font-transcendence-three text-4xl
-					col-start-3 row-start-1 text-left self-center
-					portrait:self-start portrait:text-left">0</span>
-			<div className="
-				flex-grow flex items-center justify-center
-				border-4 border-transcendence-white rounded-xl overflow-hidden
-				col-start-2 portrait:col-span-1">
-				<canvas
-					ref={canvasRef}
-					width={screenIsPortrait ? HEIGHT : WIDTH}
-					height={screenIsPortrait ? WIDTH : HEIGHT}
-					className="w-full h-full"
-				/>
-			</div>
-        </div>
-    );
+	return (<VisualGame pointsRef={PointsRef} pointsRef2={PointsRef2} canvasRef={canvasRef} screenIsPortrait={screenIsPortrait}/>)
 };
