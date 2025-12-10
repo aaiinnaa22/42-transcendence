@@ -121,9 +121,6 @@ export const Discussion = ({onExitClick}: DiscussionProps) =>
 		}
 	}
 
-	//idea for the game invite: in top corner a button to invite the friend. If click, an invitation will be sent as a message to the friend. If friend accepts, a text back
-	//that says "friend accepted and joined the game room", and below a button to join it aswell
-
 	return (
 		<div className="flex flex-col h-full">
 

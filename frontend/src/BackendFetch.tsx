@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState} from "react";
 
-export function getCurrentUser()
+export function useCurrentUser()
 {
 	const [username, setUsername] = useState<string>("");
 	const [profilePic, setProfilePic] = useState<string>("");
