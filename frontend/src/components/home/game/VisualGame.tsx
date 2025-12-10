@@ -22,11 +22,11 @@ export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait}:
 			<span ref={pointsRef}
 				className="text-transcendence-white font-transcendence-three text-4xl
 					col-start-1 row-start-1 text-right self-center
-					portrait:self-end portrait:text-right">0</span>
+					portrait:self-end portrait:text-right w-10">0</span>
 			<span ref={pointsRef2}
 				className="text-transcendence-white font-transcendence-three text-4xl
 					col-start-3 row-start-1 text-left self-center
-					portrait:self-start portrait:text-left">0</span>
+					portrait:self-start portrait:text-left w-10">0</span>
 			<div className="
 				flex-grow flex items-center justify-center
 				border-4 border-transcendence-white rounded-xl overflow-hidden
