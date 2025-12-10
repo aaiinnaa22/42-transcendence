@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Chat } from '../components/home/panels/chat/Chat';
 import { NavBar } from "../components/home/NavBar";
 import { PlayButton } from "../components/home/PlayButton";
 import { Leaderboard } from "../components/home/stats/Leaderboard";
@@ -12,15 +11,13 @@ import { PopUp } from "../components/home/utils/PopUp"
 import { PersonalStats } from '../components/home/stats/PersonalStats';
 import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
 import { ExitTopLeft } from '../components/home/utils/ExitTopLeft';
-import { Discussion } from '../components/home/panels/chat/Discussion';
+import { ChatContainer } from '../components/home/panels/chat/ChatContainer';
 import {Routes, Route, useNavigate, Navigate} from "react-router-dom";
-import { GameLobby } from '../components/home/game/GameLobby';
 
 export const Home = () => {
 	const navigate = useNavigate();
 	const [screenIsLarge, setScreenIsLarge] = useState(() => window.innerWidth >= 1024);
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "chat" | null>(null);
-
 
 	const togglePanel = (panel: "chat" | "menu") => {
 		setCurrentPanel(currentPanel === panel ? null : panel);
@@ -49,19 +46,6 @@ export const Home = () => {
 		return () => window.removeEventListener('resize', setVhVw);
 }, []);
 
-	const [currentChat, setCurrentChat] = useState<"chat" | "discussion">("chat");
-
-	const renderChat = () =>
-	{
-		switch (currentChat)
-		{
-			case "chat":
-				return <Chat onChatClick={() => setCurrentChat("discussion")}/>
-			case "discussion":
-				return <Discussion onExitClick={() => setCurrentChat("chat")}/>
-		}
-	}
-
 	// style={{height: 'calc(var(--vh, 1vh) * 100)',}} responsive height? looks weird in chrome dev tools
 
 	return (
@@ -76,15 +60,14 @@ export const Home = () => {
 						<Game/></ExitTopLeft>}/>
 				<Route path="play/tournament" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}>
 						<GameTournament/></ExitTopLeft>}/>
-				<Route path="play/lobby" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}><GameLobby/></ExitTopLeft>}/>
 				<Route path="stats" element={<PersonalStats/>}/>
 				<Route path="stats/leaderboard" element={<Leaderboard/>}/>
 				<Route path="profile" element={<Profile/>}/>
 			</Routes>
 				{screenIsLarge &&
-					<SideTab isOpen={currentPanel === "chat"}>{renderChat()}</SideTab>}
+					<SideTab isOpen={currentPanel === "chat"}><ChatContainer/></SideTab>}
 				{!screenIsLarge &&
-					<PopUp isOpen={currentPanel === "chat"}>{renderChat()}</PopUp>}
+					<PopUp isOpen={currentPanel === "chat"}><ChatContainer/></PopUp>}
 				<PopUp isOpen={currentPanel === "menu"}>
 					<Menu onPageChoose={() => setCurrentPanel(null)}/>
 				</PopUp>

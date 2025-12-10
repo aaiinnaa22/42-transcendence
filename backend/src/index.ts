@@ -7,6 +7,7 @@ import fastifyCookie from "@fastify/cookie";
 import gameComponent from "./pong/init.ts";
 import leaderboardComponent from "./leaderboard/leaderboard.route.ts";
 import chatComponent from "./chat/index.ts";
+import chatUsersComponent from "./chat/usersRoute.ts";
 
 const server : FastifyInstance = Fastify( {
 	logger: env.NODE_ENV === "production"
@@ -99,8 +100,14 @@ const start = async () =>
 		} );
 
 		await server.register( gameComponent );
+
+		await server.register( chatUsersComponent );
+
 		await server.register( leaderboardComponent );
+		
 		await server.register( chatComponent );
+
+		await server.register( import ( "./routes/friends.route.ts" ) );
 
 		// Grab the configuration from env
 		const host = env.HOSTNAME;
