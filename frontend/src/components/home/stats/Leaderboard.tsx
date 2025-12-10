@@ -13,7 +13,6 @@ type LeaderboardEntry =
 	ratio: number;
 };
 
-//TODO: import global stats
 
 export const Leaderboard = () => {
 	const navigate = useNavigate();
