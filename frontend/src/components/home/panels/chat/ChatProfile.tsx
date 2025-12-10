@@ -7,8 +7,14 @@ export const ChatProfile = ({onExitClick}: ChatProfileProps) => {
 	return (
 		<div className="flex flex-col h-full bg-transcendence-white rounded-l-2xl px-5 py-20 justify-between border-2">
 			<button onClick={onExitClick} className="fixed top-5 left-2 material-symbols-outlined !text-md cursor-pointer">arrow_back_ios_new</button>
-			<div className="flex flex-col items-center gap-8 justify-between w-full">
-				<h2 className="font-bold text-lg border-b-2 h-fit w-full">Susan</h2>
+			<div className="flex flex-col items-center gap-5 w-full">
+				<div className="flex flex-col items-center justify-between w-full gap-2">
+					<h2 className="font-bold text-lg border-b-2 h-fit w-full">Susan</h2>
+					<div className="flex w-full gap-1 items-center">
+						<p className="text-sm text-right w-full">currently offline</p>
+						<span className="bg-transcendence-red border-2 w-4 h-4 rounded-full"></span>
+					</div>
+				</div>
 				<img className="w-40 h-40 rounded-full object-cover border-2" src="/testimage.png"></img>
 			</div>
 			<div className="grid grid-cols-[auto_auto] grid-rows-[auto_auto_auto] gap-5">
