@@ -119,9 +119,52 @@ export const Game = () =>
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
         const handleKeyUp = (e: KeyboardEvent) => { keysPressed.current[e.key] = false; };
 		const handleBlur = () => { keysPressed.current = {}; };
+
+		// Touch event handlers
+		const handleTouchMove = (e: TouchEvent) => {
+			const canvas = canvasRef.current;
+			if (!canvas) return;
+
+			const touch = e.touches[0];
+			const rect = canvas.getBoundingClientRect();
+			const touchY = touch.clientY - rect.top;
+			const touchX = touch.clientX - rect.left;
+
+			// Determine which side of the screen was touched
+			const screenIsPortrait = window.innerHeight > window.innerWidth;
+			const canvasCenter = screenIsPortrait ? canvas.width / 2 : canvas.height / 2;
+
+			// Left side moves player 1 (w/ArrowUp keys)
+			if (touchX < rect.width / 2) {
+				if (touchY < canvasCenter) {
+					keysPressed.current["w"] = true;
+					keysPressed.current["s"] = false;
+				} else {
+					keysPressed.current["w"] = false;
+					keysPressed.current["s"] = true;
+				}
+			} 
+			// Right side moves player 2 (ArrowUp/ArrowDown keys)
+			else {
+				if (touchY < canvasCenter) {
+					keysPressed.current["ArrowUp"] = true;
+					keysPressed.current["ArrowDown"] = false;
+				} else {
+					keysPressed.current["ArrowUp"] = false;
+					keysPressed.current["ArrowDown"] = true;
+				}
+			}
+		};
+
+		const handleTouchEnd = () => {
+			keysPressed.current = {};
+		};
+
         window.addEventListener("keydown",handleKeyDown);
         window.addEventListener("keyup", handleKeyUp);
 		window.addEventListener("blur", handleBlur);
+		window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    	window.addEventListener("touchend", handleTouchEnd);
 
         ws.onopen = () => {console.log("Connected!");}
         ws.onclose = () => {console.log("Disconnected!");};
@@ -195,6 +238,8 @@ export const Game = () =>
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
 			window.removeEventListener("blur", handleBlur);
+			window.removeEventListener("touchmove", handleTouchMove);
+        	window.removeEventListener("touchend", handleTouchEnd);
 			window.removeEventListener("resize", handleResize);
         };
     },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/

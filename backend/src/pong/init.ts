@@ -117,7 +117,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					const connection2 = activePlayers.get( friendQueue[j]?.userId );
 					if ( connection1 && connection2 )
 					{
-						server.log.info(`Creating friendly game between ${friendQueue[0]?.userName} and ${friendQueue[1]?.userName}`);
+						server.log.info(`Creating friendly game between ${friendQueue[i]?.userName} and ${friendQueue[j]?.userName}`);
 						createMultiplayerSession(connection1,connection2, GameMode.Invite);
 					}
 					removeI = i;
@@ -129,11 +129,11 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 		if (removeI !== null && removeJ !== null) 
 		{
-        const first = Math.min(removeI, removeJ);
-        const second = Math.max(removeI, removeJ);
+			const first = Math.min(removeI, removeJ);
+			const second = Math.max(removeI, removeJ);
 
-        friendQueue.splice(second, 1);
-        friendQueue.splice(first, 1);
+			friendQueue.splice(second, 1);
+			friendQueue.splice(first, 1);
     	}}
 		catch (error) {
 			server.log.error(`Game: Friendchecking loop error: ${error}`);
