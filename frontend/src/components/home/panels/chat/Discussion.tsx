@@ -116,7 +116,7 @@ export const Discussion = ({onExitClick, onProfileClick}: DiscussionProps) =>
 	};
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex flex-col h-full rounded-l-2xl border-2">
 
 			{/* Header */}
 			<div className="flex flex-row justify-between items-center bg-white w-full rounded-tl-2xl p-2 border-b-2">

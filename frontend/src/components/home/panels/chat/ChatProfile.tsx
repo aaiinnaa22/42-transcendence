@@ -5,7 +5,7 @@ type ChatProfileProps =
 
 export const ChatProfile = ({onExitClick}: ChatProfileProps) => {
 	return (
-		<div className="flex flex-col h-full bg-transcendence-white rounded-l-2xl px-5 py-20 justify-between">
+		<div className="flex flex-col h-full bg-transcendence-white rounded-l-2xl px-5 py-20 justify-between border-2">
 			<button onClick={onExitClick} className="fixed top-5 left-2 material-symbols-outlined !text-md cursor-pointer">arrow_back_ios_new</button>
 			<div className="flex flex-col items-center gap-8 justify-between w-full">
 				<h2 className="font-bold text-lg border-b-2 h-fit w-full">Susan</h2>
@@ -30,7 +30,7 @@ export const ChatProfile = ({onExitClick}: ChatProfileProps) => {
 			</div>
 			<div className="flex flex-col gap-5">
 				<h3 className="font-bold border-b-1">settings</h3>
-				<div className="flex flex-col px-2 gap-1">
+				<div className="flex flex-col px-2 gap-2">
 					<h4 className="font-bold text-sm">befriend</h4>
 					<h4 className="font-bold text-sm text-transcendence-red">block</h4>
 				</div>
