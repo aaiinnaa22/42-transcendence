@@ -16,7 +16,7 @@ export const Chat = ({ users, selectedUserId, onChatClick, onProfileClick }: Cha
 				<h2 className="lg:text-right text-center px-4 font-bold font-transcendence-three py-2 text-lg tracking-[0.06em]">chat with players</h2>
 			</div>
 		</div>
-		<ul className="flex flex-col">
+		<ul className="flex flex-col overflow-y-auto">
 			{users.map((user) => {
 			const isSelected = user.id === selectedUserId;
 			return (
