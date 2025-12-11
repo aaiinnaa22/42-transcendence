@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback, type JSX } from 'react'
 import { useNavigate } from 'react-router-dom';
 
@@ -11,7 +12,9 @@ type LeaderboardEntry =
 	ratio: number;
 };
 
+
 export const Leaderboard = () => {
+	const navigate = useNavigate();
 	const [myRank, setMyRank] = useState<LeaderboardEntry | null>(null);
 	const [users, setUsers] = useState<LeaderboardEntry[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -19,7 +22,6 @@ export const Leaderboard = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [hasMore, setHasMore] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const navigate = useNavigate();
 
 	const observerTarget = useRef<HTMLDivElement>(null);
 
