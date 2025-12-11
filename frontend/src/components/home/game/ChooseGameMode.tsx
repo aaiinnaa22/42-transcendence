@@ -1,11 +1,8 @@
-type ChooseGameModeProps =
-{
-	onSinglePlayerChoose: () => void;
-	onTournamentChoose: () => void;
-};
+import { useNavigate } from "react-router-dom";
 
-export const ChooseGameMode = ({onSinglePlayerChoose, onTournamentChoose}: ChooseGameModeProps) =>
+export const ChooseGameMode = () =>
 {
+	const navigate = useNavigate();
 	return (
 		<div className="relative w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] grid grid-cols-[10%_auto_10%] grid-rows-[15%_auto] p-5 lg:p-10">
 			<div className="flex justify-center col-start-2">
@@ -22,7 +19,7 @@ export const ChooseGameMode = ({onSinglePlayerChoose, onTournamentChoose}: Choos
 				</div>
 				<div className="flex flex-col font-transcendence-two gap-6 text-center">
 					<button className="rounded-2xl flex flex-row justify-center items-center gap-3 p-6 xl:p-8 border-3 border-transcendence-white cursor-pointer group h-22 landscape:h-15 md:landscape:h-25 xl:h-25"
-						onClick={onTournamentChoose}>
+						onClick={() => navigate("/home/play/tournament")}>
 						<span className="material-symbols-outlined text-transcendence-white w-5">social_leaderboard</span>
 						<h2 className="text-2xl text-transcendence-white group-hover:pt-1">tournament</h2>
 					</button>
