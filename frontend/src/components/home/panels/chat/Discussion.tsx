@@ -66,10 +66,10 @@ export const Discussion = ({
 	};
 
 	return (
-		<div className="flex flex-col h-full rounded-l-2xl border-2">
+		<div className="flex flex-col h-full lg:rounded-l-2xl border-2">
 
 			{/* Header */}
-			<div className="flex flex-row justify-between items-center bg-white w-full rounded-tl-2xl p-2 border-b-2">
+			<div className="flex flex-row justify-between items-center bg-white w-full lg:rounded-tl-2xl p-2 border-b-2">
 				<button onClick={onExitClick} className="material-symbols-outlined !text-md">arrow_back_ios_new</button>
 				<h2 className="font-semibold">{friend.username}</h2>
 				<ChatProfilePic friend={friend} onProfileClick={onProfileClick}/>
