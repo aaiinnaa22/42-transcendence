@@ -1,9 +1,7 @@
+
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback, type JSX } from 'react'
 
-type LeaderboardProps =
-{
-	switchStats: () => void;
-};
 
 type LeaderboardEntry =
 {
@@ -15,7 +13,9 @@ type LeaderboardEntry =
 	ratio: number;
 };
 
-export const Leaderboard = ({switchStats}: LeaderboardProps) => {
+
+export const Leaderboard = () => {
+	const navigate = useNavigate();
 	const [myRank, setMyRank] = useState<LeaderboardEntry | null>(null);
 	const [users, setUsers] = useState<LeaderboardEntry[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -197,7 +197,7 @@ export const Leaderboard = ({switchStats}: LeaderboardProps) => {
 			<button className="absolute text-transcendence-white font-transcendence-two tracking-[0.02em] flex items-center justify-center
 			top-5 left-5 xl:top-10 xl:left-10
 			text-xs xl:text-sm cursor-pointer"
-			onClick={switchStats}>
+			onClick={() => navigate("/home/stats")}>
 				<span className="material-symbols-outlined">arrow_forward</span>
 				<h3 className="h-full">My stats</h3>
 			</button>
