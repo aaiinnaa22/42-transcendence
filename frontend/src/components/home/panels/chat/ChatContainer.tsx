@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Chat } from "./Chat";
 import { Discussion } from "./Discussion";
+import { fetchWithAuth } from "../../../../api/fetchWithAuth";
 
 export type Message = {
   id: number;
@@ -55,7 +56,7 @@ export const ChatContainer = () => {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:4241/chat/users", {
+    fetchWithAuth("http://localhost:4241/chat/users", {
       credentials: "include",
     })
       .then(res => res.json())

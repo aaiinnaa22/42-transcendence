@@ -1,5 +1,6 @@
 import {useState, useEffect, useRef} from 'react'
 import {Settings} from "./settings/Settings"
+import { fetchWithAuth } from "../../api/fetchWithAuth";
 
 export const Profile = () => {
 	const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -9,7 +10,7 @@ export const Profile = () => {
 	useEffect(() => {
 		const getUserInfo = async() => {
 			try {
-				const response = await fetch("http://localhost:4241/auth/me",
+				const response = await fetchWithAuth("http://localhost:4241/auth/me",
 				{
 					method: "GET",
 					credentials: "include",
@@ -24,7 +25,7 @@ export const Profile = () => {
 				}
 				else if (data.avatarType === "local")
 				{
-					const avatarResponse = await fetch("http://localhost:4241/users/avatar",
+					const avatarResponse = await fetchWithAuth("http://localhost:4241/users/avatar",
 					{
 						method: "GET",
 						credentials: "include",
@@ -70,7 +71,7 @@ export const Profile = () => {
 			const formData = new FormData();
 			formData.append("file", profilePicFile);
 
-			const response = await fetch("http://localhost:4241/users/avatar",
+			const response = await fetchWithAuth("http://localhost:4241/users/avatar",
 			{
 				method: "POST",
 				credentials: "include",
