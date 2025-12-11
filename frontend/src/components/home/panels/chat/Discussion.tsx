@@ -66,7 +66,7 @@ export const Discussion = ({
 	};
 
 	return (
-		<div className="flex flex-col h-full lg:rounded-l-2xl border-2">
+		<div className="flex flex-col h-full lg:rounded-l-2xl lg:border-2">
 
 			{/* Header */}
 			<div className="flex flex-row justify-between items-center bg-white w-full lg:rounded-tl-2xl p-2 border-b-2">

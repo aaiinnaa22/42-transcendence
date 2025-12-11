@@ -32,25 +32,8 @@ export const Home = () => {
 		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
-	useEffect(() => {
-		function setVhVw() {
-		const vh = window.innerHeight * 0.01;
-		const vw = window.innerWidth * 0.01;
-		document.documentElement.style.setProperty('--vh', `${vh}px`);
-		document.documentElement.style.setProperty('--vw', `${vw}px`);
-		}
-
-		setVhVw();
-		window.addEventListener('resize', setVhVw);
-
-		return () => window.removeEventListener('resize', setVhVw);
-}, []);
-
 	return (
-		<div className="bg-transcendence-black w-[100vw] flex flex-col md:shadow-transcendence-beige"
-		        style={{
-    height: 'calc(var(--vh, 1vh) * 100)',
-  }}>
+		<div className="bg-transcendence-black w-[100vw] h-screen flex flex-col">
 			<NavBar currentPanel={currentPanel} onTogglePanel={togglePanel}/>
 			<Routes>
 				<Route index element={<Navigate to="play" replace/>}/>
