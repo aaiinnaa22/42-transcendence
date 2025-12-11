@@ -48,10 +48,7 @@ export const Home = () => {
 }, []);
 
 	return (
-		<div className="bg-transcendence-black w-[100vw] flex flex-col md:shadow-transcendence-beige"
-		        style={{
-    height: 'calc(var(--vh, 1vh) * 100)',
-  }}>
+		<div className="bg-transcendence-black w-[100vw] h-screen flex flex-col md:shadow-transcendence-beige">
 			<NavBar currentPanel={currentPanel} onTogglePanel={togglePanel}/>
 			<Routes>
 				<Route index element={<Navigate to="play" replace/>}/>
