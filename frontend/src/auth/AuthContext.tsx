@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
-//maybe add set authenticated later
 type AuthState = {
 	ready: boolean;
 	authenticated: boolean;

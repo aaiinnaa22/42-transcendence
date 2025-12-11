@@ -1,5 +1,5 @@
 import GoogleSignIn from "../assets/googleSignIn.svg";
-import {useNavigate, useLocation, Outlet} from "react-router-dom";
+import { Navigate, useNavigate, useLocation, Outlet} from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
 export const Welcome = () => {

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LanguageSelector } from "./LanguageSelector";
 import { TwoFAModal } from "./TwoFAModal";
+import { fetchWithAuth } from "../../../api/fetchWithAuth";
 
 export const Settings = () =>
 {
@@ -13,7 +14,7 @@ export const Settings = () =>
 	useEffect(() => {
 		const loadTwoFAStatus = async () => {
 			try {
-				const res = await fetch("http://localhost:4241/auth/me", {
+				const res = await fetchWithAuth("http://localhost:4241/auth/me", {
 					credentials: "include",
 				});
 				if (!res.ok) throw new Error("Failed to fetch user info");
