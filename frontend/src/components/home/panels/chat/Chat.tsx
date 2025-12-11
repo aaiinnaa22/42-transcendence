@@ -10,9 +10,11 @@ type ChatProps = {
 
 export const Chat = ({ users, selectedUserId, onChatClick, onProfileClick }: ChatProps) => {
   return (
-    <div className="flex flex-col h-full bg-transcendence-white lg:rounded-l-2xl border-2 py-4">
-		<div className="bg-transcendence-beige w-64 rounded-r-full border-2 border-l-0">
-			<h2 className="text-right px-4 font-bold font-transcendence-three py-2 text-lg tracking-[0.06em]">chat with players</h2>
+    <div className="flex flex-col h-full bg-transcendence-white lg:rounded-l-2xl border-2 py-6 lg:py-4 gap-4">
+		<div className="flex justify-center lg:block">
+			<div className="bg-transcendence-beige border-2 rounded-full w-60 lg:w-64 lg:rounded-none lg:rounded-r-full lg:border-l-0">
+				<h2 className="lg:text-right text-center px-4 font-bold font-transcendence-three py-2 text-lg tracking-[0.06em]">chat with players</h2>
+			</div>
 		</div>
 		<ul className="flex flex-col">
 			{users.map((user) => {
