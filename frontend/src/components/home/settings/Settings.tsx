@@ -1,40 +1,74 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LanguageSelector } from "./LanguageSelector";
 import { TwoFAModal } from "./TwoFAModal";
 
-type SettingsProps = {
-  twoFAEnabled: boolean;
-  onTwoFAChange: (enabled: boolean) => void;
-};
+export const Settings = () =>
+{
+	const [error, setError] = useState<string | null>(null);
+	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
+	const [isTwoFAEnabled, setIsTwoFAEnabled] = useState<boolean | null>(null);
+	const navigate = useNavigate();
 
-export const Settings = ({
-  twoFAEnabled,
-  onTwoFAChange,
-}: SettingsProps) => {
-  const [error, setError] = useState("");
-  const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
-  const navigate = useNavigate();
+	useEffect(() => {
+		const loadTwoFAStatus = async () => {
+			try {
+				const res = await fetch("http://localhost:4241/auth/me", {
+					credentials: "include",
+				});
+				if (!res.ok) throw new Error("Failed to fetch user info");
+				
+				const data = await res.json();
+				setIsTwoFAEnabled(Boolean(data.twoFAEnabled));
+			} catch (err: any) {
+				console.error("Error fetching 2FA status:", err);
+				setError(err.message || "Could not load settings.");
+			}
+		};				
 
-  const handleLogOut = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+		loadTwoFAStatus();
+	}, []);
 
-    try {
-      await fetch("http://localhost:4241/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+	const handleTwoFAStatusChange = (enabled: boolean) => {
+        setIsTwoFAEnabled(enabled);
+    };
 
-      navigate("/");
-    } catch (err: any) {
-      setError(err.message || "Something went wrong.");
-    }
-  };
+	const handleLogOut = async (e: React.FormEvent) =>
+	{
+		e.preventDefault();
+		setError(null);
 
-  return (
+		try {
+			const response = await fetch("http://localhost:4241/auth/logout",
+			{
+				method: "POST",
+				credentials: "include",
+			});
+
+			// Did we get a response code of 2xx (success)
+			if (!response.ok)
+			{
+				const data = await response.json();
+				throw new Error(data.error || "Logout failed");
+			}
+
+			navigate("/");
+		}
+		catch (err: any) {
+			console.error("Login error:", err);
+			setError(err.message || "Something went wrong. Please try again later.");
+		};
+	}
+
+	return (
     <>
       <div className="flex flex-col gap-6 lg:gap-15 items-center justify-center">
+        {error && (
+          <div className="text-transcendence-red text-sm text-center">
+            {error}
+          </div>
+        )}
+
         <LanguageSelector />
 
         <div className="flex flex-col gap-2 text-center">
@@ -42,7 +76,7 @@ export const Settings = ({
             className="text-transcendence-white font-transcendence-two text-sm font-semibold hover:font-bold"
             onClick={() => setIsTwoFAModalOpen(true)}
           >
-            {twoFAEnabled
+            {isTwoFAEnabled
               ? "Disable two-factor authentication"
               : "Enable two-factor authentication"}
           </button>
@@ -54,17 +88,17 @@ export const Settings = ({
             Log out
           </button>
 
-          {error && (
-            <div className="text-transcendence-red text-sm">{error}</div>
-          )}
+          <button className="text-transcendence-red font-transcendence-two text-sm font-semibold hover:font-bold">
+            Delete account
+          </button>
         </div>
       </div>
 
       <TwoFAModal
         isOpen={isTwoFAModalOpen}
-        mode={twoFAEnabled ? "disable" : "enable"}
+        mode={isTwoFAEnabled ? "disable" : "enable"}
         onClose={() => setIsTwoFAModalOpen(false)}
-        onStatusChange={onTwoFAChange}
+        onStatusChange={handleTwoFAStatusChange}
       />
     </>
   );

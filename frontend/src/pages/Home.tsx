@@ -46,11 +46,10 @@ export const Home = () => {
 		return () => window.removeEventListener('resize', setVhVw);
 }, []);
 
+	// style={{height: 'calc(var(--vh, 1vh) * 100)',}} responsive height? looks weird in chrome dev tools
+
 	return (
-		<div className="bg-transcendence-black w-[100vw] flex flex-col md:shadow-transcendence-beige"
-		        style={{
-    height: 'calc(var(--vh, 1vh) * 100)',
-  }}>
+		<div className="bg-transcendence-black w-screen flex flex-col md:shadow-transcendence-beige" style={{height: 'calc(var(--vh, 1vh) * 100)',}}>
 			<NavBar currentPanel={currentPanel} onTogglePanel={togglePanel}/>
 			<Routes>
 				<Route index element={<Navigate to="play" replace/>}/>

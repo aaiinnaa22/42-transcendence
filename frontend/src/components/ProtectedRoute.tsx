@@ -16,5 +16,5 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 		return <Navigate to="/welcome" replace />;
 	}
 
-	return <>{children}</>;	
+	return <>{children}</>;
 };
