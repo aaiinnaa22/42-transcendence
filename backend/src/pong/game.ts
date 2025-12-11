@@ -2,6 +2,7 @@ import Player from "./player.ts";
 import Ball from "./ball.ts";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH, RATE_LIMIT_MS, MOVE_SPEED, MIN_BALL_SPEED, MAX_BALL_SPEED, TOURNAMENT_WIN_CONDITION } from "./constants.ts";
 import { gameStateMessage, type BallState, type GameState, type PlayerState } from "../schemas/game.states.schema.ts";
+import type { WebSocket as WsWebSocket } from "ws";
 
 export enum Location {
 	Left = 1,
@@ -28,7 +29,7 @@ class Game
 	id: string;
 	players: Player[];
 	ball: Ball;
-	sockets: WebSocket[] = [];
+	sockets: WsWebSocket[];
 	mode: GameMode;
 	hasEnded: boolean;
 	loop!: NodeJS.Timeout;
@@ -39,7 +40,7 @@ class Game
 
 	constructor(
 		id: string,
-		sockets: WebSocket[],
+		sockets: WsWebSocket[],
 		mode: GameMode = GameMode.Singleplayer,
 		onGameEnd: GameEndCallback | undefined )
 	{

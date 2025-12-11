@@ -1,7 +1,7 @@
 type Friend = {
 	username: string;
 	profile: string;
-	online: boolean;
+	online?: boolean;
 	lastMessage?: string;
 }
 
@@ -19,7 +19,7 @@ export const ChatProfilePic = ({friend, onProfileClick}: ChatProfileProps) =>
 			? <img className="ml-1 mt-1 w-12 h-12 rounded-full object-cover" src="/testimage.png"></img>
 			: <span className="!text-6xl material-symbols-outlined">account_circle</span>
 			}
-			<div className={"absolute top-1 left-1 border-[1.5px] rounded-full w-3 h-3 " + (friend.online ? "bg-purple-500" : "bg-white")}></div>
+			<div className={"absolute top-1 left-1 border-[1.5px] rounded-full w-2 h-2 lg:w-3 lg:h-3 " + (friend.online ? "bg-purple-500" : "bg-white")}></div>
 		</div>
 	);
 }

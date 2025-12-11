@@ -63,3 +63,10 @@
     transform: translateY(0) scale(1);
   }
 }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: black;
+}
