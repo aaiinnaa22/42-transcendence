@@ -9,6 +9,23 @@ export const Login = () => {
 	const [twoFATempToken, setTwoFATempToken] = useState<string | null>(null);
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const navigate = useNavigate();
+
+	useEffect(() => {
+		const checkSession = async () => {
+			try {
+				const res = await fetch("http://localhost:4241/auth/me", {
+					method: "GET",
+					credentials: "include",
+				});
+
+				if (res.ok) {
+					navigate("/home", { replace: true });
+				}
+			} catch (err) {}
+		};
+
+		checkSession();
+	}, [navigate]);
 	
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
