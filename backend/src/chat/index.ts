@@ -1,16 +1,15 @@
-import type { FastifyInstance } from "fastify";
-import type { WebSocket } from "@fastify/websocket";
-
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { WebSocket as WsWebSocket } from "ws";
 import { addUser, removeUser } from './presence.js';
 import { sendDM, sendInvite } from './directMessage.js';
 import { onlineUsers } from './state.js';
-import { isBlocked, blockUser, unblockUser } from './blocking.js';
+import { isBlocked } from './blocking.js';
 
-const clients = new Map<WebSocket, number>();
+// const clients = new Map<WebSocket, number>();
 
-// TO DO: add prehandler authenticate (?)
+// TODO: add prehandler authenticate (?)
 export default async function chatComponent(server: FastifyInstance) {
-	server.get("/chat", { websocket: true }, (socket, req) => {
+	server.get("/chat", { websocket: true }, (socket: WsWebSocket, req: FastifyRequest) => {
 
 			let userId: string;
 			try
