@@ -2,8 +2,6 @@
 const navItems = ["play", "stats", "profile"] as const;
 import { useNavigate, useLocation } from "react-router-dom";
 
-type Page = typeof navItems[number];
-
 type MenuProps = {
 	onPageChoose: () => void;
 }

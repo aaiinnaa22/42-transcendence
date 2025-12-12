@@ -15,15 +15,12 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 	const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-
-
-
 	useEffect(() => {
 		const checkAuth = async () => {
 			try {
 				const response = await fetchWithAuth("http://localhost:4241/auth/me");
 				setIsAuthenticated(response.ok);
-			} 
+			}
 			catch {
 				setIsAuthenticated(false);
 			}
@@ -39,5 +36,5 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 		return <Navigate to="/" replace />;
 	}
 
-	return <>{children}</>;	
+	return <>{children}</>;
 };
