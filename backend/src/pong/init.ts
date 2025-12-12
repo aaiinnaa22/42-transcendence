@@ -4,7 +4,7 @@ import { authenticate } from "../shared/middleware/auth.middleware.ts";
 //import type { WebSocket } from "@fastify/websocket";
 import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT, ELO_K_FACTOR } from "./constants.ts";
 import type { GameState } from "../schemas/game.states.schema.ts";
-import type Player from "./player.ts";
+import Player from "./player.ts";
 import { validateWebSocketMessage } from "../shared/utility/websocket.utility.ts";
 import { MoveMessageSchema } from "../schemas/game.schema.ts";
 import type { WebSocket as WsWebSocket } from "ws";
@@ -110,11 +110,13 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		{
 			for ( let j = i + 1; j < friendQueue.length; ++j)
 			{	
-				// when the invitation happens who invited who is going to be stored there.
 				if (friendQueue[i]?.friendName == friendQueue[j]?.userName && friendQueue[j]?.friendName ==  friendQueue[i]?.userName)
-				{
-					const connection1 = activePlayers.get( friendQueue[i]?.userId );	
-					const connection2 = activePlayers.get( friendQueue[j]?.userId );
+				{	
+					const player1 = friendQueue[i];
+					const player2 = friendQueue[j];
+					if (!player1 || !player2) continue;
+					const connection1 = activePlayers.get( player1.userId );	
+					const connection2 = activePlayers.get( player2.userId );
 					if ( connection1 && connection2 )
 					{
 						server.log.info(`Creating friendly game between ${friendQueue[i]?.userName} and ${friendQueue[j]?.userName}`);
