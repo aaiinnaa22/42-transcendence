@@ -6,9 +6,11 @@ import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_IN
 import type { GameState } from "../schemas/game.states.schema.ts";
 import Player from "./player.ts";
 import { validateWebSocketMessage } from "../shared/utility/websocket.utility.ts";
-import { MoveMessageSchema } from "../schemas/game.schema.ts";
+import { GameFriendNameSchema, MoveMessageSchema } from "../schemas/game.schema.ts";
 import type { WebSocket as WsWebSocket } from "ws";
-import { sendDM } from "../chat/directMessage.ts";	
+import { sendDM } from "../chat/directMessage.ts";
+import { validateRequest } from "../shared/utility/validation.utility.ts";
+import { HttpError } from "../shared/utility/error.utility.ts";
 
 type UserId = string;
 type GameId = string;
@@ -109,13 +111,13 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		for ( let i = 0; i < friendQueue.length; ++i )
 		{
 			for ( let j = i + 1; j < friendQueue.length; ++j)
-			{	
+			{
 				if (friendQueue[i]?.friendName == friendQueue[j]?.userName && friendQueue[j]?.friendName ==  friendQueue[i]?.userName)
-				{	
+				{
 					const player1 = friendQueue[i];
 					const player2 = friendQueue[j];
 					if (!player1 || !player2) continue;
-					const connection1 = activePlayers.get( player1.userId );	
+					const connection1 = activePlayers.get( player1.userId );
 					const connection2 = activePlayers.get( player2.userId );
 					if ( connection1 && connection2 )
 					{
@@ -125,11 +127,11 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					removeI = i;
 					removeJ = j;
 					break;
-				}	
+				}
 			}
 			if (removeI !== null) break;
 		}
-		if (removeI !== null && removeJ !== null) 
+		if (removeI !== null && removeJ !== null)
 		{
 			const first = Math.min(removeI, removeJ);
 			const second = Math.max(removeI, removeJ);
@@ -640,9 +642,17 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 
 		// check invitation status
-		const friendName = (request.query as any).friendName as string | undefined;
-		console.log(`Inviation ${friendName}`);
-		await checkInvitation( userId, socket, friendName ?? "unkown" );
+		try {
+			const { friendName } = validateRequest(GameFriendNameSchema, request.query);
+			console.log(`Invitation ${friendName}`);
+			await checkInvitation( userId, socket, friendName );
+		} catch (error) {
+			const replyMessage = error instanceof HttpError ? error.message : "Invalid friend name";
+			socket.send(JSON.stringify( {
+				type: "error",
+				message: replyMessage
+			} ));
+		}
 
 		ws.on( "message", ( message: any ) =>
 		{
@@ -903,31 +913,31 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					endGame(game);
 					return;
 				}
-					const winnerConnection = activePlayers.get(data.winner.userId);
-					const loserConnection = activePlayers.get(data.loser.userId);
+				const winnerConnection = activePlayers.get(data.winner.userId);
+				const loserConnection = activePlayers.get(data.loser.userId);
 
-					if ( !winnerConnection || !loserConnection )
-					{
-						server.log.error( `Game ${gameId}: Missing connection info, skipping endStateMessage` );
-						endGame( game );
-						return;
-					}
+				if ( !winnerConnection || !loserConnection )
+				{
+					server.log.error( `Game ${gameId}: Missing connection info, skipping endStateMessage` );
+					endGame( game );
+					return;
+				}
 
-					const endStateMessage = {
-						type: "end",
-						mode: "invite",
-						winner: winnerConnection.userName,
-						loser: loserConnection.userName,
-						message: data.reason === "inactivity"
-							? `Inactive player ${loserConnection.userName} forfeited the game`
-							: data.reason === "disconnect"
-							? `Disconnected player ${loserConnection.userName} forfeited the game`
-							: `${winnerConnection.userName} won!`
-					}
+				const endStateMessage = {
+					type: "end",
+					mode: "invite",
+					winner: winnerConnection.userName,
+					loser: loserConnection.userName,
+					message: data.reason === "inactivity"
+						? `Inactive player ${loserConnection.userName} forfeited the game`
+						: data.reason === "disconnect"
+						? `Disconnected player ${loserConnection.userName} forfeited the game`
+						: `${winnerConnection.userName} won!`
+				}
 
-					// Message the players
-					winnerConnection.socket.send( JSON.stringify(endStateMessage) );
-					loserConnection.socket.send( JSON.stringify(endStateMessage) );
+				// Message the players
+				winnerConnection.socket.send( JSON.stringify(endStateMessage) );
+				loserConnection.socket.send( JSON.stringify(endStateMessage) );
 			}
 
 			endGame(game);
