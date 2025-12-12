@@ -1,6 +1,12 @@
 import { useRef, useEffect } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 
+const BUTTON_KEYS = {
+    P1_UP: "p1_up",
+    P1_DOWN: "p1_down",
+    P2_UP: "p2_up",
+    P2_DOWN: "p2_down",
+} as const;
 
 export const Game = () =>
 {
@@ -12,17 +18,23 @@ export const Game = () =>
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
     const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
-	const holdInterval = useRef<number | null>(null);
+	const holdIntervals = useRef<Record<string, number | null>>({});
 
-	const startHold = (id: number, dy: number) => {
+	//Touch screen button managers
+	const startHold = (key: string, id: number, dy: number) => {
+		if (holdIntervals.current[key]) {
+			clearInterval(holdIntervals.current[key]!);
+		}
 		sendMove(id, dy);
-		holdInterval.current = window.setInterval(() => sendMove(id, dy), 20);
+		holdIntervals.current[key] = window.setInterval(() => {
+			sendMove(id, dy);
+		}, 20);
 	};
 
-	const stopHold = () => {
-		if (holdInterval.current) {
-			clearInterval(holdInterval.current);
-			holdInterval.current = null;
+	const stopHold = (key: string) => {
+		if (holdIntervals.current[key]) {
+			clearInterval(holdIntervals.current[key]!);
+			holdIntervals.current[key] = null;
 		}
 	};
 
@@ -66,7 +78,7 @@ export const Game = () =>
         ctx.clearRect(0,0, canvas.width, canvas.height);
         ctx.fillStyle = 'white';
 
-        // Draw players might fuck up the id is not a number
+        // Draw players
         for (const id in players.current)
         {
 			const player = players.current[id];
@@ -239,18 +251,13 @@ export const Game = () =>
 				/>
 			</div>
 			<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-50">
-            <button onPointerDown={() => startHold(1, -1)} onPointerUp={stopHold} onPointerLeave={stopHold} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-                P1 Up
+            <button     onPointerDown={() => startHold(BUTTON_KEYS.P1_UP, 1, -1)} onPointerUp={() => stopHold(BUTTON_KEYS.P1_UP)} onPointerLeave={() => stopHold(BUTTON_KEYS.P1_UP)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
             </button>
-            <button onPointerDown={() => startHold(1, 1)} onPointerUp={stopHold} onPointerLeave={stopHold}className="px-4 py-2 bg-transcendence-beige text-black rounded">
-                P1 Down
+            <button     onPointerDown={() => startHold(BUTTON_KEYS.P1_DOWN, 1, 1)} onPointerUp={() => stopHold(BUTTON_KEYS.P1_DOWN)} onPointerLeave={() => stopHold(BUTTON_KEYS.P1_DOWN)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
             </button>
-
-            <button onPointerDown={() => startHold(2, -1)} onPointerUp={stopHold} onPointerLeave={stopHold} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-                P2 Up
+            <button     onPointerDown={() => startHold(BUTTON_KEYS.P2_DOWN, 2, 1)} onPointerUp={() => stopHold(BUTTON_KEYS.P2_DOWN)} onPointerLeave={() => stopHold(BUTTON_KEYS.P2_DOWN)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
             </button>
-            <button  onPointerDown={() => startHold(2, 1)} onPointerUp={stopHold} onPointerLeave={stopHold} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-                P2 Down
+            <button      onPointerDown={() => startHold(BUTTON_KEYS.P2_UP, 2, -1)} onPointerUp={() => stopHold(BUTTON_KEYS.P2_UP)} onPointerLeave={() => stopHold(BUTTON_KEYS.P2_UP)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
             </button>
        	 </div>
         </div>
