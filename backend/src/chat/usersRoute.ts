@@ -1,12 +1,12 @@
 import type { FastifyInstance } from "fastify";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 
-export default async function chatUsersComponent(server: FastifyInstance) 
+export default async function chatUsersComponent(server: FastifyInstance)
 {
   server.get("/chat/users", { preHandler: authenticate }, async (req, reply) => {
 
     //auth check
-    if (!req.user) 
+    if (!req.user)
     {
         reply.code(401);
         return { error: "Unauthorized" };
@@ -19,8 +19,9 @@ export default async function chatUsersComponent(server: FastifyInstance)
       },
       select: {
         id: true, // remove id maybe?
-        username: true, 
+        username: true,
         avatar: true,
+		playerStats: true,
       },
       orderBy: { username: "asc" },
     });
@@ -29,6 +30,7 @@ export default async function chatUsersComponent(server: FastifyInstance)
       id: u.id,
       username: u.username ?? "(no name)",
       profile: u.avatar ?? "",
+	  stats: u.playerStats ?? null,
     }));
   });
 }

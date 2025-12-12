@@ -10,12 +10,20 @@ export type Message = {
   isInvite?: boolean;
 };
 
+type userStats = {
+	wins:  number,
+	losses: number,
+	playedGames: number,
+	eloRating: number
+}
+
 export type ChatUser = {
   id: string;
   username: string;
   profile: string;
   online?: boolean;
   lastMessage?: string;
+  stats: userStats;
 };
 
 export const ChatContainer = () => {

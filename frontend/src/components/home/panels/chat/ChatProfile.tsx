@@ -29,8 +29,8 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 							landscape:border-b-0 lg:landscape:border-b-2">{user.username}</h2>
 						<div className="flex w-full gap-1 items-center">
 							<p className="text-xs md:text-sm text-right w-full">currently {user.online ? "online" : "offline"}</p>
-							<span className={"bg-transcendence-red border-1 lg:border-2 w-2 h-2 lg:w-4 lg:h-4 rounded-full "
-								+ (user.online ? "bg-green-500" : "bg-transcendence-red")}></span>
+							<span className={"border-1 lg:border-2 w-2 h-2 lg:w-4 lg:h-4 rounded-full "
+								+ (user.online ? "bg-transcendence-green" : "bg-transcendence-red")}></span>
 						</div>
 					</div>
 					<img className="rounded-full object-cover border-2 w-full max-w-40 aspect-square
@@ -48,21 +48,21 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 					</div>
 					<div className="col-span-2 flex justify-center items-center border-2 rounded-lg p-2
 						portrait:p-4 lg:portrait:p-2">
-						<h4 className="text-xs md:text-sm"><span className="font-bold !text-md">45</span> games played in total</h4>
+						<h4 className="text-xs md:text-sm"><span className="font-bold !text-md">{user.stats.playedGames} </span> games played in total</h4>
 					</div>
 					<div className="bg-transcendence-beige flex flex-col justify-center items-center rounded-lg p-1
 						portrait:p-4 lg:portrait:p-2">
-						<h4 className="text-sm md:text-md font-bold">4</h4>
+						<h4 className="text-sm md:text-md font-bold">{user.stats.wins}</h4>
 						<p className="text-xs md:text-sm">games won</p>
 					</div>
 					<div className="bg-transcendence-black text-transcendence-white flex flex-col justify-center items-center rounded-lg p-1
 						portrait:p-4 lg:portrait:p-2">
-						<h4 className="text-sm md:text-md font-bold">11</h4>
+						<h4 className="text-sm md:text-md font-bold">{user.stats.losses}</h4>
 						<p className="text-xs md:text-sm">games lost</p>
 					</div>
 					<div className="col-span-2 flex justify-center p-1 rounded-lg">
 						<h4 className="tracking-wide text-xs md:text-sm border-b-2 font-bold max-h-6
-							landscape:self-center lg:landscape:self-start">RATING: 1400</h4>
+							landscape:self-center lg:landscape:self-start">RATING: {user.stats.eloRating}</h4>
 					</div>
 				</div>
 				<div className="flex flex-col gap-5 w-full flex-grow justify-center
