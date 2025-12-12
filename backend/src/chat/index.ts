@@ -1,10 +1,10 @@
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "@fastify/websocket";
 
-import { addUser, removeUser } from "./presence.ts";
-import { sendDM, sendInvite } from "./directMessage.ts";
-import { onlineUsers } from "./state.ts";
-import { isBlocked, blockUser, unblockUser } from "./blocking.ts";
+import { addUser, removeUser } from './presence.js';
+import { sendDM, sendInvite } from './directMessage.js';
+import { onlineUsers } from './state.js';
+import { isBlocked, blockUser, unblockUser } from './blocking.js';
 
 const clients = new Map<WebSocket, number>();
 
@@ -58,7 +58,7 @@ export default async function chatComponent(server: FastifyInstance) {
 				if (data.type === "dm") {
 					const blocked = await isBlocked(server, userId, data.to);
 
-					if (blocked) 
+					if (blocked)
 					{
 						socket.send(JSON.stringify({
 						type: "error",

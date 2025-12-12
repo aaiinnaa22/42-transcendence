@@ -1,4 +1,4 @@
-import { env } from "../config/environment.ts";
+import { env } from '../config/environment.js';
 
 import fastifyPlugin from 'fastify-plugin';
 import fastifyJwt from '@fastify/jwt';

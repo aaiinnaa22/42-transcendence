@@ -1,12 +1,12 @@
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
-import { authenticate } from "../shared/middleware/auth.middleware.ts";
+import { authenticate } from '../shared/middleware/auth.middleware.js';
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 import fs from "fs/promises";
-import { BadRequestError, NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
-import { validateRequest } from "../shared/utility/validation.utility.ts";
-import { GetAvatarSchema } from "../schemas/avatar.schema.ts";
+import { BadRequestError, NotFoundError, sendErrorReply } from '../shared/utility/error.utility.js';
+import { validateRequest } from '../shared/utility/validation.utility.js';
+import { GetAvatarSchema } from '../schemas/avatar.schema.js';
 
 const AVATAR_DIR = path.join( process.cwd(), "upload", "avatars" );
 const MAX_FILESIZE = 4 * 1024 * 1024; // 4MB

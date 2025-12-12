@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
 	emailField, usernameField, passwordField,
 	twoFACodeField
-} from "../shared/utility/validation.utility.ts";
+} from '../shared/utility/validation.utility.js';
 
 // Export auth route schemas
 

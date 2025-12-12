@@ -1,13 +1,13 @@
-import { env } from "../config/environment.ts";
+import { env } from '../config/environment.js';
 
 import { type FastifyInstance } from "fastify";
-import { authenticate } from "../shared/middleware/auth.middleware.ts";
+import { authenticate } from '../shared/middleware/auth.middleware.js';
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { blockUser, unblockUser } from "../chat/blocking.ts";
-import { HttpError, NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
-import { validateRequest } from "../shared/utility/validation.utility.ts";
-import { UpdateUserSchema } from "../schemas/user.schema.ts";
+import { blockUser, unblockUser } from '../chat/blocking.js';
+import { HttpError, NotFoundError, sendErrorReply } from '../shared/utility/error.utility.js';
+import { validateRequest } from '../shared/utility/validation.utility.js';
+import { UpdateUserSchema } from '../schemas/user.schema.js';
 
 const userRoutes = async (server: FastifyInstance) => {
     // Get user profile (protected route)
@@ -109,7 +109,7 @@ const userRoutes = async (server: FastifyInstance) => {
         "/users/:id/block",
         { preHandler: authenticate },
         async (request, reply) => {
-            try 
+            try
             {
                 const { userId } = request.user as { userId: string };
                 const { id: targetUserId } = request.params as { id: string };
@@ -121,8 +121,8 @@ const userRoutes = async (server: FastifyInstance) => {
                 }
 
                 reply.send({ ok: true });
-            } 
-            catch (err: any) 
+            }
+            catch (err: any)
             {
                 server.log.error({ err }, "Block user failed");
                 reply.code(500).send({ error: "Failed to block user" });
@@ -135,7 +135,7 @@ const userRoutes = async (server: FastifyInstance) => {
         "/users/:id/block",
         { preHandler: authenticate },
         async (request, reply) => {
-            try 
+            try
             {
                 const { userId } = request.user as { userId: string };
                 const { id: targetUserId } = request.params as { id: string };
@@ -143,8 +143,8 @@ const userRoutes = async (server: FastifyInstance) => {
                 const success = await unblockUser(server, userId, targetUserId);
 
                 reply.send({ ok: success });
-            } 
-            catch (err: any) 
+            }
+            catch (err: any)
             {
                 server.log.error({ err }, "Unblock user failed");
                 reply.code(500).send({ error: "Failed to unblock user" });

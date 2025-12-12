@@ -1,9 +1,9 @@
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
-import { authenticate } from "../shared/middleware/auth.middleware.ts";
+import { authenticate } from '../shared/middleware/auth.middleware.js';
 import {} from "@prisma/client";
-import { NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
-import { validateRequest } from "../shared/utility/validation.utility.ts";
-import { GetStatsUsernameSchema } from "../schemas/stats.schema.ts";
+import { NotFoundError, sendErrorReply } from '../shared/utility/error.utility.js';
+import { validateRequest } from '../shared/utility/validation.utility.js';
+import { GetStatsUsernameSchema } from '../schemas/stats.schema.js';
 
 const statsRoutes = async ( server: FastifyInstance ) =>
 {

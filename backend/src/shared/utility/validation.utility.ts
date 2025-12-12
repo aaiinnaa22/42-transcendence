@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BadRequestError } from "./error.utility.ts";
+import { BadRequestError } from './error.utility.js';
 
 /**
  * NOTE: The following requests MUST be validated by Zod

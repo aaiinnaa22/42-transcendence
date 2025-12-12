@@ -1,5 +1,5 @@
 
-import { WIDTH, HEIGHT, MAX_BALL_SPEED, MIN_BALL_SPEED } from "./constants.ts";
+import { WIDTH, HEIGHT, MAX_BALL_SPEED, MIN_BALL_SPEED } from './constants.js';
 
 class Ball
 {

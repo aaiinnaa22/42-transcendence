@@ -1,12 +1,12 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import Game, { GameMode, Location, type GameEndData } from "./game.ts";
-import { authenticate } from "../shared/middleware/auth.middleware.ts";
+import Game, { GameMode, Location, type GameEndData } from './game.js';
+import { authenticate } from '../shared/middleware/auth.middleware.js';
 //import type { WebSocket } from "@fastify/websocket";
-import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT, ELO_K_FACTOR } from "./constants.ts";
-import type { GameState } from "../schemas/game.states.schema.ts";
-import type Player from "./player.ts";
-import { validateWebSocketMessage } from "../shared/utility/websocket.utility.ts";
-import { MoveMessageSchema } from "../schemas/game.schema.ts";
+import { INITIAL_ELO_RANGE, ELO_RANGE_INCREASE, MAX_ELO_RANGE, RANGE_INCREASE_INTERVAL, INACTIVITY_TIMEOUT, ELO_K_FACTOR } from './constants.js';
+import type { GameState } from '../schemas/game.states.schema.js';
+import type Player from './player.js';
+import { validateWebSocketMessage } from '../shared/utility/websocket.utility.js';
+import { MoveMessageSchema } from '../schemas/game.schema.js';
 import type { WebSocket as WsWebSocket } from "ws";
 
 type UserId = string;

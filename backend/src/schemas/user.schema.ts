@@ -4,7 +4,7 @@ import {
 	usernameField,
 	passwordField,
 	avatarUrlField
-} from "../shared/utility/validation.utility.ts";
+} from '../shared/utility/validation.utility.js';
 
 // Export user route schemas
 

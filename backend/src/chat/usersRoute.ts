@@ -1,12 +1,12 @@
 import type { FastifyInstance } from "fastify";
-import { authenticate } from "../shared/middleware/auth.middleware.ts";
+import { authenticate } from '../shared/middleware/auth.middleware.js';
 
-export default async function chatUsersComponent(server: FastifyInstance) 
+export default async function chatUsersComponent(server: FastifyInstance)
 {
   server.get("/chat/users", { preHandler: authenticate }, async (req, reply) => {
 
     //auth check
-    if (!req.user) 
+    if (!req.user)
     {
         reply.code(401);
         return { error: "Unauthorized" };
@@ -19,7 +19,7 @@ export default async function chatUsersComponent(server: FastifyInstance)
       },
       select: {
         id: true, // remove id maybe?
-        username: true, 
+        username: true,
         avatar: true,
       },
       orderBy: { username: "asc" },

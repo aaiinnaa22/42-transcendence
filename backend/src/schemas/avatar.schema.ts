@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { avatarFilenameField } from "../shared/utility/validation.utility.ts";
+import { avatarFilenameField } from '../shared/utility/validation.utility.js';
 
 export const GetAvatarSchema = z.strictObject({
 	filename: avatarFilenameField

@@ -1,13 +1,13 @@
-import { env } from "./config/environment.ts" // IMPORTANT: validation happens first
+import { env } from './config/environment.js' // IMPORTANT: validation happens first
 
 import Fastify, { type FastifyInstance } from "fastify";
-import prismaPlugin from "./plugins/prisma.ts";
-import jwtPlugin from "./plugins/jwt.ts";
+import prismaPlugin from './plugins/prisma.js';
+import jwtPlugin from './plugins/jwt.js';
 import fastifyCookie from "@fastify/cookie";
-import gameComponent from "./pong/init.ts";
-import leaderboardComponent from "./leaderboard/leaderboard.route.ts";
-import chatComponent from "./chat/index.ts";
-import chatUsersComponent from "./chat/usersRoute.ts";
+import gameComponent from './pong/init.js';
+import leaderboardComponent from './leaderboard/leaderboard.route.js';
+import chatComponent from './chat/index.js';
+import chatUsersComponent from './chat/usersRoute.js';
 
 const server : FastifyInstance = Fastify( {
 	logger: env.NODE_ENV === "production"
@@ -81,17 +81,17 @@ const start = async () =>
 		await server.register( jwtPlugin );
 
 		// Register routes
-		await server.register( import( "./routes/healthcheck.route.ts" ) );
+		await server.register( import( './routes/healthcheck.route.js' ) );
 
 		// Auth route
-		await server.register( import( "./routes/auth.route.ts" ) );
+		await server.register( import( './routes/auth.route.js' ) );
 
 		// User route
-		await server.register( import( "./routes/user.route.ts" ) );
+		await server.register( import( './routes/user.route.js' ) );
 
-		await server.register( import( "./routes/avatar.route.ts" ) );
+		await server.register( import( './routes/avatar.route.js' ) );
 
-		await server.register( import( "./routes/stats.route.ts" ) );
+		await server.register( import( './routes/stats.route.js' ) );
 
 		// Game module initialization
 
@@ -104,10 +104,10 @@ const start = async () =>
 		await server.register( chatUsersComponent );
 
 		await server.register( leaderboardComponent );
-		
+
 		await server.register( chatComponent );
 
-		await server.register( import ( "./routes/friends.route.ts" ) );
+		await server.register( import ( './routes/friends.route.js' ) );
 
 		// Grab the configuration from env
 		const host = env.HOSTNAME;

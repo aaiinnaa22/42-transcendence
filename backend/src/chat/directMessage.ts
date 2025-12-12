@@ -1,4 +1,4 @@
-import { onlineUsers } from "./state.ts";
+import { onlineUsers } from "./state.js";
 import WebSocket from "ws";
 
 export function sendDM(
@@ -7,7 +7,7 @@ export function sendDM(
 	message: string
 ): boolean {
 	const targets = onlineUsers.get(to);
-	if (!targets) 
+	if (!targets)
 	{
 		console.log("no online users found");
 		return false;

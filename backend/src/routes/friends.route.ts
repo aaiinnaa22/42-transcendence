@@ -1,6 +1,6 @@
 import { type FastifyInstance } from "fastify";
-import { authenticate } from "../shared/middleware/auth.middleware.ts";
-import { sendFriendRequest, acceptFriendRequest, removeFriend } from "../chat/friends.ts";
+import { authenticate } from '../shared/middleware/auth.middleware.js';
+import { sendFriendRequest, acceptFriendRequest, removeFriend } from '../chat/friends.js';
 
 export default async function friendsRoutes(server: FastifyInstance) {
 	// GET /friends

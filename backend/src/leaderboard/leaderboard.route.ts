@@ -1,9 +1,9 @@
 import { type FastifyInstance, type FastifyRequest, type FastifyReply } from "fastify";
-import LeaderboardService from "./leaderboard.class.ts";
-import { authenticate } from "../shared/middleware/auth.middleware.ts";
-import { BadRequestError, NotFoundError, sendErrorReply, ServiceUnavailableError } from "../shared/utility/error.utility.ts";
-import { validateRequest } from "../shared/utility/validation.utility.ts";
-import { GetLeaderboardPageSchema } from "../schemas/leaderboard.schema.ts";
+import LeaderboardService from './leaderboard.class.js';
+import { authenticate } from '../shared/middleware/auth.middleware.js';
+import { NotFoundError, sendErrorReply, ServiceUnavailableError } from '../shared/utility/error.utility.js';
+import { validateRequest } from '../shared/utility/validation.utility.js';
+import { GetLeaderboardPageSchema } from '../schemas/leaderboard.schema.js';
 
 const leaderboardComponent = async ( server: FastifyInstance ) =>
 {

@@ -1,15 +1,15 @@
-import { env } from "../config/environment.ts";
+import { env } from '../config/environment.js';
 
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import fastifyOauth2, { type OAuth2Namespace } from "@fastify/oauth2";
 import { OAuth2Client } from "google-auth-library";
-import { authenticate } from "../shared/middleware/auth.middleware.ts";
+import { authenticate } from '../shared/middleware/auth.middleware.js';
 import bcrypt from "bcrypt";
-import { validateRequest } from "../shared/utility/validation.utility.ts";
-import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReply, NotFoundError, ConflictError, UnauthorizedError } from "../shared/utility/error.utility.ts";
+import { validateRequest } from '../shared/utility/validation.utility.js';
+import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReply, NotFoundError, ConflictError, UnauthorizedError } from '../shared/utility/error.utility.js';
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
-import { LoginSchema, RegisterSchema, TwoFADisableSchema, TwoFALoginSchema, TwoFAVerifySchema } from "../schemas/auth.schema.ts";
+import { LoginSchema, RegisterSchema, TwoFADisableSchema, TwoFALoginSchema, TwoFAVerifySchema } from '../schemas/auth.schema.js';
 
 // Augment Fastify instance with oauth2 namespace added by the plugin
 declare module "fastify" {
@@ -231,6 +231,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	// Logout endpoint (now it clears cookies)
 	server.post( "/auth/logout", { preHandler: authenticate }, async ( request: FastifyRequest, reply: FastifyReply ) =>
 	{
+		void request;
+
 		reply
 			.clearCookie( "accessToken", { path: "/" } )
 			.clearCookie( "refreshToken", { path: "/" } )

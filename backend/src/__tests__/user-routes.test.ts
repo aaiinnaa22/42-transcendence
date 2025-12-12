@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import fastifyCookie from '@fastify/cookie';
-import jwtPlugin from '../plugins/jwt.ts';
-import userRoutes from '../routes/user.route.ts';
+import jwtPlugin from '../plugins/jwt.js';
+import userRoutes from '../routes/user.route.js';
 import { jest, describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 
 // Integration-style tests for user routes using cookie-based auth

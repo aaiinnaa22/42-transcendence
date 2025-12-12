@@ -1,11 +1,11 @@
 import type { WebSocket } from "@fastify/websocket";
-import { onlineUsers } from "./state.ts";
+import { onlineUsers } from './state.js';
 
-export function addUser(userId: string, socket: WebSocket) 
+export function addUser(userId: string, socket: WebSocket)
 {
 	let sockets = onlineUsers.get(userId);
 
-	if (!sockets) 
+	if (!sockets)
 	{
 		sockets = new Set();
 		onlineUsers.set(userId, sockets);
@@ -17,14 +17,14 @@ export function addUser(userId: string, socket: WebSocket)
 	console.log("ONLINE USERS:", [...onlineUsers.keys()]);
 }
 
-export function removeUser(userId: string, socket: WebSocket) 
+export function removeUser(userId: string, socket: WebSocket)
 {
 	const sockets = onlineUsers.get(userId);
 	if (!sockets) return;
 
 	sockets.delete(socket);
 
-	if (sockets.size === 0) 
+	if (sockets.size === 0)
 	{
 		onlineUsers.delete(userId);
 		broadcastPresence(userId, false);
@@ -33,7 +33,7 @@ export function removeUser(userId: string, socket: WebSocket)
 	}
 }
 
-export function broadcastPresence(userId: string, online: boolean) 
+export function broadcastPresence(userId: string, online: boolean)
 {
 	const payload = JSON.stringify({
 		type: "presence",
@@ -41,10 +41,10 @@ export function broadcastPresence(userId: string, online: boolean)
 		online
 	});
 
-	for (const sockets of onlineUsers.values()) 
+	for (const sockets of onlineUsers.values())
 	{
 		for (const socket of sockets) {
-			if (socket.readyState === socket.OPEN) 
+			if (socket.readyState === socket.OPEN)
 			{
 				socket.send(payload);
 			}
