@@ -47,7 +47,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	const friendQueue: WaitingFriend[] = [];
 
 		// Helper for queueing new players
-	const checkInvitation = async ( id: UserId, socket: WebSocket, friend: UserName ) => {
+	const checkInvitation = async ( id: UserId, socket: WsWebSocket, friend: UserName ) => {
 		try{
 		const stats = await server.prisma.playerStats.findUnique( {
 			where: { userId: id },
@@ -622,7 +622,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		// ============================= INVITE GAME ===============================
 	server.get( "/game/chat",
 		{ websocket: true, preHandler: authenticate },
-		async ( socket: WebSocket, request: FastifyRequest ) =>
+		async ( socket, request: FastifyRequest ) =>
 	{
 		const ws = socket as unknown as WsWebSocket;
         const { userId } = request.user as { userId: string };
