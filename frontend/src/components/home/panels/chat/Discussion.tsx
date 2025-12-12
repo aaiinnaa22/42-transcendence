@@ -9,7 +9,7 @@ type DiscussionProps = {
 	messages: Message[];
 	onSendMessage: (text: string) => void;
 	onExitClick: () => void;
-	onProfileClick: () => void;
+	onProfileClick: (user: ChatUser) => void;
 	inviteIsActive: boolean;
 	inviteTimeLeft: number;
 	onSendInvite: () => void;

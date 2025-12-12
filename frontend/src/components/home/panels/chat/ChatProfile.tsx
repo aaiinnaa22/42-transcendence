@@ -1,13 +1,12 @@
+import type { ChatUser } from "./ChatContainer";
 
 type ChatProfileProps =
 {
 	onExitClick: () => void;
+	user: ChatUser;
 }
 
-export const ChatProfile = ({onExitClick}: ChatProfileProps) => {
-
-
-
+export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 	return (
 		<div className="flex flex-col h-full w-full bg-transcendence-white lg:rounded-l-2xl px-3 pt-10 pb-5 lg:border-2">
 			<div className="fixed top-0 w-[90%] lg:mt-[2px] h-10 bg-transcendence-white flex items-center">
@@ -27,14 +26,15 @@ export const ChatProfile = ({onExitClick}: ChatProfileProps) => {
 						<h2 className="font-bold text-md md:text-lg border-b-2 h-fit w-full
 							portrait:text-center lg:portrait:text-left
 							portrait:w-fit lg:portrait:w-full
-							landscape:border-b-0 lg:landscape:border-b-2">Susan</h2>
+							landscape:border-b-0 lg:landscape:border-b-2">{user.username}</h2>
 						<div className="flex w-full gap-1 items-center">
-							<p className="text-xs md:text-sm text-right w-full">currently offline</p>
-							<span className="bg-transcendence-red border-1 lg:border-2 w-2 h-2 lg:w-4 lg:h-4 rounded-full"></span>
+							<p className="text-xs md:text-sm text-right w-full">currently {user.online ? "online" : "offline"}</p>
+							<span className={"bg-transcendence-red border-1 lg:border-2 w-2 h-2 lg:w-4 lg:h-4 rounded-full "
+								+ (user.online ? "bg-green-500" : "bg-transcendence-red")}></span>
 						</div>
 					</div>
 					<img className="rounded-full object-cover border-2 w-full max-w-40 aspect-square
-						row-span-2 landscape:max-w-40 lg:landscape:max-w-40" src="/testimage.png"></img>
+						row-span-2 landscape:max-w-40 lg:landscape:max-w-40" src={user.profile}></img>
 				</div>
 				<div className="grid grid-cols-[auto_auto] grid-rows-[auto_auto_auto] gap-5 w-full flex-grow
 					landscape:flex flex-row lg:landscape:grid

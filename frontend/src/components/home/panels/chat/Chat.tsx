@@ -5,7 +5,7 @@ type ChatProps = {
   users: ChatUser[];
   selectedUserId: string | null;
   onChatClick: (user: ChatUser) => void;
-  onProfileClick: () => void;
+  onProfileClick: (user: ChatUser) => void;
 };
 
 export const Chat = ({ users, selectedUserId, onChatClick, onProfileClick }: ChatProps) => {

@@ -214,11 +214,11 @@ export const ChatContainer = () => {
       ));
 	}
 
-	const [showProfile, setShowProfile] = useState(false);
+	const [profileUser, setProfileUser] = useState<ChatUser | null>(null);
 
-	if (showProfile)
+	if (profileUser)
 	{
-		return (<ChatProfile onExitClick={() => setShowProfile(false)}/>)
+		return (<ChatProfile user={profileUser} onExitClick={() => setProfileUser(null)}/>)
 	}
 
   return (
@@ -230,7 +230,7 @@ export const ChatContainer = () => {
 			users={usersWithPresence}
 			selectedUserId={null}
 			onChatClick={setSelectedUser}
-			onProfileClick={() => setShowProfile(true)}
+			onProfileClick={setProfileUser}
 		/>
 		)}
 
@@ -244,7 +244,7 @@ export const ChatContainer = () => {
 			inviteIsActive={inviteActive}
 			inviteTimeLeft={inviteTimeLeft}
 			onSendInvite={sendGameInvite}
-			onProfileClick={() => setShowProfile(true)}
+			onProfileClick={setProfileUser}
 		/>
 		)}
 
