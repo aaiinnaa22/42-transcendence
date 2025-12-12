@@ -18,7 +18,7 @@ export const ChatProfile = ({onExitClick}: ChatProfileProps) => {
 				lg:portrait:items-start lg:portrait:px-5
 				landscape:grid grid-cols-[auto_auto] grid-rows-[20%_auto_15%] landscape:justify-center
 				lg:landscape:flex lg:landscape:justify-between
-				landscape:max-h-100">
+				landscape:max-h-100 lg:landscape:max-h-none">
 				<div className="flex flex-col items-center justify-center lg:gap-5 w-full flex-grow
 					landscape:contents lg:landscape:flex">
 					<div className="flex flex-col items-center justify-between w-full gap-2
