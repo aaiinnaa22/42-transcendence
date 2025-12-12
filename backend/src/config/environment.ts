@@ -71,8 +71,12 @@ const PUBLIC_URL = isProduction
 	? `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}`
 	: `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}:${_env.PORT}`;
 
+const FRONTEND_URL = isProduction
+	? `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}`
+	: `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}:${_env.FRONTEND_PORT}`;
+
 const GOOGLE_CALLBACK_URL = `${PUBLIC_URL}/auth/google/callback`;
-const CLIENT_REDIRECT_URL = `${PUBLIC_URL}/home`;
+const CLIENT_REDIRECT_URL = `${FRONTEND_URL}/home`;
 const CLIENT_LOGIN_REDIRECT_URL = `${PUBLIC_URL}/login`;
 
 // Export the validated environment

@@ -33,19 +33,6 @@ export const Home = () => {
 		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
-	useEffect(() => {
-		function setVhVw() {
-		const vh = window.innerHeight * 0.01;
-		const vw = window.innerWidth * 0.01;
-		document.documentElement.style.setProperty('--vh', `${vh}px`);
-		document.documentElement.style.setProperty('--vw', `${vw}px`);
-		}
-
-		setVhVw();
-		window.addEventListener('resize', setVhVw);
-
-		return () => window.removeEventListener('resize', setVhVw);
-}, []);
 
 	return (
 		<div className="bg-transcendence-black w-[100vw] h-screen flex flex-col md:shadow-transcendence-beige">
