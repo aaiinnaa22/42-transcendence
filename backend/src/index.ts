@@ -80,34 +80,29 @@ const start = async () =>
 		await server.register( prismaPlugin );
 		await server.register( jwtPlugin );
 
-		// Register routes
-		await server.register( import( './routes/healthcheck.route.js' ) );
-
-		// Auth route
-		await server.register( import( './routes/auth.route.js' ) );
-
-		// User route
-		await server.register( import( './routes/user.route.js' ) );
-
-		await server.register( import( './routes/avatar.route.js' ) );
-
-		await server.register( import( './routes/stats.route.js' ) );
-
-		// Game module initialization
-
 		await server.register( import( "@fastify/websocket" ), {
-	  		options: { maxPayload: 1048576 }
+			options: { maxPayload: 1048576 }
 		} );
 
-		await server.register( gameComponent );
+		// Register healthcheck as a non-api route
+		await server.register( import( './routes/healthcheck.route.js' ) );
 
-		await server.register( chatUsersComponent );
+		// Register routes with a '/api' prefix
+		await server.register( async (api: FastifyInstance) => {
+			// Standard routes
+			await api.register( import( './routes/auth.route.js' ) );
+			await api.register( import( './routes/user.route.js' ) );
+			await api.register( import( './routes/avatar.route.js' ) );
+			await api.register( import( './routes/stats.route.js' ) );
+			await api.register( import ( './routes/friends.route.js' ) );
 
-		await server.register( leaderboardComponent );
+			// Component routes
+			await api.register( gameComponent );
+			await api.register( chatUsersComponent );
+			await api.register( leaderboardComponent );
+			await api.register( chatComponent );
 
-		await server.register( chatComponent );
-
-		await server.register( import ( './routes/friends.route.js' ) );
+		}, { prefix: "/api" });
 
 		// Grab the configuration from env
 		const host = env.HOSTNAME;
