@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { usernameField } from "../shared/utility/validation.utility.ts";
 
 export const MoveMessageSchema = z.object({
 	type: z.literal("move"),
@@ -16,5 +17,10 @@ export const GameClientMessageSchema = z.discriminatedUnion( "type", [
 	MoveMessageSchema
 ]);
 
+export const GameFriendNameSchema = z.object({
+	friendName: usernameField
+}).loose();
+
 export type MoveMessage = z.infer<typeof MoveMessageSchema>;
 export type GameClientMessage = z.infer<typeof GameClientMessageSchema>;
+export type GameFriendNameQuery = z.infer<typeof GameFriendNameSchema>;

@@ -1,14 +1,10 @@
 import { useRef, useEffect } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
+import { } from "../panels/chat/Discussion";
+import { useLocation } from "react-router-dom";
 
-const BUTTON_KEYS = {
-    P1_UP: "p1_up",
-    P1_DOWN: "p1_down",
-    P2_UP: "p2_up",
-    P2_DOWN: "p2_down",
-} as const;
 
-export const Game = () =>
+export const GameInvite = () =>
 {
     // I am using useRef instead of useState so things persist when components load again and things wont't rerender
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -17,42 +13,22 @@ export const Game = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
-	const holdIntervals = useRef<Record<string, number | null>>({});
-
-	//Touch screen button managers
-	const startHold = (key: string, id: number, dy: number) => {
-		if (holdIntervals.current[key]) {
-			clearInterval(holdIntervals.current[key]!);
-		}
-		sendMove(id, dy);
-		holdIntervals.current[key] = window.setInterval(() => {
-			sendMove(id, dy);
-		}, 20);
-	};
-
-	const stopHold = (key: string) => {
-		if (holdIntervals.current[key]) {
-			clearInterval(holdIntervals.current[key]!);
-			holdIntervals.current[key] = null;
-		}
-	};
+    const ball = useRef<{ x: number; y: number; countdown?: number; waiting?: string}>({ x: 0, y: 0 , countdown: 5, waiting: undefined});
+	const location = useLocation();
 
     // sends move command to backend server when player wants to move
-    const sendMove = (id: number, dy: number) => {
+    const sendMove = (dy: number) => {
         const ws = wsRef.current;
         if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: "move", id, dy }));
+            ws.send(JSON.stringify({ type: "move", dy }));
         }
     };
 
     //registers what key was pressed and call sendMove function
     const updateGame = () => {
         //Perform action based on the keypressed
-        if (keysPressed.current["ArrowUp"]) sendMove(2, -1);
-        if (keysPressed.current["ArrowDown"]) sendMove(2, 1);
-        if (keysPressed.current["w"]) sendMove(1, -1);
-        if (keysPressed.current["s"]) sendMove(1, 1);
+        if (keysPressed.current["ArrowUp"] || keysPressed.current["w"]) sendMove(-1);
+        if (keysPressed.current["ArrowDown"] || keysPressed.current["s"]) sendMove(1);
     };
 
 	const axisScale = () => {
@@ -78,7 +54,7 @@ export const Game = () =>
         ctx.clearRect(0,0, canvas.width, canvas.height);
         ctx.fillStyle = 'white';
 
-        // Draw players
+        // Draw players might fuck up the id is not a number
         for (const id in players.current)
         {
 			const player = players.current[id];
@@ -117,7 +93,10 @@ export const Game = () =>
 			const scaleCenterX = (WIDTH / 2) * scaleX;
 			const scaleCenterY = (HEIGHT / 2) * scaleY;
 
-			ctx.fillText(`${ball.current.countdown}`, scaleCenterX, scaleCenterY);
+			if (ball.current.countdown == 5)
+				ctx.fillText(`${ball.current.waiting}`, scaleCenterX, scaleCenterY);
+			else
+				ctx.fillText(`${ball.current.countdown}`, scaleCenterX, scaleCenterY);
 
 			// Reset alignment
 			ctx.textAlign = "left";
@@ -137,8 +116,10 @@ export const Game = () =>
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
-        const ws = new WebSocket('ws://localhost:4241/game/singleplayer');
-
+		const invitee = location.state?.invitee;
+   		console.log("DEBUG: invitee =", invitee); 
+		ball.current.waiting = `Waiting ${invitee}`;
+        const ws = new WebSocket(`ws://localhost:4241/game/chat?friendName=${invitee}`);
         wsRef.current = ws;
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
@@ -159,10 +140,10 @@ export const Game = () =>
                 players.current = data.players;
                 ball.current = data.ball;
 				ball.current.countdown = data.countdown;
-        	}
+			}
 			else if (data.type === "waiting")
 			{
-				console.log("Waiting in queue.");
+				console.log("Waiting in queue. Position: ", data.position);
 			}
 			else if (data.type === "error")
 			{
@@ -177,11 +158,11 @@ export const Game = () =>
 			else if (data.type === "end")
 			{
 				console.log( data.message );
-				if ( data.winner )
-				{
-					console.log( "The winner was the " + data.winner + " player with " + data.score.winner + " points!" );
-				}
+				ball.current.countdown = 5;
+				ball.current.waiting = `Winner is ${data.winner}`;
+				//console.log( "The winner's new elo is " + data.elo.winner );
 			}
+
 			/* ADD ADDITIONAL STATES HERE */
 		};
 
@@ -247,19 +228,9 @@ export const Game = () =>
 					ref={canvasRef}
 					width={screenIsPortrait ? HEIGHT : WIDTH}
 					height={screenIsPortrait ? WIDTH : HEIGHT}
-					className="w-full h-full "
+					className="w-full h-full"
 				/>
 			</div>
-			<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-50">
-            <button     onPointerDown={() => startHold(BUTTON_KEYS.P1_UP, 1, -1)} onPointerUp={() => stopHold(BUTTON_KEYS.P1_UP)} onPointerLeave={() => stopHold(BUTTON_KEYS.P1_UP)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-            </button>
-            <button     onPointerDown={() => startHold(BUTTON_KEYS.P1_DOWN, 1, 1)} onPointerUp={() => stopHold(BUTTON_KEYS.P1_DOWN)} onPointerLeave={() => stopHold(BUTTON_KEYS.P1_DOWN)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-            </button>
-            <button     onPointerDown={() => startHold(BUTTON_KEYS.P2_DOWN, 2, 1)} onPointerUp={() => stopHold(BUTTON_KEYS.P2_DOWN)} onPointerLeave={() => stopHold(BUTTON_KEYS.P2_DOWN)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-            </button>
-            <button      onPointerDown={() => startHold(BUTTON_KEYS.P2_UP, 2, -1)} onPointerUp={() => stopHold(BUTTON_KEYS.P2_UP)} onPointerLeave={() => stopHold(BUTTON_KEYS.P2_UP)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-            </button>
-       	 </div>
         </div>
     );
 };
