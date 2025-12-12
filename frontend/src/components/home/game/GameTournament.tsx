@@ -192,7 +192,7 @@ export const GameTournament = () =>
 			window.removeEventListener("blur", handleBlur);
 			window.removeEventListener("resize", handleResize);
         };
-    },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
+    });
 
     // Aina's stuff after this line
 	const screenIsPortrait = window.innerHeight > window.innerWidth;
