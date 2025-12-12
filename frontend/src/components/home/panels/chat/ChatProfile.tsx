@@ -86,6 +86,3 @@ export const ChatProfile = ({onExitClick}: ChatProfileProps) => {
 		</div>
 	)
 }
-
-//rating wins losses
-//befriend unfriend block
