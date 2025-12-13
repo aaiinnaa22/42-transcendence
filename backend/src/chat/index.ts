@@ -74,7 +74,15 @@ export default async function chatComponent(server: FastifyInstance) {
 					console.log(`User ${userId} sent a game invite`);
 
 					sendInvite(userId, data.to, data.message, data.timestamp);
-			}
+				}
+				// logout test - TO DO : DELETE THIS
+				if (data.type === "test:logout") {
+					socket.send(JSON.stringify({
+						type: "error",
+						reason: "unauthorized"
+					}));
+					socket.close(1008, "Unauthorized");
+				}
 			});
 
 		// 3. ON DISCONNECT
