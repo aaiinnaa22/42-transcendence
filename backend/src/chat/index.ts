@@ -16,25 +16,26 @@ export default async function chatComponent(server: FastifyInstance) {
 			try
 			{
 				const signed = req.cookies.accessToken;
-				if (!signed) {
-					socket.close();
-					return;
-				}
+				if (!signed) 
+					throw new Error("No cookie");
 
 				const unsign = req.unsignCookie(signed);
-				if (!unsign.valid) {
-					socket.close();
-					return;
-				}
+				if (!unsign.valid) 
+					throw new Error("Invalid cookie");
 
 				const payload = server.jwt.verify(unsign.value) as { userId: string };
 
 				req.user = payload;
 				userId = payload.userId;
 			}
-			catch (err)
+			catch (err: any)
 			{
-				socket.close();
+				server.log.error( `Chat authentication failed: ${err?.message}` );
+				socket.send(JSON.stringify({
+					type: "error",
+					reason: "unauthorized"
+				}));
+				socket.close(1008, "Unauthorized");
 				return;
 			}
 
@@ -73,14 +74,6 @@ export default async function chatComponent(server: FastifyInstance) {
 					console.log(`User ${userId} sent a game invite`);
 
 					sendInvite(userId, data.to, data.message, data.timestamp);
-
-
-				// broadcast TO EVERYONE EXCEPT THE SENDER
-				// for (const client of clients) {
-				// 	if (client !== socket && client.readyState === client.OPEN) {
-				// 		client.send(payload);
-				// 	}
-				// }
 			}
 			});
 
