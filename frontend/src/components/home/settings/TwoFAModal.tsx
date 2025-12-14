@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BaseModal } from "./BaseModal";
 
 type TwoFAMode = "enable" | "disable";
 
@@ -115,79 +116,72 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
         }
     };
 
-    if (!isOpen)
-        return null;
+    if (!isOpen) return null;
 
     const loadingQr = mode === "enable" && !qrCode && !error;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-            <div className="bg-transcendence-black text-transcendence-white rounded-2xl p-6 w-80 max-w-full font-transcendence-two flex flex-col gap-4">
+        <BaseModal
+            isOpen={isOpen}
+            title={mode === "enable" ? "Enable Two-Factor Authentication" : "Disable Two-Factor Authentication"}
+            onClose={onClose}
+        >
+            <p className="text-xs text-transcendence-white/80">
+                {mode === "enable"
+                    ? "Scan the QR code with your authenticator app, then enter the code."
+                    : "Enter a code from your authenticator app to disable 2FA."}
+            </p>
 
-                <div className="flex justify-between items-center">
-                    <h2 className="text-lg font-semibold tracking-wide">
-                        {mode === "enable" ? "Enable Two-Factor Authentication" : "Disable Two-Factor Authentication"}
-                    </h2>
-                    <button onClick={onClose} className="text-transcendence-white/70 hover:text-transcendence-white text-xl leading-none px-1">×</button>
+            {mode === "enable" && (
+                <div className="flex flex-col items-center gap-3">
+                    {loadingQr && <div className="text-sm text-transcendence-white/70">Generating QR code…</div>}
+                    {error && !qrCode && <div className="text-red-500 text-xs">{error}</div>}
+                    {qrCode && (
+                        <img
+                            src={qrCode}
+                            alt="2FA QR code"
+                            className="w-40 h-40 border border-transcendence-beige rounded-lg bg-white"
+                        />
+                    )}
                 </div>
+            )}
 
-                 <p className="text-xs text-transcendence-white/80">
-                    {mode === "enable"
-                        ? "Scan the QR code with your authenticator app, then enter the code."
-                        : "Enter a code from your authenticator app to disable 2FA."}
-                </p>
+            <form onSubmit={handleVerify} className="flex flex-col gap-3 mt-2">
+                <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="Enter 6-digit code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    className="border border-transcendence-beige bg-transparent rounded-lg px-3 py-2 text-sm tracking-widest text-center placeholder:text-xs"
+                />
 
-                {mode === "enable" && (
-                    <div className="flex flex-col items-center gap-3">
-                        {loadingQr && <div className="text-sm text-transcendence-white/70">Generating QR code…</div>}
-                        {error && !qrCode && <div className="text-red-500 text-xs">{error}</div>}
-                        {qrCode && (
-                            <img
-                                src={qrCode}
-                                alt="2FA QR code"
-                                className="w-40 h-40 border border-transcendence-beige rounded-lg bg-white"
-                            />
-                        )}
-                    </div>
+                {error && (
+                    <div className="text-red-500 text-xs min-h-[1rem]">{error}</div>
                 )}
 
-                <form onSubmit={handleVerify} className="flex flex-col gap-3 mt-2">
-                    <input
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        placeholder="Enter 6-digit code"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        className="border border-transcendence-beige bg-transparent rounded-lg px-3 py-2 text-sm tracking-widest text-center placeholder:text-xs"
-                    />
+                <button
+                    type="submit"
+                    disabled={verifying || (mode === "enable" && loadingQr)}
+                    className="bg-transcendence-beige text-transcendence-black rounded-xl py-2 text-sm font-semibold"
+                >
+                    {verifying
+                        ? "Verifying…"
+                        : mode === "enable"
+                            ? "Verify & Enable 2FA"
+                            : "Verify & Disable 2FA"}
+                </button>
 
-                    {error && (
-                        <div className="text-red-500 text-xs min-h-[1rem]">{error}</div>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={verifying || (mode === "enable" && loadingQr)}
-                        className="bg-transcendence-beige text-transcendence-black rounded-xl py-2 text-sm font-semibold"
-                    >
-                        {verifying
-                            ? "Verifying…"
-                            : mode === "enable"
-                                ? "Verify & Enable 2FA"
-                                : "Verify & Disable 2FA"}
-                    </button>
-
-                    {success && (
-                        <div className="text-green-400 text-xs text-center">
-                            {mode === "enable"
-                                ? "2FA enabled successfully!"
-                                : "2FA disabled successfully!"}
-                            {` Closing modal in ${countdown} second`}
-                        </div>
-                    )}
-                </form>
-            </div>
-        </div>
+                {success && (
+                    <div className="text-green-400 text-xs text-center">
+                        {mode === "enable"
+                            ? "2FA enabled successfully!"
+                            : "2FA disabled successfully!"}
+                        {` Closing modal in ${countdown} second`}
+                    </div>
+                )}
+            </form>
+        </BaseModal>
     );
 };
