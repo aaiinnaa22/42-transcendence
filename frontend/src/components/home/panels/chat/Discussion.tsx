@@ -107,7 +107,7 @@ export const Discussion = ({
 							<div className="flex flex-row justify-center items-center border-2 border-transcendence-white rounded-lg p-1 gap-2">
 								{inviteIsActive && <span className="text-transcendence-white font-bold">{formatTime(inviteTimeLeft)}</span>}
 								<button disabled={!inviteIsActive} className="text-white font-bold"
-									onClick={() => navigate("/home/play/tournament")}>{inviteIsActive ? "join the game" : "invite expired"}</button>
+									onClick={() => navigate("/home/play/invite", { state: {invitee: friend.username}})}>{inviteIsActive ? "join the game" : "invite expired"}</button>
 							</div>
 						</div>
 					)
