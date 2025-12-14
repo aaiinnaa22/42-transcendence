@@ -6,6 +6,7 @@ import {Welcome} from "./pages/Welcome";
 import {ProtectedRoute} from "./components/ProtectedRoute";
 import { SignUp } from "./components/welcome/SignUp";
 import { Login } from "./components/welcome/Login";
+import NotFound from "./pages/NotFound";
 
 function App() {
 	return (
@@ -19,7 +20,8 @@ function App() {
 				<Route
 					path="/home/*"
 					element={<ProtectedRoute><Home/></ProtectedRoute>}
-				/>
+				/>			
+				<Route path="/*" element={<NotFound />}/>
 			</Routes>
 		</Router>
 	);
