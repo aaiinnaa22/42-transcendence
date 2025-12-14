@@ -181,7 +181,6 @@ export const GameTournament = () =>
 
         // Main game loop that keeps calling different update functions
         const gameLoop = () => {
-			if (!didOpenRef.current) return;
             updateGame(); //register key presses and move players
             drawGame(); // draws the game canvas TEST IF NEEDED BECAUSE THE GAME IS ALREADY DRAWN AFTER EACH MESSAGE
             animationFrameId = requestAnimationFrame(gameLoop); // syncs the game to the browser refress rate to make animation smooth
