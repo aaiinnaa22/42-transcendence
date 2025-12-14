@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
+import { forceLogout } from "../../../api/forceLogout.ts";
 
 
 export const GameTournament = () =>
@@ -12,6 +13,7 @@ export const GameTournament = () =>
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
     const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
+	const didOpenRef = useRef(false);
 
     // sends move command to backend server when player wants to move
     const sendMove = (dy: number) => {
@@ -120,8 +122,25 @@ export const GameTournament = () =>
         window.addEventListener("keyup", handleKeyUp);
 		window.addEventListener("blur", handleBlur);
 
-        ws.onopen = () => {console.log("Connected!");}
-        ws.onclose = () => {console.log("Disconnected!");};
+        ws.onopen = () => {
+			console.log("Connected!");
+			didOpenRef.current = true;
+		}
+		ws.onclose = (e) => {
+		console.log("Game WS closed", e.code, e.reason);
+		if (!didOpenRef.current) {
+			console.warn("Game WS handshake failed, forcing logout");
+			forceLogout();
+			return;
+		}
+		if (e.code === 1008) {
+			console.warn("Unauthorized game socket, forcing logout");
+			forceLogout();
+			return; 
+		}
+		wsRef.current = null;
+		console.log("Game socket disconnected normally");
+		};
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -138,6 +157,11 @@ export const GameTournament = () =>
 			}
 			else if (data.type === "error")
 			{
+				if (data.reason === "unauthorized") {
+					console.warn("WebSocket unauthorized, forcing logout");
+					forceLogout();
+					return;
+				}
 				console.error("Error from server: ", data.message);
 				if (data.error) console.error("Validation errors: ", data.error);
 			}
@@ -157,6 +181,7 @@ export const GameTournament = () =>
 
         // Main game loop that keeps calling different update functions
         const gameLoop = () => {
+			if (!didOpenRef.current) return;
             updateGame(); //register key presses and move players
             drawGame(); // draws the game canvas TEST IF NEEDED BECAUSE THE GAME IS ALREADY DRAWN AFTER EACH MESSAGE
             animationFrameId = requestAnimationFrame(gameLoop); // syncs the game to the browser refress rate to make animation smooth
