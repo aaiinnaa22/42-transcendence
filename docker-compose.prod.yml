@@ -26,8 +26,11 @@ services:
       target: production
       args:
         VITE_API_URL: /api
-        VITE_WS_URL: wss://localhost/
+        VITE_WS_URL: wss://${DOMAIN_NAME}/ws
     container_name: tr_frontend
+    secrets:
+      - ssl-cert
+      - ssl-key
     ports:
       - "80:80"
       - "443:443"
@@ -38,6 +41,12 @@ services:
     networks:
       - transcendence_net
     restart: unless-stopped
+
+secrets:
+  ssl-cert:
+    file: ./secrets/ssl-cert
+  ssl-key:
+    file: ./secrets/ssl-key
 
 volumes:
   db-data:

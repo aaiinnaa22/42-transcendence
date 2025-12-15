@@ -60,3 +60,9 @@ backend/prisma/*.d.ts.map
 
 # Lint caches
 .eslintcache
+
+# Secrets
+secrets/
+*.pem
+*.key
+*.crt
