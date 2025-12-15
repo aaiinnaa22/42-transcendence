@@ -13,6 +13,9 @@ services:
       PORT: 4241
       DATABASE_URL: "file:/app/data/prod.db"
       TZ: "Europe/Helsinki"
+      FRONTEND_HOST: frontend
+      FRONTEND_PORT: 443
+      PUBLIC_DOMAIN: localhost
     volumes:
       - db-data:/app/data
     networks:
@@ -32,8 +35,8 @@ services:
       - ssl-cert
       - ssl-key
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "8443:443"
     depends_on:
       - backend
     environment:

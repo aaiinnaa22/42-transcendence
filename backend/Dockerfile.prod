@@ -15,7 +15,7 @@ COPY src ./src
 COPY tsconfig.json ./
 
 # Generate Prisma client
-RUN npx prisma generate || true
+RUN npx prisma generate
 
 # Compile Typescript
 RUN npm run build
@@ -34,7 +34,9 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package*.json ./
 
 # Data directory for SQLite
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data && \
+	chown -R node:node /app/data && \
+	chown -R node:node /app
 
 # Entrypoint script
 COPY entrypoint.prod.sh /usr/local/bin/entrypoint.sh
