@@ -229,11 +229,11 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	} );
 
 	// Logout endpoint (now it clears cookies)
-	server.post( "/auth/logout", { preHandler: authenticate }, async ( request: FastifyRequest, reply: FastifyReply ) =>
+	server.post( "/auth/logout", async ( request: FastifyRequest, reply: FastifyReply ) =>
 	{
 		reply
-			.clearCookie( "accessToken", { path: "/" } )
-			.clearCookie( "refreshToken", { path: "/" } )
+			.clearCookie( "accessToken", { path: "/", sameSite: "strict", secure: env.NODE_ENV === "production", signed: true, } )
+			.clearCookie( "refreshToken", { path: "/", sameSite: "strict", secure: env.NODE_ENV === "production", signed: true, } )
 			.send( { message: "Logged out successfully" } );
 	} );
 
