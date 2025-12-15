@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
 
 export type LeaderboardEntry = {
 	rank: number;
@@ -8,6 +8,11 @@ export type LeaderboardEntry = {
 	losses: number;
 	ratio: number;
 };
+
+type PlayerStatsWithUsername = Prisma.PlayerStatsGetPayload<{
+	include: { user: { select: { username: true } } };
+	omit: { userId: true };
+}>;
 
 export default class LeaderboardService
 {
@@ -141,7 +146,7 @@ export default class LeaderboardService
 				take: this.MAX_ENTRIES
 			});
 
-			this.cache = players.map((player, index) => ({
+			this.cache = players.map((player: PlayerStatsWithUsername, index: number) => ({
 				rank: index + 1,
 				name: player.user.username ?? "Unknown",
 				rating: player.eloRating,

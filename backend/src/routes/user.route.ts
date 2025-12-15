@@ -45,7 +45,7 @@ const userRoutes = async (server: FastifyInstance) => {
             // This block is to handle password update
             // Perform updates in a single transaction. If a password is provided,
             // upsert the credential row to handle users without existing credentials (e.g. OAuth users).
-            const user = await server.prisma.$transaction(async (tx) => {
+            const user = await server.prisma.$transaction(async (tx : Prisma.TransactionClient) => {
                 if (password !== undefined)
                 {
                     const salt_rounds = env.SALT_ROUNDS;
@@ -158,7 +158,7 @@ const userRoutes = async (server: FastifyInstance) => {
             const { userId } = request.user as { userId: string };
 
             // Delete user and related data in a transaction
-            await server.prisma.$transaction(async (tx) => {
+            await server.prisma.$transaction(async (tx : Prisma.TransactionClient) => {
                 // Delete credentials
                 await tx.credential.deleteMany({ where: { userId } });
                 // Delete player stats

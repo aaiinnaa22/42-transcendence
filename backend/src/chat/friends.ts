@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
 
 export async function sendFriendRequest(
@@ -17,7 +18,7 @@ export async function sendFriendRequest(
 	});
 
 	if (blocked) return false;
-	
+
 	try {
 		await server.prisma.friendship.create({
 			data: {
@@ -26,7 +27,7 @@ export async function sendFriendRequest(
 			status: "pending",
 			},
 		});
-	} 
+	}
 	catch (e: any) {
 		if (e.code === "P2002") return true; // already requested
 		throw e;
@@ -39,7 +40,7 @@ export async function acceptFriendRequest(
 	fromId: string,
 	toId: string
 ): Promise<boolean> {
-	return await server.prisma.$transaction(async (tx) => {
+	return await server.prisma.$transaction(async (tx : Prisma.TransactionClient) => {
 		const updated = await tx.friendship.updateMany({
 		where: {
     		userId: fromId,

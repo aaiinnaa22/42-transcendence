@@ -1,5 +1,13 @@
 import type { FastifyInstance } from "fastify";
 import { authenticate } from '../shared/middleware/auth.middleware.js';
+import type { Prisma } from "@prisma/client";
+
+type UserSelect = Prisma.UserGetPayload<{
+	select: {
+		username: true;
+		avatar: true;
+	}
+}>;
 
 export default async function chatUsersComponent(server: FastifyInstance)
 {
@@ -18,16 +26,14 @@ export default async function chatUsersComponent(server: FastifyInstance)
         id: { not: userId }, // everyone except me
       },
       select: {
-        id: true, // remove id maybe?
         username: true,
         avatar: true,
       },
       orderBy: { username: "asc" },
     });
 
-    return users.map(u => ({
-      id: u.id,
-      username: u.username ?? "(no name)",
+    return users.map( (u : UserSelect) => ({
+      username: u.username ?? "Unknown",
       profile: u.avatar ?? "",
     }));
   });

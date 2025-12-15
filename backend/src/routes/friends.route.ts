@@ -1,6 +1,22 @@
 import { type FastifyInstance } from "fastify";
 import { authenticate } from '../shared/middleware/auth.middleware.js';
 import { sendFriendRequest, acceptFriendRequest, removeFriend } from '../chat/friends.js';
+import type { Prisma } from "@prisma/client";
+
+type FriendSelect = Prisma.FriendshipGetPayload<{
+	include: {
+		user: { select: {
+			id: true;
+			username: true;
+			avatar: true;
+		}};
+		friend: { select: {
+			id: true;
+			username: true;
+			avatar: true;
+		}};
+	};
+}>;
 
 export default async function friendsRoutes(server: FastifyInstance) {
 	// GET /friends
@@ -21,7 +37,7 @@ export default async function friendsRoutes(server: FastifyInstance) {
 				},
 			});
 
-			return friendships.map(f => {
+			return friendships.map((f: FriendSelect) => {
 				const other =
 					f.userId === userId ? f.friend : f.user;
 
