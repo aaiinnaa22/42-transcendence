@@ -1,5 +1,6 @@
 import {useState, useEffect, useRef} from 'react'
 import {Settings} from "./settings/Settings"
+import { apiUrl } from '../../api/api';
 
 export const Profile = () => {
 	const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -9,7 +10,7 @@ export const Profile = () => {
 	useEffect(() => {
 		const getUserInfo = async() => {
 			try {
-				const response = await fetch("http://localhost:4241/auth/me",
+				const response = await fetch( apiUrl('/auth/me'),
 				{
 					method: "GET",
 					credentials: "include",
@@ -24,7 +25,7 @@ export const Profile = () => {
 				}
 				else if (data.avatarType === "local")
 				{
-					const avatarResponse = await fetch("http://localhost:4241/users/avatar",
+					const avatarResponse = await fetch( apiUrl('/users/avatar'),
 					{
 						method: "GET",
 						credentials: "include",
@@ -38,7 +39,7 @@ export const Profile = () => {
 					}
 				}
 			}
-			catch (err: any) {
+			catch {
 				console.error("Failed to fetch user info");
 			};
 		};
@@ -56,12 +57,12 @@ export const Profile = () => {
 		const profilePicFile = event.target.files?.[0];
 		if (!profilePicFile) return;
 
-		
+
 		if (profilePic?.startsWith("blob:"))
 		{
 			URL.revokeObjectURL(profilePic);
 		}
-		
+
 		// Preview the uploaded image
 		const profileUrl = URL.createObjectURL(profilePicFile);
     	setProfilePic(profileUrl);
@@ -70,7 +71,7 @@ export const Profile = () => {
 			const formData = new FormData();
 			formData.append("file", profilePicFile);
 
-			const response = await fetch("http://localhost:4241/users/avatar",
+			const response = await fetch( apiUrl('/users/avatar'),
 			{
 				method: "POST",
 				credentials: "include",

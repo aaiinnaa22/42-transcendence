@@ -1,3 +1,5 @@
+import { apiUrl } from "./api";
+
 let refreshPromise: Promise<Response> | null = null;
 
 export async function fetchWithAuth(
@@ -14,7 +16,7 @@ export async function fetchWithAuth(
   }
 
   if (!refreshPromise) {
-    refreshPromise = fetch("http://localhost:4241/auth/refresh", {
+    refreshPromise = fetch( apiUrl('/auth/refresh'), {
       method: "POST",
       credentials: "include",
     }).finally(() => {
