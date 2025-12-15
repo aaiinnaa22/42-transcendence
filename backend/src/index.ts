@@ -87,22 +87,23 @@ const start = async () =>
 		// Register healthcheck as a non-api route
 		await server.register( import( './routes/healthcheck.route.js' ) );
 
-		// Register routes with a '/api' prefix
-		await server.register( async (api: FastifyInstance) => {
-			// Standard routes
-			await api.register( import( './routes/auth.route.js' ) );
-			await api.register( import( './routes/user.route.js' ) );
-			await api.register( import( './routes/avatar.route.js' ) );
-			await api.register( import( './routes/stats.route.js' ) );
-			await api.register( import ( './routes/friends.route.js' ) );
+		// Register HTTP routes with a '/api' prefix
+		await server.register( async (apiServer: FastifyInstance) => {
+			await apiServer.register( import( './routes/auth.route.js' ) );
+			await apiServer.register( import( './routes/user.route.js' ) );
+			await apiServer.register( import( './routes/avatar.route.js' ) );
+			await apiServer.register( import( './routes/stats.route.js' ) );
+			await apiServer.register( import ( './routes/friends.route.js' ) );
 
-			// Component routes
-			await api.register( gameComponent );
-			await api.register( chatUsersComponent );
-			await api.register( leaderboardComponent );
-			await api.register( chatComponent );
-
+			await apiServer.register( chatUsersComponent );
+			await apiServer.register( leaderboardComponent );
 		}, { prefix: "/api" });
+
+		// Register WebSocket routes with '/ws' prefix
+		await server.register( async (wsServer: FastifyInstance) => {
+			await wsServer.register( gameComponent );
+			await wsServer.register( chatComponent );
+		}, { prefix: "/ws" });
 
 		// Grab the configuration from env
 		const host = env.HOSTNAME;
