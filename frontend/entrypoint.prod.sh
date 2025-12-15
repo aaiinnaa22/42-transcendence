@@ -4,9 +4,9 @@ set -e
 export DOMAIN_NAME="${DOMAIN_NAME:-localhost}"
 
 # Files where environmental variables need to be substituted
-TEMPLATES= "
-	/etc/nginx/conf.d/server.conf.template
-	/etc/nginx/snippets/security-headers.conf.template
+TEMPLATES="
+/etc/nginx/conf.d/server.conf.template
+/etc/nginx/snippets/security-headers.conf.template
 "
 
 # Substitute variables within template configs
