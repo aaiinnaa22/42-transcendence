@@ -1,7 +1,8 @@
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {LanguageSelector} from "./LanguageSelector"
+import { LanguageSelector } from "./LanguageSelector"
 import { TwoFAModal } from "./TwoFAModal";
+import { apiUrl } from "../../../api/api";
 
 export const Settings = () =>
 {
@@ -13,7 +14,7 @@ export const Settings = () =>
 	useEffect(() => {
 		const loadTwoFAStatus = async () => {
 			try {
-				const res = await fetch("http://localhost:4241/auth/me", {
+				const res = await fetch( apiUrl('/auth/me'), {
 					credentials: "include",
 				});
 
@@ -43,7 +44,7 @@ export const Settings = () =>
 		setError(null);
 
 		try {
-			const response = await fetch("http://localhost:4241/auth/logout",
+			const response = await fetch( apiUrl('/auth/logout'),
 			{
 				method: "POST",
 				credentials: "include",

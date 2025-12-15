@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from './constants.js';
+import { wsUrl } from "../../../api/api.js";
 
 
 export const Game = () =>
@@ -112,7 +113,7 @@ export const Game = () =>
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
-        const ws = new WebSocket('ws://localhost:4241/game/singleplayer');
+        const ws = new WebSocket( wsUrl('/game/singleplayer') );
 
         wsRef.current = ws;
 

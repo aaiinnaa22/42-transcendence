@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from './constants.js';
+import { wsUrl } from "../../../api/api.js";
 
 
 export const GameTournament = () =>
@@ -110,7 +111,7 @@ export const GameTournament = () =>
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
-        const ws = new WebSocket('ws://localhost:4241/game/multiplayer');
+        const ws = new WebSocket( wsUrl('/game/multiplayer'));
         wsRef.current = ws;
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };

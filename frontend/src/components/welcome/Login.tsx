@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TwoFALoginModal } from "./TwoFALoginModal";
+import { apiUrl } from "../../api/api";
 
 export const Login = () => {
 	const [email, setEmail] = useState("");
@@ -9,7 +10,7 @@ export const Login = () => {
 	const [twoFATempToken, setTwoFATempToken] = useState<string | null>(null);
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const navigate = useNavigate();
-	
+
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
 
@@ -32,7 +33,7 @@ export const Login = () => {
 		setError("");
 
 		try {
-			const response = await fetch("http://localhost:4241/auth/login",
+			const response = await fetch( apiUrl('/auth/login'),
 			{
 				method: "POST",
 				credentials: "include",

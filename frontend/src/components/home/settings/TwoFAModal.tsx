@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiUrl } from "../../../api/api";
 
 type TwoFAMode = "enable" | "disable";
 
@@ -35,7 +36,7 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
         const fetchQr = async () => {
             try {
                 setError(null);
-                const response = await fetch("http://localhost:4241/auth/2fa/setup", {
+                const response = await fetch( apiUrl('/auth/2fa/setup'), {
                     method: "POST",
                     credentials: "include",
                 });
@@ -88,8 +89,8 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
 
             const endpoint =
                 mode === "enable"
-                    ? "http://localhost:4241/auth/2fa/verify"
-                    : "http://localhost:4241/auth/2fa/disable";
+                    ? apiUrl('/auth/2fa/verify')
+                    : apiUrl('/auth/2fa/disable');
 
             const response = await fetch(endpoint, {
                 method: "POST",

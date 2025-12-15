@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiUrl } from "../../api/api";
 
 export const SignUp = () => {
 	const [email, setEmail] = useState("");
@@ -14,7 +15,7 @@ export const SignUp = () => {
 		setError("");
 
 		try {
-			const response = await fetch("http://localhost:4241/auth/register",
+			const response = await fetch( apiUrl('/auth/register'),
 			{
 				method: "POST",
 				credentials: "include",

@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { fetchWithAuth } from "../api/fetchWithAuth";
+import { apiUrl } from "../api/api";
 
 interface ProtectedRouteProps {
 	children: React.ReactNode;
@@ -18,7 +19,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 	useEffect(() => {
 		const checkAuth = async () => {
 			try {
-				const response = await fetchWithAuth("http://localhost:4241/auth/me");
+				const response = await fetchWithAuth( apiUrl('/auth/me') );
 				setIsAuthenticated(response.ok);
 			}
 			catch {

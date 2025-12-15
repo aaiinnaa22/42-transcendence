@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Chat } from "./Chat";
 import { Discussion } from "./Discussion";
+import { apiUrl, wsUrl } from "../../../../api/api";
 
 export type Message = {
   id: number;
@@ -55,7 +56,7 @@ export const ChatContainer = () => {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:4241/chat/users", {
+    fetch( apiUrl('/chat/users'), {
       credentials: "include",
     })
       .then(res => res.json())
@@ -65,7 +66,7 @@ export const ChatContainer = () => {
 
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:4241/chat");
+    const ws = new WebSocket( wsUrl('/chat') );
     wsRef.current = ws;
 
     ws.onopen = () => {
