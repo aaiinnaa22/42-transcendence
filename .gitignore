@@ -35,6 +35,8 @@ backend/prisma/.seeded
 
 # Environmental variable file
 .env
+.env.production
+.env.development
 
 # Database seed check
 .seeded
