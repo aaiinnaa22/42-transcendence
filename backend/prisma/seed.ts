@@ -21,9 +21,8 @@ const seedDev = async () =>
 				create: {}
 			},
 			credential: { create: {
-					password: trashmanPassword
-				}
-			}
+				password: trashmanPassword
+			} }
 		}
 	} );
 	const charlie = await prisma.user.upsert( {
@@ -37,9 +36,8 @@ const seedDev = async () =>
 				create: {}
 			},
 			credential: { create: {
-					password: wildcardPassword
-				},
-			}
+				password: wildcardPassword
+			} }
 		}
 	} );
 

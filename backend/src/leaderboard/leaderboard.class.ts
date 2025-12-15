@@ -34,7 +34,7 @@ export default class LeaderboardService
 	{
 		this.cache = null;
 		this.lastUpdate = 0;
-		this.loop = setInterval(() => this.update(), this.REFRESH_INTERVAL );
+		this.loop = setInterval( () => this.update(), this.REFRESH_INTERVAL );
 		this.update();
 	}
 
@@ -50,18 +50,18 @@ export default class LeaderboardService
 
 		// Return all entries
 		if ( page === 0 )
-		{
+
 			return this.cache;
-		}
+
 		// Return speccific page
 		else if ( page > 0 )
 		{
-			const startIndex = (page - 1) * this.PAGE_ENTRIES;
+			const startIndex = ( page - 1 ) * this.PAGE_ENTRIES;
 			const endIndex = startIndex + this.PAGE_ENTRIES;
 
 			if ( startIndex >= this.cache.length ) return null;
 
-			return this.cache.slice(startIndex, endIndex);
+			return this.cache.slice( startIndex, endIndex );
 		}
 		return null;
 	}
@@ -78,29 +78,29 @@ export default class LeaderboardService
 
 		try
 		{
-			const playerStats = await this.prisma.playerStats.findUnique({
+			const playerStats = await this.prisma.playerStats.findUnique( {
 				where: { userId },
 				include:{ user: { select: { username: true, lastLogin: true } } },
 				omit: { userId: true }
-			});
+			} );
 
 			if ( !playerStats || playerStats.playedGames < this.MIN_PLAYED || playerStats.wins < this.MIN_WINS )
 				return null;
 
-			const activityConstraint = new Date(Date.now() - this.PLAYER_ACTIVITY);
+			const activityConstraint = new Date( Date.now() - this.PLAYER_ACTIVITY );
 
-			const higherRankedCount = await this.prisma.playerStats.count({
+			const higherRankedCount = await this.prisma.playerStats.count( {
 				where: {
 					eloRating: { gt: playerStats.eloRating },
 					playedGames: { gte: this.MIN_PLAYED },
 					wins: { gte: this.MIN_WINS },
 					user: { lastLogin: { gte: activityConstraint }}
 				}
-			});
+			} );
 
 			const rank = higherRankedCount + 1;
 			const ratio = playerStats.playedGames > 0
-				? Math.round((playerStats.wins / playerStats.playedGames) * 100)
+				? Math.round( ( playerStats.wins / playerStats.playedGames ) * 100 )
 				: 0;
 
 			const userRank: LeaderboardEntry = {
@@ -114,9 +114,9 @@ export default class LeaderboardService
 
 			return userRank;
 		}
-		catch (error)
+		catch ( error )
 		{
-			console.error("Leaderboard error: ", error);
+			console.error( "Leaderboard error: ", error );
 		}
 		return null;
 	}
@@ -132,9 +132,9 @@ export default class LeaderboardService
 
 		try
 		{
-			const activityConstraint = new Date(Date.now() - this.PLAYER_ACTIVITY);
+			const activityConstraint = new Date( Date.now() - this.PLAYER_ACTIVITY );
 
-			const players = await this.prisma.playerStats.findMany({
+			const players = await this.prisma.playerStats.findMany( {
 				where: {
 					playedGames: { gte: this.MIN_PLAYED },
 					wins: { gte: this.MIN_WINS },
@@ -144,25 +144,25 @@ export default class LeaderboardService
 				omit: { userId: true },
 				orderBy: { eloRating: "desc" },
 				take: this.MAX_ENTRIES
-			});
+			} );
 
-			this.cache = players.map((player: PlayerStatsWithUsername, index: number) => ({
+			this.cache = players.map( ( player: PlayerStatsWithUsername, index: number ) => ( {
 				rank: index + 1,
 				name: player.user.username ?? "Unknown",
 				rating: player.eloRating,
 				wins: player.wins,
 				losses: player.losses,
 				ratio: player.playedGames > 0
-					? Math.round((player.wins / player.playedGames) * 100)
+					? Math.round( ( player.wins / player.playedGames ) * 100 )
 					: 0
-			}));
+			} ) );
 
 			this.lastUpdate = now;
-			console.log("Leaderboard cached successfully");
+			console.log( "Leaderboard cached successfully" );
 		}
-		catch (error)
+		catch ( error )
 		{
-			console.error("Leaderboard error: ", error);
+			console.error( "Leaderboard error: ", error );
 		}
 	}
 
@@ -171,8 +171,7 @@ export default class LeaderboardService
 	 */
 	public destroy() : void
 	{
-		if ( this.loop ) clearInterval(this.loop);
+		if ( this.loop ) clearInterval( this.loop );
 		this.cache = null;
 	}
-
 };

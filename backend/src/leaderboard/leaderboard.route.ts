@@ -1,18 +1,19 @@
 import { type FastifyInstance, type FastifyRequest, type FastifyReply } from "fastify";
-import LeaderboardService from './leaderboard.class.js';
-import { authenticate } from '../shared/middleware/auth.middleware.js';
-import { NotFoundError, sendErrorReply, ServiceUnavailableError } from '../shared/utility/error.utility.js';
-import { validateRequest } from '../shared/utility/validation.utility.js';
-import { GetLeaderboardPageSchema } from '../schemas/leaderboard.schema.js';
+import LeaderboardService from "./leaderboard.class.js";
+import { authenticate } from "../shared/middleware/auth.middleware.js";
+import { NotFoundError, sendErrorReply, ServiceUnavailableError } from "../shared/utility/error.utility.js";
+import { validateRequest } from "../shared/utility/validation.utility.js";
+import { GetLeaderboardPageSchema } from "../schemas/leaderboard.schema.js";
 
 const leaderboardComponent = async ( server: FastifyInstance ) =>
 {
-	const leaderboard: LeaderboardService = new LeaderboardService(server.prisma);
+	const leaderboard: LeaderboardService = new LeaderboardService( server.prisma );
 
-	server.addHook( "onClose", () => { leaderboard.destroy() } );
+	server.addHook( "onClose", () => { leaderboard.destroy(); } );
 
 	// Returns all leaderboard entries
-	server.get( "/leaderboard",
+	server.get(
+		"/leaderboard",
 		{ preHandler: authenticate },
 		( request: FastifyRequest, reply: FastifyReply ) =>
 		{
@@ -20,42 +21,44 @@ const leaderboardComponent = async ( server: FastifyInstance ) =>
 
 			try
 			{
-				const entries = leaderboard.getCache(0);
+				const entries = leaderboard.getCache( 0 );
 
-				if (!entries) throw ServiceUnavailableError("Leaderboard unavailable");
+				if ( !entries ) throw ServiceUnavailableError( "Leaderboard unavailable" );
 
-				return reply.send(entries);
+				return reply.send( entries );
 			}
-			catch (error)
+			catch ( error )
 			{
-				sendErrorReply(reply, error, "Failed to fetch leaderboard");
+				sendErrorReply( reply, error, "Failed to fetch leaderboard" );
 			}
 		}
 	);
 
 	// Fetch specific set of ten users for lazy loading
-	server.get( "/leaderboard/:page",
+	server.get(
+		"/leaderboard/:page",
 		{ preHandler: authenticate },
 		( request: FastifyRequest, reply: FastifyReply ) =>
 		{
 			try
 			{
-				const { page } = validateRequest(GetLeaderboardPageSchema, request.params);
-				const entries = leaderboard.getCache(page);
+				const { page } = validateRequest( GetLeaderboardPageSchema, request.params );
+				const entries = leaderboard.getCache( page );
 
-				if ( !entries ) throw NotFoundError(`Page ${page} not found`);
+				if ( !entries ) throw NotFoundError( `Page ${page} not found` );
 
-				return reply.send(entries);
+				return reply.send( entries );
 			}
-			catch (error)
+			catch ( error )
 			{
-				sendErrorReply(reply, error, "Failed to fetch leaderboard page");
+				sendErrorReply( reply, error, "Failed to fetch leaderboard page" );
 			}
 		}
 	);
 
 	// Fetch the user's own rank
-	server.get( "/leaderboard/me",
+	server.get(
+		"/leaderboard/me",
 		{ preHandler: authenticate },
 		async ( request: FastifyRequest, reply: FastifyReply ) =>
 		{
@@ -63,14 +66,14 @@ const leaderboardComponent = async ( server: FastifyInstance ) =>
 			{
 				const { userId } = request.user as { userId: string };
 
-				const entry = await leaderboard.getUserRank(userId);
-				if ( !entry ) throw NotFoundError("User not yet ranked");
+				const entry = await leaderboard.getUserRank( userId );
+				if ( !entry ) throw NotFoundError( "User not yet ranked" );
 
-				return reply.send(entry);
+				return reply.send( entry );
 			}
-			catch (error)
+			catch ( error )
 			{
-				sendErrorReply(reply, error, "Failed to fetch user rank");
+				sendErrorReply( reply, error, "Failed to fetch user rank" );
 			}
 		}
 	);

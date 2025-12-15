@@ -19,7 +19,7 @@ export default defineConfig( [
 			indent: ["error", "tab", { SwitchCase: 1 }],
 			"no-tabs": "off",
 			"brace-style": ["error", "allman", { allowSingleLine: true }],
-			"curly": ["error", "multiline"],
+			"curly": ["error", "multi"],
 			"semi": ["error", "always"],
 			"quotes": ["error", "double"],
 
@@ -40,7 +40,7 @@ export default defineConfig( [
 			// --- Conditionals ---
 			"one-var": ["error", "never"],
 			"multiline-ternary": ["error", "always-multiline"],
-			"nonblock-statement-body-position": ["error", "below"],
+			"nonblock-statement-body-position": ["error", "any"],
 
 			// --- Misc ---
 			"no-trailing-spaces": "error",
