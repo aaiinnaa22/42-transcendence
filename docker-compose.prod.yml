@@ -26,7 +26,7 @@ services:
       target: production
       args:
         VITE_API_URL: /api
-        VITE_WS_URL: wss://${DOMAIN_NAME}/ws
+        VITE_WS_URL: wss://${DOMAIN_NAME:-localhost}/ws
     container_name: tr_frontend
     secrets:
       - ssl-cert
