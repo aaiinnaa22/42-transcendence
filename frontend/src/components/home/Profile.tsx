@@ -37,6 +37,7 @@ export const Profile = () => {
 			};
 		};
 		getUserInfo();
+		
 	}, []);
 
 	const handleProfilePicChange = async (event: React.ChangeEvent<HTMLInputElement>) => {

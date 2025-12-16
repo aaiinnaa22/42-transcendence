@@ -24,4 +24,5 @@ done
 nginx -t
 
 # Set NGINX as the foreground application
+echo "Launching NGINX"
 nginx -g 'daemon off;'

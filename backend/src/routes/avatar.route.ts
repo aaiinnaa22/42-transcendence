@@ -8,7 +8,7 @@ import { BadRequestError, NotFoundError, sendErrorReply } from "../shared/utilit
 import { validateRequest } from "../shared/utility/validation.utility.js";
 import { GetAvatarByUsernameSchema } from "../schemas/avatar.schema.js";
 
-const AVATAR_DIR = path.join( process.cwd(), "upload", "avatars" );
+const AVATAR_DIR = process.env.UPLOAD_DIR || path.join( process.cwd(), "data", "upload", "avatars" );
 const MAX_FILESIZE = 4 * 1024 * 1024; // 4MB
 const ALLOWED_FORMATS = ["image/jpeg", "image/png", "image/webp"];
 

@@ -15,6 +15,7 @@ export const Settings = () =>
 		const loadTwoFAStatus = async () => {
 			try {
 				const res = await fetch( apiUrl('/auth/me'), {
+					method: "GET",
 					credentials: "include",
 				});
 

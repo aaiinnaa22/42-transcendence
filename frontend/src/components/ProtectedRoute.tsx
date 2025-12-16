@@ -19,7 +19,11 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 	useEffect(() => {
 		const checkAuth = async () => {
 			try {
-				const response = await fetchWithAuth( apiUrl('/auth/me') );
+				const response = await fetchWithAuth( apiUrl('/auth/me'),
+				{
+					method: "GET",
+					credentials: "include",
+				} );
 				setIsAuthenticated(response.ok);
 			}
 			catch {

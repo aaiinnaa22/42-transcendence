@@ -31,7 +31,7 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			sameSite: "strict",
 			secure: env.NODE_ENV === "production",
 			signed: true,
-			maxAge: 60 * 5, // TODO: temporary 5, remember to change back to 15
+			maxAge: 60 * 15, // TODO: temporary 5, remember to change back to 15
 		} )
 		.setCookie( "refreshToken", refreshToken, {
 			path: "/",
@@ -39,8 +39,8 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			sameSite: "strict",
 			secure: env.NODE_ENV === "production",
 			signed: true,
-		//	maxAge: 60 * 60 * 24 * 7, // 7 days
-			maxAge: 60 * 10, // TODO: temporary 10, remember to change back to 15 (Did you mean 7 days? @huskyhania )
+			maxAge: 60 * 60 * 24 * 7, // 7 days
+			//maxAge: 60 * 10, // TODO: temporary 10, remember to change back to 15 (Did you mean 7 days? @huskyhania )
 		} );
 }
 // check if user is already logged in
@@ -180,8 +180,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			}
 
 			// Step 5: Signing app JWT with JWT plugin
-			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, {expiresIn: "5m"} ); // TODO: Do these change based on your comment earlier? @huskyhania
-			const refreshToken = server.jwt.sign( { userId: user.id }, {expiresIn: "10m"} );
+			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, {expiresIn: "15m"} ); // TODO: Do these change based on your comment earlier? @huskyhania
+			const refreshToken = server.jwt.sign( { userId: user.id }, {expiresIn: "7d"} );
 			setAuthCookies( reply, accessToken, refreshToken );
 
 			// Step 6: redirect from google auth
@@ -203,23 +203,31 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		{
 			const { userId } = request.user as { userId: string }; // Validated with JWT
 
-			const user = await server.prisma.user.findUnique({
+			const user = await server.prisma.user.findUnique( {
 				where: { id: userId },
-					select: {
-						id: true,
-						email: true,
-						username: true,
-						avatar: true,
-						avatarType: true,
-						twoFAEnabled: true,
-						createdAt: true,
-						lastLogin: true,
-						playerStats: true,
-					},
-			});
+				select: {
+					username: true,
+					avatar: true,
+					avatarType: true,
+					twoFAEnabled: true,
+				},
+			} );
 
 			if ( !user ) throw NotFoundError( "User not found" );
-			reply.send( user );
+
+			// Helper for providig the correct path to the authenticated user's avatar
+			const getAvatarUrl = () =>
+			{
+				if ( user.avatarType === "local" ) return `/avatars/${user.avatar}`;
+				else if ( user.avatarType === "provider" ) return user.avatar;
+				else return "/avatars/00000000-0000-0000-0000-000000000000.webp";
+			};
+
+			reply.send( {
+				username: user.username,
+				avatar: getAvatarUrl(),
+				twoFAEnabled: user.twoFAEnabled
+			} );
 		}
 		catch ( err: any )
 		{
@@ -280,8 +288,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			} );
 
 			// Generate JWT (access and refresh tokens)
-			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, { expiresIn: "5m" } );
-			const refreshToken = server.jwt.sign( { userId: user.id }, { expiresIn: "10m" } );
+			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, { expiresIn: "15m" } );
+			const refreshToken = server.jwt.sign( { userId: user.id }, { expiresIn: "7d" } );
 
 			setAuthCookies( reply, accessToken, refreshToken );
 
@@ -358,8 +366,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			}
 
 			// Generate JWT (access and refresh)
-			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, { expiresIn: "5m" } );
-			const refreshToken = server.jwt.sign( { userId: user.id }, { expiresIn: "10m" } );
+			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, { expiresIn: "15m" } );
+			const refreshToken = server.jwt.sign( { userId: user.id }, { expiresIn: "7d" } );
 
 			setAuthCookies( reply, accessToken, refreshToken );
 
@@ -389,8 +397,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			const user = await server.prisma.user.findUnique( { where: { id: decoded.userId } } );
 			if ( !user ) throw NotFoundError( "User not found" );
 
-			const newAccess = server.jwt.sign( { userId: user.id, email: user.email }, { expiresIn: "5m" } );
-			const newRefresh = server.jwt.sign( { userId: user.id }, { expiresIn: "10m" } );
+			const newAccess = server.jwt.sign( { userId: user.id, email: user.email }, { expiresIn: "15m" } );
+			const newRefresh = server.jwt.sign( { userId: user.id }, { expiresIn: "7d" } );
 			setAuthCookies( reply, newAccess, newRefresh );
 
 			reply.send( { message: "Token refreshed" } );
@@ -483,8 +491,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			if (!isValid) throw UnauthorizedError("Invalid 2FA code");
 
 			// 2FA Passed → Send real JWT cookies
-			const accessToken = server.jwt.sign({ userId: user.id, email: user.email }, { expiresIn: "5m" });
-			const refreshToken = server.jwt.sign({ userId: user.id }, { expiresIn: "10m" });
+			const accessToken = server.jwt.sign({ userId: user.id, email: user.email }, { expiresIn: "15m" });
+			const refreshToken = server.jwt.sign({ userId: user.id }, { expiresIn: "7d" });
 
 			setAuthCookies(reply, accessToken, refreshToken);
 

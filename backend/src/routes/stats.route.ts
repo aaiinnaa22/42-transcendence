@@ -1,9 +1,9 @@
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
-import { authenticate } from '../shared/middleware/auth.middleware.js';
+import { authenticate } from "../shared/middleware/auth.middleware.js";
 import {} from "@prisma/client";
-import { NotFoundError, sendErrorReply } from '../shared/utility/error.utility.js';
-import { validateRequest } from '../shared/utility/validation.utility.js';
-import { GetStatsUsernameSchema } from '../schemas/stats.schema.js';
+import { NotFoundError, sendErrorReply } from "../shared/utility/error.utility.js";
+import { validateRequest } from "../shared/utility/validation.utility.js";
+import { GetStatsUsernameSchema } from "../schemas/stats.schema.js";
 
 const statsRoutes = async ( server: FastifyInstance ) =>
 {
@@ -30,12 +30,11 @@ const statsRoutes = async ( server: FastifyInstance ) =>
 	} );
 
 	// Get statistics of another player
-	server.get( "/stats/user/:username", { preHandler: authenticate },
-		async ( request: FastifyRequest, reply: FastifyReply ) =>
+	server.get( "/stats/user/:username", { preHandler: authenticate }, async ( request: FastifyRequest, reply: FastifyReply ) =>
 	{
 		try
 		{
-			const { username } = validateRequest(GetStatsUsernameSchema, request.params);
+			const { username } = validateRequest( GetStatsUsernameSchema, request.params );
 
 			const playerStats = await server.prisma.user.findUnique( {
 				where: { username },
