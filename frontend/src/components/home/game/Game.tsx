@@ -231,14 +231,102 @@ export const Game = () =>
 		<div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
 		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
 		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
+			<span
+				className="
+					col-start-1 row-start-1
+					flex flex-col gap-10
+					text-right self-center
+					portrait:self-end
+					xl:hidden
+				"
+				>
+				<button
+					onPointerDown={() => startHold(BUTTON_KEYS.P1_UP, 1, -1)}
+					onPointerUp={() => stopHold(BUTTON_KEYS.P1_UP)}
+					onPointerLeave={() => stopHold(BUTTON_KEYS.P1_UP)}
+					className="
+						text-transcendence-white
+						text-5xl
+						flex items-center justify-center
+						rounded-full
+						active:scale-90
+						transition
+						select-none
+					"
+					aria-label="Player 1 Up"
+					>
+					<span className="material-symbols-outlined rotate-270">play_circle</span>
+					</button>
+				<button
+					onPointerDown={() => startHold(BUTTON_KEYS.P1_DOWN, 1, 1)}
+					onPointerUp={() => stopHold(BUTTON_KEYS.P1_DOWN)}
+					onPointerLeave={() => stopHold(BUTTON_KEYS.P1_DOWN)}
+					className="
+						text-transcendence-white
+						text-5xl
+						flex items-center justify-center
+						rounded-full
+						active:scale-90
+						transition
+						select-none
+					"
+					aria-label="Player 1 Up"
+					>
+					<span className="material-symbols-outlined rotate-90">play_circle</span>
+					</button>
+				</span>
 			<span ref={PointsRef}
 				className="text-transcendence-white font-transcendence-three text-4xl
-					col-start-1 row-start-1 text-right self-center
-					portrait:self-end portrait:text-right">0</span>
+					col-start-1 row-start-1 text-right self-start
+					portrait:self-start portrait:text-right">0</span>
 			<span ref={PointsRef2}
 				className="text-transcendence-white font-transcendence-three text-4xl
-					col-start-3 row-start-1 text-left self-center
-					portrait:self-start portrait:text-left">0</span>
+					col-start-3 row-start-1 text-left self-start
+					portrait:self-end portrait:text-left">0</span>
+			<span
+				className="
+					col-start-3 row-start-1
+					flex flex-col gap-10
+					text-left self-center
+					portrait:self-start
+					xl:hidden
+				"
+				>
+				<button
+					onPointerDown={() => startHold(BUTTON_KEYS.P2_UP, 2, -1)}
+					onPointerUp={() => stopHold(BUTTON_KEYS.P2_UP)}
+					onPointerLeave={() => stopHold(BUTTON_KEYS.P2_UP)}
+					className="
+						text-transcendence-white
+						text-5xl
+						flex items-center justify-center
+						rounded-full
+						active:scale-90
+						transition
+						select-none
+					"
+					aria-label="Player 2 Up"
+					>
+					<span className="material-symbols-outlined rotate-270">play_circle</span>
+					</button>
+				<button
+					onPointerDown={() => startHold(BUTTON_KEYS.P2_DOWN, 2, 1)}
+					onPointerUp={() => stopHold(BUTTON_KEYS.P2_DOWN)}
+					onPointerLeave={() => stopHold(BUTTON_KEYS.P2_DOWN)}
+					className="
+						text-transcendence-white
+						text-5xl
+						flex items-center justify-center
+						rounded-full
+						active:scale-90
+						transition
+						select-none
+					"
+					aria-label="Player 2 Up"
+					>
+					<span className="material-symbols-outlined rotate-90">play_circle</span>
+					</button>
+				</span>
 			<div className="
 				flex-grow flex items-center justify-center
 				border-4 border-transcendence-white rounded-xl overflow-hidden
@@ -250,16 +338,6 @@ export const Game = () =>
 					className="w-full h-full "
 				/>
 			</div>
-			<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-50">
-            <button     onPointerDown={() => startHold(BUTTON_KEYS.P1_UP, 1, -1)} onPointerUp={() => stopHold(BUTTON_KEYS.P1_UP)} onPointerLeave={() => stopHold(BUTTON_KEYS.P1_UP)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-            </button>
-            <button     onPointerDown={() => startHold(BUTTON_KEYS.P1_DOWN, 1, 1)} onPointerUp={() => stopHold(BUTTON_KEYS.P1_DOWN)} onPointerLeave={() => stopHold(BUTTON_KEYS.P1_DOWN)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-            </button>
-            <button     onPointerDown={() => startHold(BUTTON_KEYS.P2_DOWN, 2, 1)} onPointerUp={() => stopHold(BUTTON_KEYS.P2_DOWN)} onPointerLeave={() => stopHold(BUTTON_KEYS.P2_DOWN)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-            </button>
-            <button      onPointerDown={() => startHold(BUTTON_KEYS.P2_UP, 2, -1)} onPointerUp={() => stopHold(BUTTON_KEYS.P2_UP)} onPointerLeave={() => stopHold(BUTTON_KEYS.P2_UP)} className="px-4 py-2 bg-transcendence-beige text-black rounded">
-            </button>
-       	 </div>
         </div>
     );
 };
