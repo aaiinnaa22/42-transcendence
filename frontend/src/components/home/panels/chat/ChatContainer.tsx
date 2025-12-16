@@ -69,8 +69,6 @@ export const ChatContainer = () => {
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:4241/chat");
     wsRef.current = ws;
-	// TO DO: delete this line V
-	//(window as any).chatWS = ws; //- for testing with window.chatWS.send(JSON.stringify({ type: "test:logout" }));
 
 
     ws.onopen = () => {
