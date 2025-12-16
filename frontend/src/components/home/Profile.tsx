@@ -92,7 +92,7 @@ export const Profile = () => {
 
 
 		}
-		catch (err: any) {
+		catch {
 			console.error("Failed to store profile picture");
 			setProfilePic(null);
 		};
