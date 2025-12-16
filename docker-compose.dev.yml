@@ -16,6 +16,7 @@ services:
       - ./backend/src:/app/src        # Mount source code, allows for live reload of changes
       - ./backend/prisma:/app/prisma  # Mount prisma directory for persistent database
       - /app/node_modules             # Preserve modules
+      - ./backend/upload/avatars:/app/upload/avatars
     environment:
       NODE_ENV: "development"
       HOSTNAME: "0.0.0.0"

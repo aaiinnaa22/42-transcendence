@@ -19,7 +19,7 @@ export default defineConfig( [
 			indent: ["error", "tab", { SwitchCase: 1 }],
 			"no-tabs": "off",
 			"brace-style": ["error", "allman", { allowSingleLine: true }],
-			"curly": ["error", "multi"],
+			"curly": ["error", "multi-line"],
 			"semi": ["error", "always"],
 			"quotes": ["error", "double"],
 

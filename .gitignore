@@ -68,3 +68,6 @@ secrets/
 *.pem
 *.key
 *.crt
+
+# Development uploads
+backend/upload/avatars
