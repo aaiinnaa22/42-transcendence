@@ -42,7 +42,7 @@ export const Profile = () => {
 					}
 				}
 			}
-			catch (err: any) {
+			catch {
 				console.error("Failed to fetch user info");
 			};
 		};
@@ -169,7 +169,7 @@ export const Profile = () => {
 									}
 									setUsername(name);
 									setIsEditOpen(false);
-								} catch (err) {
+								} catch (err: any) {
 									setEditError((err && err.message) || "Update failed");
 								}
 						}}
