@@ -23,24 +23,13 @@ export const Profile = () => {
 
 				setUsername(data.username || "User");
 
-				if (data.avatarType === "provider")
+				if (data.avatar)
 				{
-					setProfilePic(profilePic || null);
+					setProfilePic(data.avatar);
 				}
-				else if (data.avatarType === "local")
+				else
 				{
-					const avatarResponse = await fetch( apiUrl('/users/avatar'),
-					{
-						method: "GET",
-						credentials: "include",
-					});
-
-					if (avatarResponse.ok)
-					{
-						const avatarBlob = await avatarResponse.blob();
-						const avatarUrl = URL.createObjectURL(avatarBlob);
-						setProfilePic(avatarUrl);
-					}
+					setProfilePic("/avatars/00000000-0000-0000-0000-000000000000.webp");
 				}
 			}
 			catch {
@@ -48,14 +37,7 @@ export const Profile = () => {
 			};
 		};
 		getUserInfo();
-
-		return () => {
-			if (profilePic && profilePic.startsWith("blob:"))
-			{
-				URL.revokeObjectURL(profilePic);
-			}
-		}
-	});
+	}, []);
 
 	const handleProfilePicChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		const profilePicFile = event.target.files?.[0];
@@ -80,22 +62,13 @@ export const Profile = () => {
 			if (response.ok)
 			{
 				// Set image from backend
-				const avatarBlob = await response.blob();
-				const avatarUrl = URL.createObjectURL(avatarBlob);
-
-				// Prevent memory leak
-				if (profileUrl)
-				{
-					URL.revokeObjectURL(profileUrl);
-				}
-				setProfilePic(avatarUrl);
+				const data = await response.json();
+				setProfilePic(data.avatarUrl);
 			}
-
-
 		}
 		catch {
 			console.error("Failed to store profile picture");
-			setProfilePic(null);
+			setProfilePic("/avatars/00000000-0000-0000-0000-000000000000.webp");
 		};
 	};
 
