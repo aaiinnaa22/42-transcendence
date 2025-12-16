@@ -1,12 +1,12 @@
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
-import { authenticate } from '../shared/middleware/auth.middleware.js';
+import { authenticate } from "../shared/middleware/auth.middleware.js";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 import fs from "fs/promises";
-import { BadRequestError, NotFoundError, sendErrorReply } from '../shared/utility/error.utility.js';
-import { validateRequest } from '../shared/utility/validation.utility.js';
-import { GetAvatarSchema } from '../schemas/avatar.schema.js';
+import { BadRequestError, NotFoundError, sendErrorReply } from "../shared/utility/error.utility.js";
+import { validateRequest } from "../shared/utility/validation.utility.js";
+import { GetAvatarByUsernameSchema } from "../schemas/avatar.schema.js";
 
 const AVATAR_DIR = path.join( process.cwd(), "upload", "avatars" );
 const MAX_FILESIZE = 4 * 1024 * 1024; // 4MB
@@ -40,7 +40,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 				if ( !ALLOWED_FORMATS.includes( data.mimetype ) ) throw BadRequestError( "Erroneous file format" );
 
 				const imageBuffer = await data.toBuffer();
-				if ( imageBuffer.length > MAX_FILESIZE ) throw BadRequestError( "File too large. 4MB max." )
+				if ( imageBuffer.length > MAX_FILESIZE ) throw BadRequestError( "File too large. 4MB max." );
 
 				// Convert the image file into webp
 				const processedImage = await sharp( imageBuffer ).resize( 128 ).webp( {quality: 80} ).toBuffer();
@@ -87,27 +87,58 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 		}
 	);
 
-	// Get specific avatar
+	// Get avatar for a given username
 	server.get(
-		"/users/avatar/:filename",
+		"/users/avatar/:username",
 		{ preHandler: authenticate },
 		async ( request: FastifyRequest, reply: FastifyReply ) =>
 		{
 			try
 			{
-				const { filename } = validateRequest(GetAvatarSchema, request.params);
+				const { username } = validateRequest( GetAvatarByUsernameSchema, request.params );
 
-				// Check if the file exists
-				const filepath = path.join( AVATAR_DIR, filename );
-				await fs.access( filepath );
+				const user = await server.prisma.user.findUnique( {
+					where: { username },
+					select: { avatar: true, avatarType: true }
+				} );
 
-				const stream = await fs.readFile( filepath );
-				return reply.type( "image/webp" ).send( stream );
+				// Check if the user has an uploaded avatar
+				if ( user?.avatar )
+				{
+					if ( user.avatarType === "provider" )
+					{
+						return reply.send( {
+							message: "External avatar retrieved successfully",
+							avatarUrl: user.avatar
+						} );
+					}
+					else if ( user.avatarType === "local" )
+					{
+						const filepath = path.join( AVATAR_DIR, user.avatar );
+						await fs.access( filepath );
+
+						return reply.send( {
+							message: "Local avatar retrieved successfully",
+							avatarUrl: `/avatars/${user.avatar}`
+						} );
+					}
+					else
+					{
+						// Send back the default profile picture
+						return reply.send( {
+							message: "Default avatar retrieved successfully",
+							avatarUrl: "/avatars/00000000-0000-0000-0000-000000000000.webp"
+						} );
+					}
+				}
+				else
+				{
+					throw NotFoundError( "User not found" );
+				}
 			}
 			catch ( err: any )
 			{
-				server.log.error( `Avatar fetch failed ${err}` );
-				return sendErrorReply(reply, err, "No such avatar" );
+				return sendErrorReply( reply, err, "No avatar found for given user" );
 			}
 		}
 	);
@@ -130,18 +161,28 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 				{
 					if ( user.avatarType === "provider" )
 					{
-						return reply.send( { avatarUrl: user.avatar } );
+						return reply.send( {
+							message: "External avatar retrieved successfully",
+							avatarUrl: user.avatar
+						} );
 					}
 					else if ( user.avatarType === "local" )
 					{
 						const filepath = path.join( AVATAR_DIR, user.avatar );
 						await fs.access( filepath );
-						const stream = await fs.readFile( filepath );
-						return reply.type( "image/webp" ).send( stream );
+
+						return reply.send( {
+							message: "Local avatar retrieved successfully",
+							avatarUrl: `/avatars/${user.avatar}`
+						} );
 					}
 					else
 					{
-						throw NotFoundError( "Avatar not set" );
+						// Send back the default profile picture
+						return reply.send( {
+							message: "Default avatar retrieved successfully",
+							avatarUrl: "/avatars/00000000-0000-0000-0000-000000000000.webp"
+						} );
 					}
 				}
 				else
@@ -152,7 +193,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 			catch ( err: any )
 			{
 				server.log.error( `Avatar fetch failed ${err}` );
-				return sendErrorReply( reply, err, "You do not have an avatar" );
+				return sendErrorReply( reply, err, "Error when retrieving avatar" );
 			}
 		}
 	);

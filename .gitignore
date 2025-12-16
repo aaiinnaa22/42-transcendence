@@ -70,4 +70,5 @@ secrets/
 *.crt
 
 # Development uploads
+backend/upload
 backend/upload/avatars

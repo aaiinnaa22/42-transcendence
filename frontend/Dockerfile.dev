@@ -17,6 +17,9 @@ COPY vite.config.ts postcss.config.js ./
 COPY public ./public
 COPY index.html ./
 
+RUN mkdir -p /app/public && \
+	ln -s /app/data/upload /app/public/uploads
+
 EXPOSE 8080
 
 CMD ["npm", "run", "dev"]

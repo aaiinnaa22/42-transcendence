@@ -13,10 +13,10 @@ services:
     networks:
       - transcendence_net
     volumes:
-      - ./backend/src:/app/src        # Mount source code, allows for live reload of changes
-      - ./backend/prisma:/app/prisma  # Mount prisma directory for persistent database
-      - /app/node_modules             # Preserve modules
-      - ./backend/upload/avatars:/app/upload/avatars
+      - ./backend/src:/app/src                # Mount source code, allows for live reload of changes
+      - ./backend/prisma:/app/prisma          # Mount prisma directory for persistent database
+      - /app/node_modules                     # Preserve modules
+      - ./backend/upload/:/app/data/upload/   # Shared uploads between backend and frontend
     environment:
       NODE_ENV: "development"
       HOSTNAME: "0.0.0.0"
@@ -36,8 +36,9 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./frontend/src:/app/src:ro    # Live reload mount supported by vite
-      - /app/node_modules             # Preserve modules
+      - ./frontend/src:/app/src:ro            # Live reload mount supported by vite
+      - /app/node_modules                     # Preserve modules
+      - ./backend/upload/:/app/data/upload/
     environment:
       VITE_API_URL: "http://backend:4241/api"
       VITE_WS_URL: ws://backend:4241/ws
