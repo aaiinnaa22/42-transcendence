@@ -115,7 +115,14 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 					else if ( user.avatarType === "local" )
 					{
 						const filepath = path.join( AVATAR_DIR, user.avatar );
-						await fs.access( filepath );
+						try
+						{
+							await fs.access( filepath );
+						}
+						catch
+						{
+							throw NotFoundError( "Avatar for the given user not found" );
+						}
 
 						return reply.send( {
 							message: "Local avatar retrieved successfully",
@@ -169,21 +176,31 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 					else if ( user.avatarType === "local" )
 					{
 						const filepath = path.join( AVATAR_DIR, user.avatar );
-						await fs.access( filepath );
 
-						return reply.send( {
-							message: "Local avatar retrieved successfully",
-							avatarUrl: `/avatars/${user.avatar}`
-						} );
+						// Check if the file exists first
+						try
+						{
+							await fs.access( filepath );
+
+							return reply.send( {
+								message: "Local avatar retrieved successfully",
+								avatarUrl: `/avatars/${user.avatar}`
+							} );
+						}
+						catch
+						{
+							// If the previously stored avatar was lost then remove the entries from db
+							await server.prisma.user.update( {
+								where: { id: userId },
+								data: { avatar: null, avatarType: null }
+							} );
+						}
 					}
-					else
-					{
-						// Send back the default profile picture
-						return reply.send( {
-							message: "Default avatar retrieved successfully",
-							avatarUrl: "/avatars/00000000-0000-0000-0000-000000000000.webp"
-						} );
-					}
+					// Send back the default profile picture if all other cases did not match
+					return reply.send( {
+						message: "Default avatar retrieved successfully",
+						avatarUrl: "/avatars/00000000-0000-0000-0000-000000000000.webp"
+					} );
 				}
 				else
 				{
@@ -237,7 +254,6 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 			}
 		}
 	);
-
 };
 
 export default avatarRoutes;
