@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const SignUp = () => {
@@ -7,6 +7,23 @@ export const SignUp = () => {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const navigate = useNavigate();
+
+	useEffect(() => {
+		const checkSession = async () => {
+			try {
+				const res = await fetch("http://localhost:4241/auth/me", {
+					method: "GET",
+					credentials: "include",
+				});
+
+				if (res.ok) {
+					navigate("/home", { replace: true });
+				}
+			} catch (err) {}
+		};
+
+		checkSession();
+	}, [navigate]);
 
 	const handleSignUp = async (e: React.FormEvent) =>
 	{

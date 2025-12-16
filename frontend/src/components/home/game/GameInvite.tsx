@@ -2,6 +2,7 @@ import { useRef, useEffect } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 import { } from "../panels/chat/Discussion";
 import { useLocation } from "react-router-dom";
+import { forceLogout } from "../../../api/forceLogout.ts";	
 
 
 export const GameInvite = () =>
@@ -15,6 +16,7 @@ export const GameInvite = () =>
     const players = useRef<Record<string, any>>({});
     const ball = useRef<{ x: number; y: number; countdown?: number; waiting?: string}>({ x: 0, y: 0 , countdown: 5, waiting: undefined});
 	const location = useLocation();
+	const didOpenRef = useRef(false);
 
     // sends move command to backend server when player wants to move
     const sendMove = (dy: number) => {
@@ -129,8 +131,25 @@ export const GameInvite = () =>
         window.addEventListener("keyup", handleKeyUp);
 		window.addEventListener("blur", handleBlur);
 
-        ws.onopen = () => {console.log("Connected!");}
-        ws.onclose = () => {console.log("Disconnected!");};
+        ws.onopen = () => {
+			console.log("Connected!");
+			didOpenRef.current = true;
+		}
+        ws.onclose = (e) => {
+		console.log("Game WS closed", e.code, e.reason);
+		if (!didOpenRef.current) {
+			console.warn("Game WS handshake failed, forcing logout");
+			forceLogout();
+			return;
+		}
+		if (e.code === 1008) {
+			console.warn("Unauthorized game socket, forcing logout");
+			forceLogout();
+			return; 
+		}
+		wsRef.current = null;
+		console.log("Game socket disconnected normally");
+		};
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -147,6 +166,11 @@ export const GameInvite = () =>
 			}
 			else if (data.type === "error")
 			{
+				if (data.reason === "unauthorized") {
+					console.warn("WebSocket unauthorized, forcing logout");
+					forceLogout();
+					return;
+				}
 				console.error("Error from server: ", data.message);
 				if (data.error) console.error("Validation errors: ", data.error);
 			}
