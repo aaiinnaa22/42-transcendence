@@ -9,6 +9,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
+RUN mkdir -p /app/data/upload/avatars
+
 # Copy Prisma configuration
 COPY prisma.config.dev.ts ./prisma.config.ts
 

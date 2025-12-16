@@ -37,8 +37,14 @@ COPY --from=builder --chown=node:node /app/package*.json ./
 RUN mkdir -p /app/data && \
 	chown -R node:node /app/data
 
-RUN mkdir -p /app/upload/avatars && \
-	chown -R node:node /app/upload/avatars
+# Shared profile picture volume
+RUN mkdir -p /app/data/upload/avatars && \
+	chown -R node:node /app/data/upload
+
+COPY upload/avatars/00000000-0000-0000-0000-000000000000.webp \
+	/app/data/upload/avatars/00000000-0000-0000-0000-000000000000.webp
+
+RUN chown node:node /app/data/upload/avatars/00000000-0000-0000-0000-000000000000.webp
 
 # Entrypoint script
 COPY entrypoint.prod.sh /usr/local/bin/entrypoint.sh
