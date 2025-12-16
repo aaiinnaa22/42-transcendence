@@ -70,5 +70,7 @@ secrets/
 *.crt
 
 # Development uploads
-backend/upload
-backend/upload/avatars
+backend/upload/*
+!backend/upload/avatars/
+backend/upload/avatars/*
+!backend/upload/avatars/00000000-0000-0000-0000-000000000000.webp
