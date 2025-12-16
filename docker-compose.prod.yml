@@ -18,6 +18,7 @@ services:
       PUBLIC_DOMAIN: localhost
     volumes:
       - db-data:/app/data
+      - upload-data:/app/data/upload
     networks:
       - transcendence_net
     restart: unless-stopped
@@ -42,6 +43,8 @@ services:
       - backend
     environment:
       NODE_ENV: "production"
+    volumes:
+      - upload-data:/app/data/upload:ro
     networks:
       - transcendence_net
     restart: unless-stopped
@@ -54,6 +57,8 @@ secrets:
 
 volumes:
   db-data:
+    driver: local
+  upload-data:
     driver: local
 
 networks:
