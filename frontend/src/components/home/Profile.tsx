@@ -133,7 +133,7 @@ export const Profile = () => {
 								const name = newUsername.trim();
 								if (!name) { setEditError("Username cannot be empty"); return; }
 								try {
-									const resp = await fetch( apiUrl("/users/me"), {
+									const resp = await fetchWithAuth( apiUrl("/users/me"), {
 										method: "PUT",
 										credentials: "include",
 										headers: { "Content-Type": "application/json" },

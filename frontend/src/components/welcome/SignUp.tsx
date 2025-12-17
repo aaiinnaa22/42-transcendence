@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../api/api";
+import { fetchWithAuth } from "../../api/fetchWithAuth";
 
 export const SignUp = () => {
 	const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ export const SignUp = () => {
 	useEffect(() => {
 		const checkSession = async () => {
 			try {
-				const res = await fetch( apiUrl("/auth/me"), {
+				const res = await fetchWithAuth( apiUrl("/auth/me"), {
 					method: "GET",
 					credentials: "include",
 				});
