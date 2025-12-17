@@ -21,16 +21,47 @@ export default async function chatUsersComponent(server: FastifyInstance)
         id: true, // remove id maybe?
         username: true,
         avatar: true,
-		playerStats: true,
+		    playerStats: true,
+        friendships: {
+          where: { userId },
+          select: { status: true },
+        },
+        friendOf: {
+          where: { friendId: userId },
+          select: { status: true },
+        },
+        blockedUsers: {
+          where: { blockerId: userId },
+          select: { id: true },
+        },
+        blockedBy: {
+          where: { blockedId: userId },
+          select: { id: true },
+        },
       },
       orderBy: { username: "asc" },
     });
 
-    return users.map(u => ({
-      id: u.id,
-      username: u.username ?? "(no name)",
-      profile: u.avatar ?? "",
-	  stats: u.playerStats ?? null,
-    }));
+    return users.map((u: any) => {
+      const friendship =
+        u.friendships[0] ?? u.friendOf[0] ?? null;
+
+      const isFriend = friendship?.status === "accepted";
+      const friendshipStatus = friendship?.status ?? null;
+
+      const isBlockedByMe = u.blockedUsers.length > 0;
+      const hasBlockedMe = u.blockedBy.length > 0;
+      return {
+        id: u.id,
+        username: u.username ?? "(no name)",
+        profile: u.avatar ?? "",
+        stats: u.playerStats ?? null,
+
+        isFriend,
+        friendshipStatus,
+        isBlockedByMe,
+        hasBlockedMe,
+      };
+    });
   });
 }
