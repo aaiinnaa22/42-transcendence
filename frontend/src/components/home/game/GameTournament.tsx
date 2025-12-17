@@ -1,6 +1,8 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 import { forceLogout } from "../../../api/forceLogout.ts";
+import { Waiting } from "./Waiting.tsx";
+import { GameEnd } from "./GameEnd.tsx";
 
 
 export const GameTournament = () =>
@@ -14,6 +16,8 @@ export const GameTournament = () =>
     const players = useRef<Record<string, any>>({});
     const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
 	const didOpenRef = useRef(false);
+	const [waitingData, setWaitingData] = useState<{ position: number } | null>(null);
+	const [gameEndData, setGameEndData] = useState<{ winner: string; eloWinner?: number; message?: string } | null>(null);
 
     // sends move command to backend server when player wants to move
     const sendMove = (dy: number) => {
@@ -150,10 +154,12 @@ export const GameTournament = () =>
                 players.current = data.players;
                 ball.current = data.ball;
 				ball.current.countdown = data.countdown;
-}
+				setWaitingData(null); // Clear waiting state when game starts
+			}
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue. Position: ", data.position);
+				setWaitingData({ position: data.position });
 			}
 			else if (data.type === "error")
 			{
@@ -174,6 +180,8 @@ export const GameTournament = () =>
 			{
 				console.log( data.message );
 				console.log( "The winner's new elo is " + data.elo.winner );
+				setGameEndData({ winner: data.winner, eloWinner: data.elo.winner, message: data.message });
+				//The game is still running in the background use cancelAnimationFrame(animationFrameId); probably needs to be stored in useRef
 			}
 
 			/* ADD ADDITIONAL STATES HERE */
@@ -222,7 +230,10 @@ export const GameTournament = () =>
 	const screenIsPortrait = window.innerHeight > window.innerWidth;
 
     return (
-		<div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
+		<>
+		{gameEndData && <GameEnd winner={gameEndData.winner} eloWinner={gameEndData.eloWinner} message={gameEndData.message} />}
+		{waitingData && <Waiting position={waitingData.position} />}
+		{!waitingData && !gameEndData && <div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
 		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
 		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
 			<span ref={PointsRef}
@@ -244,6 +255,7 @@ export const GameTournament = () =>
 					className="w-full h-full"
 				/>
 			</div>
-        </div>
+		</div>}
+		</>
     );
 };

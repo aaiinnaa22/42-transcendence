@@ -1,9 +1,9 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 import { } from "../panels/chat/Discussion";
 import { useLocation } from "react-router-dom";
 import { forceLogout } from "../../../api/forceLogout.ts";	
-
+import { Waiting } from "./Waiting.tsx";
 
 export const GameInvite = () =>
 {
@@ -17,6 +17,7 @@ export const GameInvite = () =>
     const ball = useRef<{ x: number; y: number; countdown?: number; waiting?: string}>({ x: 0, y: 0 , countdown: 5, waiting: undefined});
 	const location = useLocation();
 	const didOpenRef = useRef(false);
+	const [waitingData, setWaitingData] = useState<{ position: number } | null>(null);
 
     // sends move command to backend server when player wants to move
     const sendMove = (dy: number) => {
@@ -159,10 +160,12 @@ export const GameInvite = () =>
                 players.current = data.players;
                 ball.current = data.ball;
 				ball.current.countdown = data.countdown;
+				setWaitingData(null);
 			}
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue. Position: ", data.position);
+				setWaitingData({ position: data.position });
 			}
 			else if (data.type === "error")
 			{
@@ -233,6 +236,8 @@ export const GameInvite = () =>
 	const screenIsPortrait = window.innerHeight > window.innerWidth;
 
     return (
+		<>
+		{waitingData && <Waiting position={waitingData.position} />}
 		<div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
 		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
 		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
@@ -256,5 +261,6 @@ export const GameInvite = () =>
 				/>
 			</div>
         </div>
+		</>
     );
 };

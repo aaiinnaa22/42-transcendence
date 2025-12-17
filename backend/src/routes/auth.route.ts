@@ -42,10 +42,10 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			maxAge: 60 * 60 * 24 * 7, // 7 days
 		} );
 }
-// check if user is already logged in
+// check if user is already logged in (refresh change for Leo - to be checked)
 function isLoggedIn(request: FastifyRequest)
 {
-  return Boolean(request.cookies?.refreshToken || request.cookies?.accessToken);
+  return Boolean(request.cookies?.accessToken);
 }
 
 const authRoutes = async ( server: FastifyInstance ) =>
