@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback, type JSX } from 'react'
 import { apiUrl } from '../../../api/api';
+import { fetchWithAuth } from '../../../api/fetchWithAuth';
 
 
 type LeaderboardEntry =
@@ -32,7 +33,7 @@ export const Leaderboard = () => {
 		const fetchMyRank = async () => {
 			try
 			{
-				const response = await fetch( apiUrl('/leaderboard/me'), {
+				const response = await fetchWithAuth( apiUrl('/leaderboard/me'), {
 					credentials: "include"
 				});
 
@@ -62,7 +63,7 @@ export const Leaderboard = () => {
 			{
 				setLoading(true);
 
-				const response = await fetch( apiUrl('/leaderboard/1'), {
+				const response = await fetchWithAuth( apiUrl('/leaderboard/1'), {
 					credentials: "include"
 				});
 
@@ -102,7 +103,7 @@ export const Leaderboard = () => {
 		{
 			setLoadingMore(true);
 			const nextPage = currentPage + 1;
-			const response = await fetch( apiUrl(`/leaderboard/${nextPage}`), {
+			const response = await fetchWithAuth( apiUrl(`/leaderboard/${nextPage}`), {
 				credentials: "include"
 			});
 

@@ -17,6 +17,7 @@ import type { WebSocket as WsWebSocket } from "ws";
 import { sendDM } from "../chat/directMessage.js";
 import { validateRequest } from "../shared/utility/validation.utility.js";
 import { HttpError } from "../shared/utility/error.utility.js";
+import { pseudonym } from "../shared/utility/anonymize.utility..js";
 
 type UserId = string;
 type GameId = string;
@@ -90,7 +91,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			activePlayers.set( id, playerConnection );
 			friendQueue.push( waitingFriend );
 
-			server.log.info( `Game: Player ${userName} waiting ${friend} to join the game Invite game.` );
+			server.log.info( { user: pseudonym( userName ), to: pseudonym( friend )}, "Player waiting for invitee" );
 			socket.send( JSON.stringify( {
 				type: "waiting",
 				elo: eloRating
@@ -100,8 +101,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 		catch ( error )
 		{
-			server.log.error( `Game: Failed to quee player to invite game ${id}: ${error}` );
-
+			server.log.error( {user: pseudonym( id ), error}, "Failed to queue invite game" );
 			const message: string = JSON.stringify( {
 				type: "error",
 				message: "Failed to join queue"
@@ -118,7 +118,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			if ( friendQueue.length < 2 ) return;
 
 			let removeI: number | null = null;
-   		let removeJ: number | null = null;
+   			let removeJ: number | null = null;
 
 			for ( let i = 0; i < friendQueue.length; ++i )
 			{
@@ -135,8 +135,16 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						const connection2 = activePlayers.get( player2.userId );
 						if ( connection1 && connection2 )
 						{
-							server.log.info( "Creating friendly game between " +
-											`${friendQueue[i]?.userName} and ${friendQueue[j]?.userName}` );
+							const playerNameFirst = friendQueue[i]?.userName;
+							const playerNameSecond = friendQueue[j]?.userName;
+
+							if ( playerNameFirst && playerNameSecond )
+							{
+								server.log.info(
+									{ user: pseudonym( playerNameFirst ), to: pseudonym( playerNameSecond ) },
+									"Creating invite game"
+								);
+							}
 							createMultiplayerSession( connection1,connection2, GameMode.Invite );
 						}
 						removeI = i;
@@ -158,7 +166,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 		catch ( error )
 		{
-			server.log.error( `Game: Friendchecking loop error: ${error}` );
+			server.log.error( { error }, "Friendchecking loop error" );
 			throw ( error );
 		}
 	};
@@ -198,7 +206,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			activePlayers.set( id, playerConnection );
 			playerQueue.push( waitingPlayer );
 
-			server.log.info( `Game: Player ${userName} with elo ${eloRating} joined the queue.` );
+			server.log.info( { user: pseudonym( userName ), elo: eloRating }, "Player joined tournament queue." );
 			socket.send( JSON.stringify( {
 				type: "waiting",
 				position: playerQueue.length,
@@ -209,7 +217,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 		catch ( error )
 		{
-			server.log.error( `Game: Failed to queue player ${id}: ${error}` );
+			server.log.error( { user: pseudonym( id ), error }, "Failed to queue player for toournament" );
 
 			const message: string = JSON.stringify( {
 				type: "error",
@@ -269,7 +277,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 		catch ( error )
 		{
-			server.log.error( `Game: Failed to start singleplayer match: ${error}` );
+			server.log.error( { error }, "Failed to start singleplayer match" );
 
 			const message: string = JSON.stringify( {
 				type: "error",
@@ -318,7 +326,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 		catch ( error )
 		{
-			server.log.error( `Game: Failed to start multiplayer match: ${error}` );
+			server.log.error( { error }, "Failed to start multiplayer match" );
 
 			const message: string = JSON.stringify( {
 				type: "error",
@@ -396,7 +404,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 		catch ( error )
 		{
-			server.log.error( `Game: Matchmaking loop error: ${error}` );
+			server.log.error( { error }, "Matchmaking loop error" );
 		}
 	};
 
@@ -423,7 +431,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						const inactiveTime = now - playerConnection.lastActivityAt;
 						if ( inactiveTime > INACTIVITY_TIMEOUT )
 						{
-							server.log.info( `Game: Ending singleplayer game ${gameId} due to inactivity` );
+							server.log.info( { game: gameId }, "Ending singleplayer game due to inactivity" );
 							const data : GameEndData = {
 								reason: "inactivity",
 								winner: null,
@@ -446,8 +454,12 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 						if ( inactiveTime > INACTIVITY_TIMEOUT )
 						{
-        	    	        server.log.info( `Game: Player ${player.userId} inactive for ` +
-											`${Math.floor( inactiveTime / 1000 )}s in game ${gameId}` );
+							const timeInSeconds = Math.floor( inactiveTime / 1000 );
+        	    	        server.log.info( {
+								game: gameId,
+								user: pseudonym( player.userId ),
+								inactiveFor: timeInSeconds
+							}, "Player inactive in multiplayer game" );
 							return true;
         	    	    }
 						return false;
@@ -456,7 +468,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					// End game if any player is inactive
         	    	if ( loserPlayer )
 					{
-        	    	    server.log.info( `Game: Ending tournament game ${gameId} due to player inactivity` );
+        	    	    server.log.info( { game: gameId }, "Ending tournament game due to inactivity" );
 
 						const winnerPlayer = game.players.find( player => player.userId !== loserPlayer.userId );
 
@@ -472,7 +484,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 		catch ( error )
 		{
-			server.log.error( `Game: Inactivity check error: ${error}` );
+			server.log.error( { error }, "Inactivity check error" );
 		}
 	};
 
@@ -482,9 +494,15 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	// Multiplayer game handler with matchmaking
 	server.get(
 		"/game/multiplayer",
-		{ websocket: true, preHandler: authenticate },
+		{ websocket: true, onRequest: authenticate },
 		async ( socket, request: FastifyRequest ) =>
 		{
+			if ( !request.user )
+			{
+				socket.close( 1008, "Unauthorized" );
+				return;
+			}
+
 			const ws = socket as unknown as WsWebSocket;
 			const { userId } = request.user as { userId: string };
 			// Check if the player is already in a match
@@ -531,7 +549,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				}
 				catch ( error )
 				{
-					server.log.error( `Game: Message handling error for ${userId}: ${error}` );
+					server.log.error( { user: pseudonym( userId ), error }, "Game message handling error" );
 					ws.send( JSON.stringify( {
 						type: "error",
 						message: "Failed to process message"
@@ -551,7 +569,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						const game = games[playerConnection.gameId];
 						if ( game && !game.hasEnded )
 						{
-							server.log.info( `Game: Player disconnect in game ${game.id}` );
+							server.log.info( { game: game.id }, "Player disconnect in tournament" );
 
 							const disconnectedPlayer = game.players.find( player => player.userId === userId );
 							const remainingPlayer = game.players.find( player => player.userId !== userId );
@@ -575,12 +593,12 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						const index = playerQueue.findIndex( p => p.userId === userId );
 						if ( index > -1 ) playerQueue.splice( index, 1 );
 
-						server.log.info( `Game: Player ${userId} was removed from the queue.` );
+						server.log.info( { user: pseudonym( userId )}, "Player was removed from tournament queue" );
 					}
 				}
 				catch ( error )
 				{
-					server.log.error( `Game: Unexpected error on socket close: ${error}` );
+					server.log.error( { error }, "Unexpected error on socket close" );
 				}
 			} );
 		}
@@ -588,9 +606,14 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 	server.get(
 		"/game/singleplayer",
-		{ websocket: true, preHandler: authenticate },
+		{ websocket: true, onRequest: authenticate },
 		async ( socket, request: FastifyRequest ) =>
 		{
+			if ( !request.user )
+			{
+				socket.close( 1008, "Unauthorized" );
+				return;
+			}
 			const ws = socket as unknown as WsWebSocket;
 			const { userId } = request.user as { userId: string };
 
@@ -640,7 +663,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				}
 				catch ( error )
 				{
-					server.log.error( `Game: Message handling error for ${userId}: ${error}` );
+					server.log.error( { user: pseudonym( userId ), error }, "Game message handling error" );
 					ws.send( JSON.stringify( {
 						type: "error",
 						message: "Failed to process message"
@@ -660,7 +683,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						const game = games[playerConnection.gameId];
 						if ( game && !game.hasEnded )
 						{
-							server.log.info( `Game: Player disconnect in singleplayer game ${game.id}` );
+							server.log.info( { game: game.id }, "Player disconnect in singleplayer game" );
 
 							const data: GameEndData = {
 								reason: "disconnect",
@@ -678,7 +701,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				}
 				catch ( error )
 				{
-					server.log.error( `Game: Unexpected error on socket close: ${error}` );
+					server.log.error( { error }, "Unexpected error on socket close" );
 				}
 			} );
 		}
@@ -687,9 +710,15 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	// ============================= INVITE GAME ===============================
 	server.get(
 		"/game/chat",
-		{ websocket: true, preHandler: authenticate },
+		{ websocket: true, onRequest: authenticate },
 		async ( socket, request: FastifyRequest ) =>
 		{
+			if ( !request.user )
+			{
+				socket.close( 1008, "Unauthorized" );
+				return;
+			}
+
 			const ws = socket as unknown as WsWebSocket;
 			const { userId } = request.user as { userId: string };
 
@@ -709,7 +738,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			try
 			{
 				const { friendName } = validateRequest( GameFriendNameSchema, request.query );
-				console.log( `Invitation ${friendName}` );
+				server.log.info( { user: pseudonym( friendName ) }, "Invitation" );
 				await checkInvitation( userId, socket, friendName );
 			}
 			catch ( error )
@@ -749,7 +778,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				}
 				catch ( error )
 				{
-					server.log.error( `Game: Message handling error for ${userId}: ${error}` );
+					server.log.error( { user: pseudonym( userId ), error }, "Game message handling error" );
 					ws.send( JSON.stringify( {
 						type: "error",
 						message: "Failed to process message"
@@ -769,7 +798,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						const game = games[playerConnection.gameId];
 						if ( game && !game.hasEnded )
 						{
-							server.log.info( `Game: Player disconnect in game ${game.id}` );
+							server.log.info( { game: game.id }, "Player disconnect in invite game" );
 
 							const disconnectedPlayer = game.players.find( player => player.userId === userId );
 							const remainingPlayer = game.players.find( player => player.userId !== userId );
@@ -793,12 +822,12 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						const index = friendQueue.findIndex( p => p.userId === userId );
 						if ( index > -1 ) friendQueue.splice( index, 1 );
 
-						server.log.info( `Game: Player ${userId} was removed from the friend queue.` );
+						server.log.info( { user: pseudonym( userId )}, "Player was removed from the friend queue" );
 					}
 				}
 				catch ( error )
 				{
-					server.log.error( `Game: Unexpected error on socket close: ${error}` );
+					server.log.error( { error }, "Unexpected error on socket close" );
 				}
 			} );
 		}
@@ -875,7 +904,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			{
 				if ( !data.winner || !data.loser )
 				{
-					server.log.warn( `Game ${gameId}: Missing winner or loser, skipping ELO calculation` );
+					server.log.warn( { game: gameId }, "Missing winner or loser, skipping ELO calculation" );
 
 					game.players.forEach( player =>
 					{
@@ -902,7 +931,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 					if ( !winnerConnection || !loserConnection )
 					{
-						server.log.error( `Game ${gameId}: Missing connection info, skipping ELO calculation` );
+						server.log.error( { game: gameId }, "Missing connection info, skipping ELO calculation" );
 						endGame( game );
 						return;
 					}
@@ -968,7 +997,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				}
 				catch ( error )
 				{
-					server.log.error( `Game ${gameId}: Elo update failed: ${error}` );
+					server.log.error( { game: gameId, error }, "Elo update failed" );
 				}
 			}
 
@@ -976,7 +1005,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			{
 				if ( !data.winner || !data.loser )
 				{
-					server.log.warn( `Game ${gameId}: Missing winner or loser, game ended unexpectedly` );
+					server.log.warn( { gamme: gameId }, "Missing winner or loser, game ended unexpectedly" );
 
 					game.players.forEach( player =>
 					{
@@ -1000,7 +1029,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 				if ( !winnerConnection || !loserConnection )
 				{
-					server.log.error( `Game ${gameId}: Missing connection info, skipping endStateMessage` );
+					server.log.error( { game: gameId }, "Missing connection info, skipping endStateMessage" );
 					endGame( game );
 					return;
 				}
@@ -1026,7 +1055,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 		catch ( error )
 		{
-			server.log.error( `Game: Unexpected error when closing game ${gameId}: ${error}` );
+			server.log.error( { gamme: gameId, error }, "Unexpected error when closing game" );
 		}
 	};
 
@@ -1034,7 +1063,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			server.log.info( `Game ${game.id}: ending session` );
+			server.log.info( { game: game.id }, "Ending game session" );
 			// Remove players from the active players
 			game.players.forEach( player =>
 			{
@@ -1047,7 +1076,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 		catch ( error )
 		{
-			server.log.error( `Game: Unexpected error when closing game ${game.id}: ${error}` );
+			server.log.error( { game: game.id, error }, "Unexpected error when closing game" );
 		}
 	};
 

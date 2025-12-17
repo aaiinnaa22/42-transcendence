@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { LanguageSelector } from "./LanguageSelector"
 import { TwoFAModal } from "./TwoFAModal";
 import { apiUrl } from "../../../api/api";
+import { fetchWithAuth } from "../../../api/fetchWithAuth";
 
 export const Settings = () =>
 {
@@ -14,7 +15,7 @@ export const Settings = () =>
 	useEffect(() => {
 		const loadTwoFAStatus = async () => {
 			try {
-				const res = await fetch( apiUrl('/auth/me'), {
+				const res = await fetchWithAuth( apiUrl('/auth/me'), {
 					method: "GET",
 					credentials: "include",
 				});

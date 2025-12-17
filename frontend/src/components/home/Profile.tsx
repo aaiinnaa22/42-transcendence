@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Settings } from "./settings/Settings"
 import { apiUrl } from '../../api/api';
+import { fetchWithAuth } from "../../api/fetchWithAuth";
 import { BaseModal } from "./settings/BaseModal";
 
 export const Profile = () => {
@@ -14,7 +15,7 @@ export const Profile = () => {
 	useEffect(() => {
 		const getUserInfo = async() => {
 			try {
-				const response = await fetch( apiUrl('/auth/me'),
+				const response = await fetchWithAuth( apiUrl("/auth/me"),
 				{
 					method: "GET",
 					credentials: "include",
@@ -37,7 +38,7 @@ export const Profile = () => {
 			};
 		};
 		getUserInfo();
-		
+
 	}, []);
 
 	const handleProfilePicChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +54,7 @@ export const Profile = () => {
 			const formData = new FormData();
 			formData.append("file", profilePicFile);
 
-			const response = await fetch( apiUrl('/users/avatar'),
+			const response = await fetchWithAuth( apiUrl('/users/avatar'),
 			{
 				method: "POST",
 				credentials: "include",

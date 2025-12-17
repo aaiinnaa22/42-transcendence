@@ -1,15 +1,28 @@
-import { env } from '../config/environment.js';
-
+import { env } from "../config/environment.js";
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import fastifyOauth2, { type OAuth2Namespace } from "@fastify/oauth2";
 import { OAuth2Client } from "google-auth-library";
-import { authenticate } from '../shared/middleware/auth.middleware.js';
+import { authenticate } from "../shared/middleware/auth.middleware.js";
 import bcrypt from "bcrypt";
-import { validateRequest } from '../shared/utility/validation.utility.js';
-import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReply, NotFoundError, ConflictError, UnauthorizedError } from '../shared/utility/error.utility.js';
+import { validateRequest } from "../shared/utility/validation.utility.js";
+import {
+	BadRequestError,
+	InternalServerError,
+	ServiceUnavailableError,
+	sendErrorReply,
+	NotFoundError,
+	ConflictError,
+	UnauthorizedError
+} from "../shared/utility/error.utility.js";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
-import { LoginSchema, RegisterSchema, TwoFADisableSchema, TwoFALoginSchema, TwoFAVerifySchema } from '../schemas/auth.schema.js';
+import {
+	LoginSchema,
+	RegisterSchema,
+	TwoFADisableSchema,
+	TwoFALoginSchema,
+	TwoFAVerifySchema
+} from "../schemas/auth.schema.js";
 
 // Augment Fastify instance with oauth2 namespace added by the plugin
 declare module "fastify" {
@@ -18,8 +31,9 @@ declare module "fastify" {
   }
 }
 
-function generate2FATempToken(server: FastifyInstance, userId: string) {
-  return server.jwt.sign({ userId }, { expiresIn: "5m" });
+function generate2FATempToken( server: FastifyInstance, userId: string )
+{
+	return server.jwt.sign( { userId }, { expiresIn: "5m" } );
 }
 
 function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken: string )
@@ -31,7 +45,7 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			sameSite: "strict",
 			secure: env.NODE_ENV === "production",
 			signed: true,
-			maxAge: 60 * 15, // TODO: temporary 5, remember to change back to 15
+			maxAge: 60 * 15,
 		} )
 		.setCookie( "refreshToken", refreshToken, {
 			path: "/",
@@ -40,13 +54,12 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 			secure: env.NODE_ENV === "production",
 			signed: true,
 			maxAge: 60 * 60 * 24 * 7, // 7 days
-			//maxAge: 60 * 10, // TODO: temporary 10, remember to change back to 15 (Did you mean 7 days? @huskyhania )
 		} );
 }
 // check if user is already logged in
-function isLoggedIn(request: FastifyRequest)
+function isLoggedIn( request: FastifyRequest )
 {
-  return Boolean(request.cookies?.refreshToken || request.cookies?.accessToken);
+	return Boolean( request.cookies?.refreshToken || request.cookies?.accessToken );
 }
 
 const authRoutes = async ( server: FastifyInstance ) =>
@@ -72,18 +85,17 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		checkStateFunction: () => true,
 	} );
 
-	server.get("/auth/google", async (request, reply) =>
+	server.get( "/auth/google", async ( request, reply ) =>
 	{
-		const clientRedirectUrl = env.CLIENT_REDIRECT_URL;
-
 		// Prevent login if already logged in
-		if (request.cookies?.accessToken || request.cookies?.refreshToken) {
-			return reply.redirect(clientRedirectUrl);
+		if ( request.cookies?.accessToken || request.cookies?.refreshToken )
+		{
+			return reply.redirect( "/home" );
 		}
 
-		const url = await server.googleOAuth2.generateAuthorizationUri(request, reply);
-  		return reply.redirect(url);
-	});
+		const url = await server.googleOAuth2.generateAuthorizationUri( request, reply );
+  		return reply.redirect( url );
+	} );
 
 	// Callback route
 	server.get( "/auth/google/callback", async ( request: FastifyRequest, reply: FastifyReply ) =>
@@ -139,7 +151,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				if ( await server.prisma.user.findUnique( { where:{ email }} ) )
 				{
 					// Step 4.b: Email from the provider already in use
-					throw ConflictError("User with that email already exists");
+					throw ConflictError( "User with that email already exists" );
 				}
 				else
 				{
@@ -168,25 +180,23 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			server.log.info( `Google Oauth: User registered (ID: ${user.id})` );
 
-			if (user.twoFAEnabled) {
+			if ( user.twoFAEnabled )
+			{
 				const tempToken = server.jwt.sign(
 					{ userId: user.id },
 					{ expiresIn: "5m" }
 				);
 
-				  return reply.redirect(
-					`http://localhost:8080/login?twoFA=1&token=${tempToken}`
-				);
+				return reply.redirect( `/login?twoFA=1&token=${tempToken}` );
 			}
 
 			// Step 5: Signing app JWT with JWT plugin
-			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, {expiresIn: "15m"} ); // TODO: Do these change based on your comment earlier? @huskyhania
+			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, {expiresIn: "15m"} );
 			const refreshToken = server.jwt.sign( { userId: user.id }, {expiresIn: "7d"} );
 			setAuthCookies( reply, accessToken, refreshToken );
 
 			// Step 6: redirect from google auth
-			const clientRedirectUrl = env.CLIENT_REDIRECT_URL;
-			return reply.redirect( clientRedirectUrl );
+			return reply.redirect( "/home" );
 
 		}
 		catch ( err: any )
@@ -237,13 +247,19 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	} );
 
 	// Logout endpoint (now it clears cookies)
-	server.post( "/auth/logout", { preHandler: authenticate }, async ( request: FastifyRequest, reply: FastifyReply ) =>
+	server.post( "/auth/logout", async ( request: FastifyRequest, reply: FastifyReply ) =>
 	{
 		void request;
 
 		reply
-			.clearCookie( "accessToken", { path: "/" } )
-			.clearCookie( "refreshToken", { path: "/" } )
+			.clearCookie(
+				"accessToken",
+				{ path: "/", sameSite: "strict", secure: env.NODE_ENV === "production", signed: true, }
+			)
+			.clearCookie(
+				"refreshToken",
+				{ path: "/", sameSite: "strict", secure: env.NODE_ENV === "production", signed: true, }
+			)
 			.send( { message: "Logged out successfully" } );
 	} );
 
@@ -252,16 +268,16 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			if (isLoggedIn(request))
+			if ( isLoggedIn( request ) )
 			{
-				throw ConflictError("Already logged in");
+				throw ConflictError( "Already logged in" );
 			}
 
-			const { email, password, username } = validateRequest(RegisterSchema, request.body);
+			const { email, password, username } = validateRequest( RegisterSchema, request.body );
 
 			// Check if email is already in use
 			if ( await server.prisma.user.findUnique( { where: { email } } ) )
-				throw ConflictError( "User already exists" );
+			{throw ConflictError( "User already exists" );}
 
 			// Check if the username is taken
 			if ( username !== undefined )
@@ -295,15 +311,6 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			reply.send( {
 				message: "Registration successful",
-				//user: {
-				//	id: user.id,
-				//	email: user.email,
-				//	username: user.username,
-				//	avatar: user.avatar,
-				//	avatarType: user.avatarType,
-				//	twoFAEnabled: user.twoFAEnabled,
-				//	createdAt: user.createdAt,
-				//},
 			} );
 
 		}
@@ -319,12 +326,12 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			if (isLoggedIn(request))
+			if ( isLoggedIn( request ) )
 			{
-				throw ConflictError("Already logged in");
+				throw ConflictError( "Already logged in" );
 			}
 
-			const { email, password } = validateRequest(LoginSchema, request.body);
+			const { email, password } = validateRequest( LoginSchema, request.body );
 
 			// Find user
 			const user = await server.prisma.user.findUnique( {
@@ -352,17 +359,17 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			} );
 
 			// 2FA check
-			if (user.twoFAEnabled)
+			if ( user.twoFAEnabled )
 			{
 				// Create short-lived temporary token
-				const tempToken = generate2FATempToken(server, user.id);
+				const tempToken = generate2FATempToken( server, user.id );
 
 				// Tell client that a 2FA step is required
-				return reply.send({
+				return reply.send( {
 					status: "TWO_FA_REQUIRED",
 					tempToken,
 					message: "Two-factor authentication required."
-				});
+				} );
 			}
 
 			// Generate JWT (access and refresh)
@@ -379,7 +386,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		catch ( err: any )
 		{
 			server.log.error( `Login failed: ${err?.message}` );
-			return sendErrorReply(reply, err, err.message ?? "Unknown error" );
+			return sendErrorReply( reply, err, err.message ?? "Unknown error" );
 		}
 	} );
 
@@ -406,142 +413,153 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		catch ( err: any )
 		{
 			server.log.error( `Refresh failed: ${err.message}` );
-			return sendErrorReply(reply, err );
+			return sendErrorReply( reply, err );
 		}
 	} );
 
-	server.post("/auth/2fa/setup", { preHandler: authenticate }, async (request: FastifyRequest, reply: FastifyReply) =>
+	server.post(
+		"/auth/2fa/setup",
+		{ preHandler: authenticate },
+		async ( request: FastifyRequest, reply: FastifyReply ) =>
+		{
+			try
+			{
+				const { userId } = request.user as { userId: string };
+
+				const secret = authenticator.generateSecret();
+
+				// Save secret, but do NOT enable 2FA yet
+				await server.prisma.user.update( {
+					where: { id: userId },
+					data: { twoFASecret: secret }
+				} );
+
+				const user = await server.prisma.user.findUnique( { where: { id: userId } } );
+				if ( !user?.email ) throw BadRequestError( "User must have email for 2FA" );
+
+				const otpauth = authenticator.keyuri( user.email, "TranscendenceApp", secret );
+				const qrCode = await QRCode.toDataURL( otpauth );
+
+				reply.send( {
+					qrCode,
+					message: "2FA secret generated. Please scan QR code."
+				} );
+			}
+			catch ( err: any )
+			{
+				server.log.error( "2FA setup error:", err?.stack || err );
+				return sendErrorReply( reply, err );
+			}
+		}
+	);
+
+	server.post( "/auth/2fa/verify", { preHandler: authenticate }, async ( request, reply ) =>
 	{
-		try {
+		try
+		{
+			const { code } = validateRequest( TwoFAVerifySchema, request.body );
 			const { userId } = request.user as { userId: string };
 
-			const secret = authenticator.generateSecret();
+			const user = await server.prisma.user.findUnique( {
+				where: { id: userId }
+			} );
 
-			// Save secret, but do NOT enable 2FA yet
-			await server.prisma.user.update({
-			where: { id: userId },
-			data: { twoFASecret: secret }
-			});
+			if ( !user?.twoFASecret )
+			{throw BadRequestError( "2FA has not been initialized" );}
 
-			const user = await server.prisma.user.findUnique({ where: { id: userId } });
-			if (!user?.email) throw BadRequestError("User must have email for 2FA");
+			const isValid = authenticator.verify( {
+				token: code,
+				secret: user.twoFASecret
+			} );
 
-			const otpauth = authenticator.keyuri(user.email, "TranscendenceApp", secret);
-			const qrCode = await QRCode.toDataURL(otpauth);
+			if ( !isValid ) throw UnauthorizedError( "Invalid 2FA code" );
 
-			reply.send({
-			qrCode,
-			message: "2FA secret generated. Please scan QR code."
-			});
-		} catch (err: any) {
-			server.log.error("2FA setup error:", err?.stack || err);
-			return sendErrorReply(reply, err);
+			await server.prisma.user.update( {
+				where: { id: userId },
+				data: { twoFAEnabled: true }
+			} );
+
+			reply.send( { message: "2FA enabled successfully" } );
+
 		}
-	});
-
-	server.post("/auth/2fa/verify", { preHandler: authenticate }, async (request, reply) => {
-		try {
-			const { code } = validateRequest(TwoFAVerifySchema, request.body);
-			const { userId } = request.user as { userId: string };
-
-			const user = await server.prisma.user.findUnique({
-			where: { id: userId }
-			});
-
-			if (!user?.twoFASecret)
-			throw BadRequestError("2FA has not been initialized");
-
-			const isValid = authenticator.verify({
-			token: code,
-			secret: user.twoFASecret
-			});
-
-			if (!isValid) throw UnauthorizedError("Invalid 2FA code");
-
-			await server.prisma.user.update({
-			where: { id: userId },
-			data: { twoFAEnabled: true }
-			});
-
-			reply.send({ message: "2FA enabled successfully" });
-
-		} catch (err: any) {
-			server.log.error("2FA verify error:", err);
-			return sendErrorReply(reply, err);
+		catch ( err: any )
+		{
+			server.log.error( "2FA verify error:", err );
+			return sendErrorReply( reply, err );
 		}
-	});
+	} );
 
-	server.post("/auth/2fa/login", async (request, reply) => {
-		try {
-			const { code, tempToken } = validateRequest(TwoFALoginSchema, request.body);
+	server.post( "/auth/2fa/login", async ( request, reply ) =>
+	{
+		try
+		{
+			const { code, tempToken } = validateRequest( TwoFALoginSchema, request.body );
 
 			// Validate temp token (5 min expiration)
-			const decoded = server.jwt.verify(tempToken) as { userId: string };
-			const user = await server.prisma.user.findUnique({ where: { id: decoded.userId } });
+			const decoded = server.jwt.verify( tempToken ) as { userId: string };
+			const user = await server.prisma.user.findUnique( { where: { id: decoded.userId } } );
 
-			if (!user) throw NotFoundError("User not found");
-			if (!user.twoFASecret) throw BadRequestError("2FA not set up");
-			if (!user.twoFAEnabled) throw UnauthorizedError("2FA is not enabled for this user");
+			if ( !user ) throw NotFoundError( "User not found" );
+			if ( !user.twoFASecret ) throw BadRequestError( "2FA not set up" );
+			if ( !user.twoFAEnabled ) throw UnauthorizedError( "2FA is not enabled for this user" );
 
-			const isValid = authenticator.verify({
-			token: code,
-			secret: user.twoFASecret
-			});
+			const isValid = authenticator.verify( {
+				token: code,
+				secret: user.twoFASecret
+			} );
 
-			if (!isValid) throw UnauthorizedError("Invalid 2FA code");
+			if ( !isValid ) throw UnauthorizedError( "Invalid 2FA code" );
 
 			// 2FA Passed → Send real JWT cookies
-			const accessToken = server.jwt.sign({ userId: user.id, email: user.email }, { expiresIn: "15m" });
-			const refreshToken = server.jwt.sign({ userId: user.id }, { expiresIn: "7d" });
+			const accessToken = server.jwt.sign( { userId: user.id, email: user.email }, { expiresIn: "15m" } );
+			const refreshToken = server.jwt.sign( { userId: user.id }, { expiresIn: "7d" } );
 
-			setAuthCookies(reply, accessToken, refreshToken);
+			setAuthCookies( reply, accessToken, refreshToken );
 
-			reply.send({
+			reply.send( {
 				message: "2FA login successful",
-				/*user: {
-					id: user.id,
-					email: user.email,
-					username: user.username,
-					twoFAEnabled: user.twoFAEnabled,
-					avatar: user.avatar,
-					avatarType: user.avatarType,
-				},*/
-			});
+			} );
 
-		} catch (err: any) {
-			server.log.error("2FA login error:", err);
-			return sendErrorReply(reply, err);
 		}
-	});
+		catch ( err: any )
+		{
+			server.log.error( "2FA login error:", err );
+			return sendErrorReply( reply, err );
+		}
+	} );
 
-	server.post("/auth/2fa/disable", { preHandler: authenticate }, async (request, reply) => {
-		try {
+	server.post( "/auth/2fa/disable", { preHandler: authenticate }, async ( request, reply ) =>
+	{
+		try
+		{
 			const { userId } = request.user as { userId: string };
-			const { code } = validateRequest(TwoFADisableSchema, request.body);
+			const { code } = validateRequest( TwoFADisableSchema, request.body );
 
-			const user = await server.prisma.user.findUnique({ where: { id: userId } });
-			if (!user?.twoFASecret) throw BadRequestError("2FA not set up");
+			const user = await server.prisma.user.findUnique( { where: { id: userId } } );
+			if ( !user?.twoFASecret ) throw BadRequestError( "2FA not set up" );
 
-			const isValid = authenticator.verify({
+			const isValid = authenticator.verify( {
 				token: code,
 				secret: user.twoFASecret,
-			});
+			} );
 
-			if (!isValid) throw UnauthorizedError("Invalid 2FA code");
+			if ( !isValid ) throw UnauthorizedError( "Invalid 2FA code" );
 
-			await server.prisma.user.update({
+			await server.prisma.user.update( {
 				where: { id: userId },
 				data: {
 					twoFAEnabled: false,
 					twoFASecret: null,
 				},
-			});
+			} );
 
-			reply.send({ message: "2FA disabled" });
-		} catch (err: any) {
-			return sendErrorReply(reply, err);
+			reply.send( { message: "2FA disabled" } );
 		}
-	});
+		catch ( err: any )
+		{
+			return sendErrorReply( reply, err );
+		}
+	} );
 };
 
 export default authRoutes;

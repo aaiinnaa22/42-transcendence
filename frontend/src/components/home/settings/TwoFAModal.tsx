@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiUrl } from "../../../api/api";
 import { BaseModal } from "./BaseModal";
+import { fetchWithAuth } from "../../../api/fetchWithAuth";
 
 type TwoFAMode = "enable" | "disable";
 
@@ -37,7 +38,7 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
         const fetchQr = async () => {
             try {
                 setError(null);
-                const response = await fetch( apiUrl('/auth/2fa/setup'), {
+                const response = await fetchWithAuth( apiUrl('/auth/2fa/setup'), {
                     method: "POST",
                     credentials: "include",
                 });
@@ -93,7 +94,7 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
                     ? apiUrl('/auth/2fa/verify')
                     : apiUrl('/auth/2fa/disable');
 
-            const response = await fetch(endpoint, {
+            const response = await fetchWithAuth(endpoint, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },

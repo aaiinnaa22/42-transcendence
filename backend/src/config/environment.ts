@@ -55,7 +55,10 @@ const backendValidators = {
 	SALT_ROUNDS: num( {
 		devDefault: 10,
 		default: 10
-	} )
+	} ),
+
+	// Anonymization (GDPR compliance)
+	LOG_SECRET: str( { desc: "Secret used for anonymizing user data" } )
 };
 
 // Environment validation
@@ -71,13 +74,7 @@ const PUBLIC_URL = isProduction
 	? `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}`
 	: `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}:${_env.PORT}`;
 
-const FRONTEND_URL = isProduction
-	? `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}`
-	: `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}:${_env.FRONTEND_PORT}`;
-
 const GOOGLE_CALLBACK_URL = `${PUBLIC_URL}/auth/google/callback`;
-const CLIENT_REDIRECT_URL = `${FRONTEND_URL}/home`;
-const CLIENT_LOGIN_REDIRECT_URL = `${PUBLIC_URL}/login`;
 
 // Export the validated environment
 export const env = {
@@ -85,7 +82,5 @@ export const env = {
 	HTTP_PROTO,
 	WS_PROTO,
 	PUBLIC_URL,
-	GOOGLE_CALLBACK_URL,
-	CLIENT_REDIRECT_URL,
-	CLIENT_LOGIN_REDIRECT_URL
+	GOOGLE_CALLBACK_URL
 } as const;

@@ -1,92 +1,71 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { WebSocket as WsWebSocket } from "ws";
-import { addUser, removeUser } from './presence.js';
-import { sendDM, sendInvite } from './directMessage.js';
-import { onlineUsers } from './state.js';
-import { isBlocked } from './blocking.js';
-
-// const clients = new Map<WebSocket, number>();
+import { addUser, removeUser } from "./presence.js";
+import { sendDM, sendInvite } from "./directMessage.js";
+import { onlineUsers } from "./state.js";
+import { isBlocked } from "./blocking.js";
+import { authenticate } from "../shared/middleware/auth.middleware.js";
+import { pseudonym } from "../shared/utility/anonymize.utility..js";
 
 // TODO: add prehandler authenticate (?)
-export default async function chatComponent(server: FastifyInstance) {
-	server.get("/chat", { websocket: true }, (socket: WsWebSocket, req: FastifyRequest) => {
+export default async function chatComponent( server: FastifyInstance )
+{
+	server.get(
+		"/chat",
+		{ websocket: true, preHandler: authenticate },
+		( socket: WsWebSocket, req: FastifyRequest ) =>
+		{
 
-			let userId: string;
-			try
-			{
-				const signed = req.cookies.accessToken;
-				if (!signed) {
-					socket.close();
-					return;
-				}
+			const { userId } = req.user as { userId: string };
 
-				const unsign = req.unsignCookie(signed);
-				if (!unsign.valid) {
-					socket.close();
-					return;
-				}
-
-				const payload = server.jwt.verify(unsign.value) as { userId: string };
-
-				req.user = payload;
-				userId = payload.userId;
-			}
-			catch (err)
-			{
-				socket.close();
-				return;
-			}
-
-			console.log("WS authenticated user:", userId);
-			addUser(userId, socket);
+			server.log.info( { user: pseudonym( userId ) }, "New chat connection" );
+			addUser( userId, socket );
 
 			// initial presence list
-			socket.send(JSON.stringify({
+			socket.send( JSON.stringify( {
 				type: "presence:list",
 				users: [...onlineUsers.keys()]
-			}));
+			} ) );
 
-			socket.on("message", async (message: any) => {
-				let data;
-				try {
-					data = JSON.parse(message.toString());
-				} catch {
+			socket.on( "message", async ( message: any ) =>
+			{
+				try
+				{
+					// TODO: Validate the messages parsed from sockets
+					const data = JSON.parse( message.toString() );
+					if ( data.type === "dm" )
+					{
+						const blocked = await isBlocked( server, userId, data.to );
+
+						if ( blocked )
+						{
+							socket.send( JSON.stringify( {
+								type: "error",
+								reason: "blocked"
+							} ) );
+							return;
+						}
+						sendDM( userId, data.to, data.message );
+					}
+
+					if ( data.type === "invite" )
+					{
+						server.log.info( { user: pseudonym( userId ), to: pseudonym( data.to ) }, "Game invite sent" );
+						sendInvite( userId, data.to, data.message, data.timestamp );
+					}
+				}
+				catch
+				{
 					return;
 				}
+			} );
 
-				if (data.type === "dm") {
-					const blocked = await isBlocked(server, userId, data.to);
-
-					if (blocked)
-					{
-						socket.send(JSON.stringify({
-						type: "error",
-						reason: "blocked"
-						}));
-						return;
-					}
-					sendDM(userId, data.to, data.message);
-				}
-
-				if (data.type === "invite") {
-					console.log(`User ${userId} sent a game invite`);
-
-					sendInvite(userId, data.to, data.message, data.timestamp);
-
-
-				// broadcast TO EVERYONE EXCEPT THE SENDER
-				// for (const client of clients) {
-				// 	if (client !== socket && client.readyState === client.OPEN) {
-				// 		client.send(payload);
-				// 	}
-				// }
-			}
-			});
-
-		// 3. ON DISCONNECT
-		socket.on("close", () => {
-			console.log(`User ${userId} disconnected.`);
-			removeUser(userId, socket);
-		});
-	});
+			// 3. ON DISCONNECT
+			socket.on( "close", () =>
+			{
+				server.log.info( { userId }, "User disconnected" );
+				removeUser( userId, socket );
+			} );
+		}
+	);
 }

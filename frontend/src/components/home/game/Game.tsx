@@ -1,6 +1,7 @@
 import { useRef, useEffect } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from './constants.js';
 import { wsUrl } from "../../../api/api.js";
+import { forceLogout } from "../../../api/forceLogout.js";
 
 const BUTTON_KEYS = {
     P1_UP: "p1_up",
@@ -20,6 +21,7 @@ export const Game = () =>
     const players = useRef<Record<string, any>>({});
     const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
 	const holdIntervals = useRef<Record<string, number | null>>({});
+	const didOpenRef = useRef(false);
 
 	//Touch screen button managers
 	const startHold = (key: string, id: number, dy: number) => {
@@ -149,8 +151,25 @@ export const Game = () =>
         window.addEventListener("keyup", handleKeyUp);
 		window.addEventListener("blur", handleBlur);
 
-        ws.onopen = () => {console.log("Connected!");}
-        ws.onclose = () => {console.log("Disconnected!");};
+        ws.onopen = () => {
+			console.log("Connected!");
+			didOpenRef.current = true;
+		}
+		ws.onclose = (e) => {
+		console.log("Game WS closed", e.code, e.reason);
+		if (!didOpenRef.current) {
+			console.warn("Game WS handshake failed, forcing logout");
+			forceLogout();
+			return;
+		}
+		if (e.code === 1008) {
+			console.warn("Unauthorized game socket, forcing logout");
+			forceLogout();
+			return;
+		}
+		wsRef.current = null;
+		console.log("Game socket disconnected normally");
+		};
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -167,6 +186,11 @@ export const Game = () =>
 			}
 			else if (data.type === "error")
 			{
+				if (data.reason === "unauthorized") {
+					console.warn("WebSocket unauthorized, forcing logout");
+					forceLogout();
+					return;
+				}
 				console.error("Error from server: ", data.message);
 				if (data.error) console.error("Validation errors: ", data.error);
 			}
