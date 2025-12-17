@@ -23,7 +23,7 @@ export const GameTournament = () =>
     const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
-	const [waitingData, setWaitingData] = useState<{ position: number } | null>(null);
+	const [waitingData, setWaitingData] = useState<{ opponent: string } | null>(null);
 	const [gameEndData, setGameEndData] = useState<{ winner: string; eloWinner?: number; message?: string } | null>(null);
 
 	//Touch screen button managers
@@ -184,7 +184,7 @@ export const GameTournament = () =>
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue. Position: ", data.position);
-				setWaitingData({ position: data.position });
+				setWaitingData({ opponent: "opponent"});
 			}
 			else if (data.type === "error")
 			{
@@ -257,7 +257,7 @@ export const GameTournament = () =>
     return (
 		<>
 		{gameEndData && <GameEnd winner={gameEndData.winner} eloWinner={gameEndData.eloWinner} message={gameEndData.message} />}
-		{waitingData && <Waiting position={waitingData.position} />}
+		{waitingData && <Waiting opponent={waitingData.opponent} />}
 		{!waitingData && !gameEndData && <div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
 		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
 		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">

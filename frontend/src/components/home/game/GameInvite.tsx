@@ -4,6 +4,7 @@ import { } from "../panels/chat/Discussion";
 import { useLocation } from "react-router-dom";
 import { forceLogout } from "../../../api/forceLogout.ts";	
 import { Waiting } from "./Waiting.tsx";
+import { GameEnd } from "./GameEnd.tsx";
 
 const BUTTON_KEYS = {
     P1_UP: "p1_up",
@@ -21,11 +22,12 @@ export const GameInvite = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number; countdown?: number; waiting?: string}>({ x: 0, y: 0 , countdown: 5, waiting: undefined});
+    const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
 	const location = useLocation();
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
-	const [waitingData, setWaitingData] = useState<{ position: number } | null>(null);
+	const [waitingData, setWaitingData] = useState<{ opponent: string } | null>(null);
+	const [gameEndData, setGameEndData] = useState<{ winner: string; eloWinner?: number; message?: string } | null>(null);
 
 	//Touch screen button managers
 	const startHold = (key: string, dy: number) => {
@@ -122,10 +124,7 @@ export const GameInvite = () =>
 			const scaleCenterX = (WIDTH / 2) * scaleX;
 			const scaleCenterY = (HEIGHT / 2) * scaleY;
 
-			if (ball.current.countdown == 5)
-				ctx.fillText(`${ball.current.waiting}`, scaleCenterX, scaleCenterY);
-			else
-				ctx.fillText(`${ball.current.countdown}`, scaleCenterX, scaleCenterY);
+			ctx.fillText(`${ball.current.countdown}`, scaleCenterX, scaleCenterY);
 
 			// Reset alignment
 			ctx.textAlign = "left";
@@ -146,8 +145,8 @@ export const GameInvite = () =>
     useEffect(() => {
         let animationFrameId: number; // not needed ??
 		const invitee = location.state?.invitee;
-   		console.log("DEBUG: invitee =", invitee); 
-		ball.current.waiting = `Waiting ${invitee}`;
+   		//console.log("DEBUG: invitee =", invitee); 
+		//ball.current.waiting = `Waiting ${invitee}`;
         const ws = new WebSocket(`ws://localhost:4241/game/chat?friendName=${invitee}`);
         wsRef.current = ws;
 
@@ -191,7 +190,7 @@ export const GameInvite = () =>
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue. Position: ", data.position);
-				setWaitingData({ position: data.position });
+				setWaitingData({ opponent: invitee});
 			}
 			else if (data.type === "error")
 			{
@@ -211,9 +210,7 @@ export const GameInvite = () =>
 			else if (data.type === "end")
 			{
 				console.log( data.message );
-				ball.current.countdown = 5;
-				ball.current.waiting = `Winner is ${data.winner}`;
-				//console.log( "The winner's new elo is " + data.elo.winner );
+				setGameEndData({ winner: data.winner, eloWinner: 42, message: data.message });
 			}
 
 			/* ADD ADDITIONAL STATES HERE */
@@ -263,8 +260,9 @@ export const GameInvite = () =>
 
     return (
 		<>
-		{waitingData && <Waiting position={waitingData.position} />}
-		<div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
+		{gameEndData && <GameEnd winner={gameEndData.winner} eloWinner={gameEndData.eloWinner} message={gameEndData.message} />}
+		{waitingData && <Waiting opponent={waitingData.opponent} />}
+		{!waitingData && !gameEndData && <div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
 		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
 		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
 			<span
@@ -374,7 +372,7 @@ export const GameInvite = () =>
 					className="w-full h-full "
 				/>
 			</div>
-        </div>
+        </div>}
 		</>
     );
 };
