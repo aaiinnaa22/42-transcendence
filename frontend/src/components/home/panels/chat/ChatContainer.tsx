@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Chat } from "./Chat";
 import { Discussion } from "./Discussion";
+import { forceLogout } from "../../../../api/forceLogout";
+import { fetchWithAuth } from "../../../../api/fetchWithAuth";
 
 export type Message = {
   id: number;
@@ -55,7 +57,7 @@ export const ChatContainer = () => {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:4241/chat/users", {
+    fetchWithAuth("http://localhost:4241/chat/users", {
       credentials: "include",
     })
       .then(res => res.json())
@@ -68,6 +70,7 @@ export const ChatContainer = () => {
     const ws = new WebSocket("ws://localhost:4241/chat");
     wsRef.current = ws;
 
+
     ws.onopen = () => {
       console.log("Chat WS connected");
     };
@@ -79,6 +82,12 @@ export const ChatContainer = () => {
     	} catch {
     	return;
     	}
+		//attempt to auth socket requests
+		if (data.type === "error" && data.reason === "unauthorized") {
+			console.warn("WebSocket unauthorized, forcing logout");
+			forceLogout();
+			return;
+		}
 
     	if (data.type === "dm") {
         	const fromId = data.from as string;
@@ -135,10 +144,16 @@ export const ChatContainer = () => {
 		if (data.type === "error" && data.reason === "blocked") {
 			alert("You cannot message this user.");
 		}
+
+		if (data.type === "error") {
+			console.error("Error received from server:", data.reason);
+		}
     };
 
-    ws.onclose = () => {
+    ws.onclose = e => {
     	console.log("Chat WS disconnected");
+		if (e.code === 1008)
+			forceLogout();
     	wsRef.current = null;
     };
 
