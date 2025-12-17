@@ -1,4 +1,5 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
+import type { FastifyInstance } from "fastify";
 
 export type LeaderboardEntry = {
 	rank: number;
@@ -30,7 +31,7 @@ export default class LeaderboardService
 	private readonly PLAYER_ACTIVITY: number = 30 * 24 * 60 * 60 * 1000;	// Active in the last month
 
 
-	constructor( private prisma: PrismaClient )
+	constructor( private prisma: PrismaClient, private server: FastifyInstance )
 	{
 		this.cache = null;
 		this.lastUpdate = 0;
@@ -49,9 +50,7 @@ export default class LeaderboardService
 		if ( !this.cache ) return null;
 
 		// Return all entries
-		if ( page === 0 )
-
-			return this.cache;
+		if ( page === 0 ) return this.cache;
 
 		// Return speccific page
 		else if ( page > 0 )
@@ -85,7 +84,9 @@ export default class LeaderboardService
 			} );
 
 			if ( !playerStats || playerStats.playedGames < this.MIN_PLAYED || playerStats.wins < this.MIN_WINS )
+			{
 				return null;
+			}
 
 			const activityConstraint = new Date( Date.now() - this.PLAYER_ACTIVITY );
 
@@ -116,7 +117,7 @@ export default class LeaderboardService
 		}
 		catch ( error )
 		{
-			console.error( "Leaderboard error: ", error );
+			this.server.log.error( { error }, "Leaderboard error" );
 		}
 		return null;
 	}
@@ -158,11 +159,11 @@ export default class LeaderboardService
 			} ) );
 
 			this.lastUpdate = now;
-			console.log( "Leaderboard cached successfully" );
+			this.server.log.info( "Leaderboard cached successfully" );
 		}
 		catch ( error )
 		{
-			console.error( "Leaderboard error: ", error );
+			this.server.log.error( { error }, "Leaderboard error" );
 		}
 	}
 

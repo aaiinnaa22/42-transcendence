@@ -23,6 +23,7 @@ import {
 	TwoFALoginSchema,
 	TwoFAVerifySchema
 } from "../schemas/auth.schema.js";
+import { pseudonym } from "../shared/utility/anonymize.utility..js";
 
 // Augment Fastify instance with oauth2 namespace added by the plugin
 declare module "fastify" {
@@ -178,7 +179,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				}
 			}
 
-			server.log.info( `Google Oauth: User registered (ID: ${user.id})` );
+			server.log.info( { user: pseudonym( user.id ) }, "User registered through Google Oauth" );
 
 			if ( user.twoFAEnabled )
 			{
@@ -201,7 +202,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 		catch ( err: any )
 		{
-			server.log.error( `Google OAuth failure: ${err?.stack || err}` );
+			server.log.error( { error: err?.stack || err }, "Google OAuth failure" );
 			return sendErrorReply( reply, err, "Google OAuth failed" );
 		}
 	} );
@@ -241,7 +242,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 		catch ( err: any )
 		{
-			server.log.error( `Get user failed: ${err?.message}` );
+			server.log.error( { error: err?.message || err }, "Get user failed" );
 			return sendErrorReply( reply, err );
 		}
 	} );
@@ -316,7 +317,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 		catch ( err: any )
 		{
-			server.log.error( `Registration failed: ${err?.message}` );
+			server.log.error( { error: err?.message || err }, "Registration failed" );
 			return sendErrorReply( reply, err, "Registration failed" );
 		}
 	} );
@@ -385,7 +386,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 		catch ( err: any )
 		{
-			server.log.error( `Login failed: ${err?.message}` );
+			server.log.error( { error: err?.message || err }, "Login failed" );
 			return sendErrorReply( reply, err, err.message ?? "Unknown error" );
 		}
 	} );
@@ -412,7 +413,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 		catch ( err: any )
 		{
-			server.log.error( `Refresh failed: ${err.message}` );
+			server.log.error( { error: err.message || err }, "Refresh failed" );
 			return sendErrorReply( reply, err );
 		}
 	} );
@@ -447,7 +448,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			}
 			catch ( err: any )
 			{
-				server.log.error( "2FA setup error:", err?.stack || err );
+				server.log.error( { error: err?.stack || err }, "2FA setup error" );
 				return sendErrorReply( reply, err );
 			}
 		}
@@ -484,7 +485,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 		catch ( err: any )
 		{
-			server.log.error( "2FA verify error:", err );
+			server.log.error( { error: err.message || err }, "2FA verify error" );
 			return sendErrorReply( reply, err );
 		}
 	} );
@@ -523,7 +524,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 		catch ( err: any )
 		{
-			server.log.error( "2FA login error:", err );
+			server.log.error( { error: err.message || err }, "2FA login error" );
 			return sendErrorReply( reply, err );
 		}
 	} );

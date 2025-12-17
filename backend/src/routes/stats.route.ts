@@ -24,36 +24,40 @@ const statsRoutes = async ( server: FastifyInstance ) =>
 		}
 		catch ( err: any )
 		{
-			server.log.error( `Get statistics failed: ${err?.message}` );
+			server.log.error( { error: err?.message || err }, "Failed to retrieve statistics" );
 			return sendErrorReply( reply, err, "Failed to get player stats" );
 		}
 	} );
 
 	// Get statistics of another player
-	server.get( "/stats/user/:username", { preHandler: authenticate }, async ( request: FastifyRequest, reply: FastifyReply ) =>
-	{
-		try
+	server.get(
+		"/stats/user/:username",
+		{ preHandler: authenticate },
+		async ( request: FastifyRequest, reply: FastifyReply ) =>
 		{
-			const { username } = validateRequest( GetStatsUsernameSchema, request.params );
+			try
+			{
+				const { username } = validateRequest( GetStatsUsernameSchema, request.params );
 
-			const playerStats = await server.prisma.user.findUnique( {
-				where: { username },
-				select: {
-					username: true,
-					playerStats: { omit: { userId: true } }
+				const playerStats = await server.prisma.user.findUnique( {
+					where: { username },
+					select: {
+						username: true,
+						playerStats: { omit: { userId: true } }
 				 }
-			} );
+				} );
 
-			if ( !playerStats ) throw NotFoundError( "Player not found" );
+				if ( !playerStats ) throw NotFoundError( "Player not found" );
 
-			reply.send( playerStats );
+				reply.send( playerStats );
+			}
+			catch ( err: any )
+			{
+				server.log.error( { error: err?.message || err }, "Failed to retrieve statistics" );
+				return sendErrorReply( reply, err, "Failed to get player stats" );
+			}
 		}
-		catch ( err: any )
-		{
-			server.log.error( `Get statistics failed: ${err?.message}` );
-			return sendErrorReply( reply, err, "Failed to get player stats" );
-		}
-	} );
+	);
 };
 
 export default statsRoutes;

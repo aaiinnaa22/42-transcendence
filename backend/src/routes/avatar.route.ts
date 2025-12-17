@@ -61,7 +61,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 					const oldAvatarPath = path.join( AVATAR_DIR, user.avatar );
 					await fs.unlink( oldAvatarPath ).catch( ( error: any ) =>
 					{
-						server.log.info( `Avatar unlink failed: ${error}` );
+						server.log.error( { error }, "Avatar unlink failed" );
 					} );
 				}
 
@@ -81,7 +81,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 			}
 			catch ( err: any )
 			{
-				server.log.error( `Image upload failed ${err}` );
+				server.log.error( { error: err }, "Image upload failed" );
 				return sendErrorReply( reply, err, "Failed to upload avatar" );
 			}
 		}
@@ -209,7 +209,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 			}
 			catch ( err: any )
 			{
-				server.log.error( `Avatar fetch failed ${err}` );
+				server.log.error( { error: err }, "Avatar fetch failed" );
 				return sendErrorReply( reply, err, "Error when retrieving avatar" );
 			}
 		}
@@ -236,7 +236,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 					const filepath = path.join( AVATAR_DIR, user.avatar );
 					await fs.unlink( filepath ).catch( ( error: any ) =>
 					{
-						server.log.info( `Avatar unlink failed: ${error}` );
+						server.log.error( { error }, "Avatar unlink failed" );
 					} );
 				}
 
@@ -249,7 +249,7 @@ const avatarRoutes = async ( server: FastifyInstance ) =>
 			}
 			catch ( err: any )
 			{
-				server.log.error( `Avatar deletion failed ${err}` );
+				server.log.error( { error: err }, "Avatar deletion failed" );
 				return sendErrorReply( reply, err, "You do not have an existing avatar" );
 			}
 		}

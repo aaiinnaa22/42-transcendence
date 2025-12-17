@@ -7,7 +7,7 @@ import { GetLeaderboardPageSchema } from "../schemas/leaderboard.schema.js";
 
 const leaderboardComponent = async ( server: FastifyInstance ) =>
 {
-	const leaderboard: LeaderboardService = new LeaderboardService( server.prisma );
+	const leaderboard: LeaderboardService = new LeaderboardService( server.prisma, server );
 
 	server.addHook( "onClose", () => { leaderboard.destroy(); } );
 

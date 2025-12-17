@@ -15,7 +15,6 @@ export default async function chatComponent( server: FastifyInstance )
 		{ websocket: true, preHandler: authenticate },
 		( socket: WsWebSocket, req: FastifyRequest ) =>
 		{
-
 			const { userId } = req.user as { userId: string };
 
 			server.log.info( { user: pseudonym( userId ) }, "New chat connection" );
@@ -63,7 +62,7 @@ export default async function chatComponent( server: FastifyInstance )
 			// 3. ON DISCONNECT
 			socket.on( "close", () =>
 			{
-				server.log.info( { userId }, "User disconnected" );
+				server.log.info( { user: pseudonym( userId ) }, "User disconnected" );
 				removeUser( userId, socket );
 			} );
 		}
