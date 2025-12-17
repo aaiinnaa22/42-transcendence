@@ -2,20 +2,20 @@ import GoogleSignIn from "../assets/googleSignIn.svg";
 import {useNavigate, useLocation, Outlet} from "react-router-dom";
 import { useEffect } from "react";
 import { apiUrl } from "../api/api";
-import { fetchWithAuth } from "../api/fetchWithAuth";
+// import { fetchWithAuth } from "../api/fetchWithAuth";
 
 export const Welcome = () => {
 	const navigate = useNavigate();
 	const {pathname} = useLocation();
 
 	useEffect(() => {
-        fetchWithAuth( apiUrl('/auth/me'), {
+        fetch( apiUrl('/auth/me'), {
             method: "GET",
             credentials: "include",
         })
         .then(res => {
             if (res.ok) {
-                navigate("/home");
+                navigate("/home", { replace: true });
             }
         })
         .catch(() => {});

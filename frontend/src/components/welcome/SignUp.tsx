@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../api/api";
-import { fetchWithAuth } from "../../api/fetchWithAuth";
 
 export const SignUp = () => {
 	const [email, setEmail] = useState("");
@@ -9,26 +8,6 @@ export const SignUp = () => {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		const checkSession = async () => {
-			try {
-				const res = await fetchWithAuth( apiUrl("/auth/me"), {
-					method: "GET",
-					credentials: "include",
-				});
-
-				if (res.ok) {
-					navigate("/home", { replace: true });
-				}
-			} catch
-			{
-				console.error("Failed to check session");
-			}
-		};
-
-		checkSession();
-	}, [navigate]);
 
 	const handleSignUp = async (e: React.FormEvent) =>
 	{

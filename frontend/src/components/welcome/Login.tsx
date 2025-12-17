@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TwoFALoginModal } from "./TwoFALoginModal";
 import { apiUrl } from "../../api/api";
-import { fetchWithAuth } from "../../api/fetchWithAuth";
 
 export const Login = () => {
 	const [email, setEmail] = useState("");
@@ -11,28 +10,6 @@ export const Login = () => {
 	const [twoFATempToken, setTwoFATempToken] = useState<string | null>(null);
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		const checkSession = async () => {
-			try
-			{
-				const res = await fetchWithAuth( apiUrl("/auth/me"), {
-					method: "GET",
-					credentials: "include",
-				});
-
-				if (res.ok) {
-					navigate("/home", { replace: true });
-				}
-			}
-			catch
-			{
-				// Do nothing
-			}
-		};
-
-		checkSession();
-	}, [navigate]);
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
