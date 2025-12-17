@@ -1,5 +1,5 @@
 import type { ChatUser } from "./ChatContainer";
-import { useBlockUser } from "../../../../BackendFetch";
+import { useBefriendUser, useBlockUser } from "../../../../BackendFetch";
 
 type ChatProfileProps =
 {
@@ -9,7 +9,9 @@ type ChatProfileProps =
 
 export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 	const {blockUser, unblockUser} = useBlockUser();
-	
+	//add blocked to ChatUser, so can test if user.blocked ? "unblock" : "block"
+	const {befriendUser, unfriendUser} = useBefriendUser();
+	//how to know if friends?
 	return (
 		<div className="flex flex-col h-full w-full bg-transcendence-white lg:rounded-l-2xl px-3 pt-10 pb-5 lg:border-2">
 			<div className="fixed top-0 w-[90%] lg:mt-[2px] h-10 bg-transcendence-white flex items-center">
