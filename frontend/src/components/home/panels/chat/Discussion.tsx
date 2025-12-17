@@ -2,7 +2,7 @@ import { ChatProfilePic } from "./ChatProfilePic";
 import { useState, useRef, useEffect } from "react";
 import type { ChatUser } from "./ChatContainer";
 import type { Message } from "./ChatContainer";
-import { useNavigate } from "react-router-dom"; //to chat container
+import { useNavigate } from "react-router-dom";
 
 type DiscussionProps = {
 	friend: ChatUser;
@@ -23,39 +23,46 @@ export const Discussion = ({
   inviteTimeLeft,
   onSendInvite
 }: DiscussionProps) => {
-  const [message, setMessage] = useState("");
-  const discussionEndRef = useRef<HTMLDivElement | null>(null);
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-  const navigate = useNavigate(); //to chat container
+	const [message, setMessage] = useState("");
+	const discussionEndRef = useRef<HTMLDivElement | null>(null);
+	const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+	const navigate = useNavigate();
 
-  useEffect(() => {
-    discussionEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+	useEffect(() => {
+		discussionEndRef.current?.scrollIntoView({ behavior: "smooth" });
+		}, [messages]);
 
-  const handleMessageSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim()) return;
 
-    onSendMessage(message);
-    setMessage("");
+	const sendMessage = () => {
+		if (!message.trim()) return;
 
-    if (textAreaRef.current) {
-      textAreaRef.current.style.height = "auto";
-    }
-  };
+		onSendMessage(message);
+		setMessage("");
+
+		if (textAreaRef.current)
+				textAreaRef.current.style.height = "auto";
+	}
+
+	const handleMessageSubmit = (e: React.FormEvent | React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if ("key" in e) {
+			if (e.key === 'Enter' && !e.shiftKey)
+			{
+				e.preventDefault();
+				sendMessage();
+			}
+		}
+		else
+		{
+			e.preventDefault();
+			sendMessage();
+		}
+	};
 
 	const handleMessageInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		e.target.style.height = "auto";
 		e.target.style.height = `${Math.min(e.target.scrollHeight, 5 * 24)}px`; // 24px ≈ line-height
 		setMessage(e.target.value);
 	};
-
-	const handleEnterKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (e.key === 'Enter' && !e.shiftKey) {
-			e.preventDefault();
-			handleMessageSubmit(e as any); //as any?
-		}
-	}
 
 	const formatTime = (seconds: number) => {
 		const minutes = Math.floor(seconds / 60);
@@ -100,7 +107,7 @@ export const Discussion = ({
 							<div className="flex flex-row justify-center items-center border-2 border-transcendence-white rounded-lg p-1 gap-2">
 								{inviteIsActive && <span className="text-transcendence-white font-bold">{formatTime(inviteTimeLeft)}</span>}
 								<button disabled={!inviteIsActive} className="text-white font-bold"
-									onClick={() => navigate("/home/play/tournament")}>{inviteIsActive ? "join the game" : "invite expired"}</button>
+									onClick={() => navigate("/home/play/invite", { state: {invitee: friend.username}})}>{inviteIsActive ? "join the game" : "invite expired"}</button>
 							</div>
 						</div>
 					)
@@ -116,7 +123,7 @@ export const Discussion = ({
 					ref={textAreaRef}
 					value={message}
 					onChange={handleMessageInput}
-					onKeyDown={handleEnterKey}
+					onKeyDown={handleMessageSubmit}
 					placeholder={`Chat with ${friend.username}`} //placeholder changes when friend isnt online and u cant chat?
 					rows={1}
 					className="focus:outline-none w-full resize-none p-2"

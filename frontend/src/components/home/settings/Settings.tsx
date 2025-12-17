@@ -2,10 +2,11 @@ import {useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import {LanguageSelector} from "./LanguageSelector"
 import { TwoFAModal } from "./TwoFAModal";
+import { fetchWithAuth } from "../../../api/fetchWithAuth";
 
 export const Settings = () =>
 {
-	const [error, setError] = useState("");
+	const [error, setError] = useState<string | null>(null);
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const [isTwoFAEnabled, setIsTwoFAEnabled] = useState<boolean | null>(null);
 	const navigate = useNavigate();
@@ -13,7 +14,7 @@ export const Settings = () =>
 	useEffect(() => {
 		const loadTwoFAStatus = async () => {
 			try {
-				const res = await fetch("http://localhost:4241/auth/me", {
+				const res = await fetchWithAuth("http://localhost:4241/auth/me", {
 					credentials: "include",
 				});
 
@@ -40,7 +41,7 @@ export const Settings = () =>
 	const handleLogOut = async (e: React.FormEvent) =>
 	{
 		e.preventDefault();
-		setError("");
+		setError(null);
 
 		try {
 			const response = await fetch("http://localhost:4241/auth/logout",
@@ -48,15 +49,15 @@ export const Settings = () =>
 				method: "POST",
 				credentials: "include",
 			});
-			const data = await response.json();
-			if (!response.ok || data.error)
+
+			// Did we get a response code of 2xx (success)
+			if (!response.ok)
 			{
-					throw new Error(data.error);
+				const data = await response.json();
+				throw new Error(data.error || "Logout failed");
 			}
-			if (data.message === "Logged out successfully")
-				navigate("/");
-			else
-				throw new Error("");
+
+			navigate("/");
 		}
 		catch (err: any) {
 			console.error("Login error:", err);
@@ -67,6 +68,7 @@ export const Settings = () =>
 	return (
 		<>
 			<div className="flex flex-col gap-6 lg:gap-15 portrait:items-center lg:landscape:items-center justify-center">
+				{error && <div className="text-red-500 text-sm landscape:text-xs lg:landscape:text-sm text-center">{error}</div>}
 				<LanguageSelector/>
 				<div className="flex flex-col gap-2">
 					<button
