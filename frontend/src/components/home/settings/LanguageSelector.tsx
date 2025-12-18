@@ -14,7 +14,7 @@ const Languages: Language[] =
 ];
 
 export const LanguageSelector = () => {
-	const [selected, setSelected] = useState<Language>(Languages[0]);
+	const [selected, setSelected] = useState<Language>(Languages[0] ?? { code: "en", name: "English"});
 	const [tabOpen, setTabOpen] = useState(false);
 
 	return (

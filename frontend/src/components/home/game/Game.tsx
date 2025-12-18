@@ -19,7 +19,7 @@ export const Game = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
+    const ball = useRef<{ x: number; y: number; countdown?: number | undefined;}>({ x: 0, y: 0 , countdown: undefined });
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
 

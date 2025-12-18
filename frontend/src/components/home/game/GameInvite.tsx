@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
+import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.js";
 import { } from "../panels/chat/Discussion";
 import { useLocation } from "react-router-dom";
 import { wsUrl } from "../../../api/api.js";
@@ -15,7 +15,7 @@ export const GameInvite = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number; countdown?: number; waiting?: string}>({ x: 0, y: 0 , countdown: 5, waiting: undefined});
+    const ball = useRef<{ x: number; y: number; countdown?: number; waiting?: string | undefined;}>({ x: 0, y: 0 , countdown: 5, waiting: undefined});
 	const location = useLocation();
 	const didOpenRef = useRef(false);
 

@@ -140,7 +140,7 @@ export const Leaderboard = () => {
 
 	useEffect(() => {
 		const observer = new IntersectionObserver((entries) => {
-				if (entries[0].isIntersecting && hasMore && !loadingMore) fetchNextPage();
+				if (entries[0]?.isIntersecting && hasMore && !loadingMore) fetchNextPage();
 			},
 			{threshold: 1.0}
 		);
