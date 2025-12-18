@@ -51,9 +51,30 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 		} );
 }
 // check if user is already logged in
-function isLoggedIn( request: FastifyRequest )
+function isLoggedIn( request: FastifyRequest, reply: FastifyReply ): boolean
 {
-	return Boolean( request.cookies?.refreshToken || request.cookies?.accessToken );
+	if ( request.cookies.accessToken )
+	{
+		const signed = request.cookies.accessToken;
+		if ( !signed )
+		{
+			reply.clearCookie( "accessToken", COOKIE_OPTIONS );
+			return false;
+		}
+
+		const unsign = request.unsignCookie( signed );
+		if ( !unsign.valid )
+		{
+			reply.clearCookie( "accessToken", COOKIE_OPTIONS );
+			return false;
+		}
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 const authRoutes = async ( server: FastifyInstance ) =>
@@ -79,10 +100,10 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		checkStateFunction: () => true,
 	} );
 
-	server.get( "/auth/google", async ( request, reply ) =>
+	server.get( "/auth/google", async ( request: FastifyRequest, reply: FastifyReply ) =>
 	{
 		// Prevent login if already logged in
-		if ( request.cookies?.accessToken || request.cookies?.refreshToken )
+		if ( isLoggedIn( request, reply ) )
 		{
 			return reply.redirect( "/home" );
 		}
@@ -256,7 +277,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			if ( isLoggedIn( request ) )
+			if ( isLoggedIn( request, reply ) )
 			{
 				throw ConflictError( "Already logged in" );
 			}
@@ -265,7 +286,9 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			// Check if email is already in use
 			if ( await server.prisma.user.findUnique( { where: { email } } ) )
-			{throw ConflictError( "User already exists" );}
+			{
+				throw ConflictError( "User already exists" );
+			}
 
 			// Check if the username is taken
 			if ( username !== undefined )
@@ -314,7 +337,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			if ( isLoggedIn( request ) )
+			if ( isLoggedIn( request, reply ) )
 			{
 				throw ConflictError( "Already logged in" );
 			}
@@ -368,7 +391,6 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			reply.send( {
 				message: "Login successful",
-				//user,
 			} );
 		}
 		catch ( err: any )

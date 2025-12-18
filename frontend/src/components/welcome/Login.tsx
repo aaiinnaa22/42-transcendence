@@ -47,6 +47,12 @@ export const Login = () => {
 			// Check for actual errors first (4xx, 5xx with error field)
 			if (!response.ok && data.error)
 			{
+				if ( response.status === 409 && data.message === "Already logged in" )
+				{
+					navigate("/home");
+					return;
+				}
+
 				throw new Error(data.error || "Login failed. Please try again.");
 			}
 

@@ -27,6 +27,12 @@ export const SignUp = () => {
 			const data = await response.json();
 			if (!response.ok || data.error)
 			{
+				if ( response.status === 409 && data.message === "Already logged in" )
+				{
+					navigate("/home");
+					return;
+				}
+
 				throw new Error(data.error || "Signup failed. Please try again.");
 			}
 			if (data.message === "Registration successful")
