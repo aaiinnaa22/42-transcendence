@@ -24,6 +24,7 @@ import {
 	TwoFAVerifySchema
 } from "../schemas/auth.schema.js";
 import { pseudonym } from "../shared/utility/anonymize.utility..js";
+import { ACCESS_TOKEN_MAX_AGE, COOKIE_OPTIONS, REFRESH_TOKEN_MAX_AGE } from "../config/cookie.constants.js";
 
 // Augment Fastify instance with oauth2 namespace added by the plugin
 declare module "fastify" {
@@ -41,20 +42,12 @@ function setAuthCookies( reply: FastifyReply, accessToken: string, refreshToken:
 {
 	reply
 		.setCookie( "accessToken", accessToken, {
-			path: "/",
-			httpOnly: true,
-			sameSite: "strict",
-			secure: env.NODE_ENV === "production",
-			signed: true,
-			maxAge: 60 * 15,
+			...COOKIE_OPTIONS,
+			maxAge: ACCESS_TOKEN_MAX_AGE,
 		} )
 		.setCookie( "refreshToken", refreshToken, {
-			path: "/",
-			httpOnly: true,
-			sameSite: "strict",
-			secure: env.NODE_ENV === "production",
-			signed: true,
-			maxAge: 60 * 60 * 24 * 7, // 7 days
+			...COOKIE_OPTIONS,
+			maxAge: REFRESH_TOKEN_MAX_AGE,
 		} );
 }
 // check if user is already logged in
@@ -253,14 +246,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		void request;
 
 		reply
-			.clearCookie(
-				"accessToken",
-				{ path: "/", sameSite: "strict", secure: env.NODE_ENV === "production", signed: true, }
-			)
-			.clearCookie(
-				"refreshToken",
-				{ path: "/", sameSite: "strict", secure: env.NODE_ENV === "production", signed: true, }
-			)
+			.clearCookie( "accessToken", COOKIE_OPTIONS )
+			.clearCookie( "refreshToken", COOKIE_OPTIONS )
 			.send( { message: "Logged out successfully" } );
 	} );
 
@@ -396,14 +383,30 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		try
 		{
 			const signed = request.cookies.refreshToken;
-			if ( !signed ) throw UnauthorizedError( "No refresh token" );
+			if ( !signed )
+			{
+				reply.clearCookie( "accessToken", COOKIE_OPTIONS );
+				throw UnauthorizedError( "No refresh token" );
+			}
 
 			const unsign = request.unsignCookie( signed );
-			if ( !unsign.valid ) throw UnauthorizedError( "Invalid cookie signature" );
+			if ( !unsign.valid )
+			{
+				reply
+					.clearCookie( "accessToken", COOKIE_OPTIONS )
+					.clearCookie( "refreshToken", COOKIE_OPTIONS );
+				throw UnauthorizedError( "Invalid cookie signature" );
+			}
 
 			const decoded = server.jwt.verify( unsign.value ) as { userId: string };
 			const user = await server.prisma.user.findUnique( { where: { id: decoded.userId } } );
-			if ( !user ) throw NotFoundError( "User not found" );
+			if ( !user )
+			{
+				reply
+					.clearCookie( "accessToken", COOKIE_OPTIONS )
+					.clearCookie( "refreshToken", COOKIE_OPTIONS );
+				throw NotFoundError( "User not found" );
+			}
 
 			const newAccess = server.jwt.sign( { userId: user.id, email: user.email }, { expiresIn: "15m" } );
 			const newRefresh = server.jwt.sign( { userId: user.id }, { expiresIn: "7d" } );
@@ -414,6 +417,14 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		catch ( err: any )
 		{
 			server.log.error( { error: err.message || err }, "Refresh failed" );
+
+			if ( !reply.sent )
+			{
+				reply
+					.clearCookie( "accessToken", COOKIE_OPTIONS )
+					.clearCookie( "refreshToken", COOKIE_OPTIONS );
+			}
+
 			return sendErrorReply( reply, err );
 		}
 	} );
