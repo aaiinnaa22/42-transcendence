@@ -11,7 +11,7 @@ RUN npm ci
 
 # Copy settings
 COPY tsconfig*.json ./
-COPY vite.config.ts postcss.config.js ./
+COPY vite.config.ts postcss.config.ts ./
 
 # Copy sources
 COPY index.html ./
