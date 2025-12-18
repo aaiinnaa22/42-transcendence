@@ -23,49 +23,44 @@ export const GameEnd = ({ winner, loser, eloWinner, eloLoser, eloWinnerOld, eloL
         : null;
 
     return (
-    <div className="flex flex-col items-center justify-center portrait:flex-col portrait:items-center col-start-2 gap-4">
-    <h2 className="text-transcendence-white font-transcendence-three text-3xl tracking-[0.12em]">
+        <div className="min-h-screen flex items-center justify-center">
+  <div className="w-full max-w-3xl max-h-[80vh] rounded-xl bg-transcendence-black p-4 overflow-y-auto flex flex-col gap-4">
+    
+    {/* Optional message */}
+    {message && (
+      <h2 className="text-transcendence-white font-transcendence-three text-3xl tracking-[0.12em] text-center">
         {message}
-    </h2>
-    <div className="grid grid-cols-[minmax(8rem,1fr)_4rem_2rem_4rem_3rem] gap-x-1 items-center">
-    <span className="truncate text-left text-transcendence-white font-transcendence-three text-3xl">{winner}</span>
+      </h2>
+    )}
 
-    <span className="text-right text-transcendence-white font-transcendence-three text-3xl">{eloWinnerOld}</span>
-
-    <span className="flex justify-center">
+    {/* Winner row */}
+    <div className="leaderboard-grid px-4 py-2 items-center">
+      <span className="truncate text-left font-bold text-transcendence-white">{winner}</span>
+      <span className="text-center font-bold text-transcendence-white">{eloWinnerOld}</span>
+      <span className="flex justify-center">
         <span className="inline-block animate-bounce">
-            <span className="material-symbols-outlined text-green-500">
-                arrow_shape_up_stack_2
-            </span>
+          <span className="material-symbols-outlined text-green-500">arrow_shape_up_stack_2</span>
         </span>
-    </span>
-
-    <span className="text-right text-transcendence-white font-transcendence-three text-3xl">{eloWinner}</span>
-
-    <span className="text-green-500 text-right font-transcendence-three text-3xl inline-block animate-bounce">
-        +{difWinner}
-    </span>
+      </span>
+      <span className="text-center font-bold text-transcendence-white hidden md:block">{eloWinner}</span>
+      <span className="text-center font-bold text-green-500 hidden lg:block">+{difWinner}</span>
     </div>
 
-    <div className="grid grid-cols-[minmax(8rem,1fr)_4rem_2rem_4rem_3rem] gap-x-1 items-center">
-    <span className="truncate text-left text-transcendence-white font-transcendence-three text-3xl">{loser}</span>
-
-    <span className="text-right text-transcendence-white font-transcendence-three text-3xl">{eloLoserOld}</span>
-
-    <span className="flex justify-center">
+    {/* Loser row */}
+    <div className="leaderboard-grid px-4 py-2 items-center">
+      <span className="truncate text-left font-bold text-transcendence-white">{loser}</span>
+      <span className="text-center font-bold text-transcendence-white">{eloLoserOld}</span>
+      <span className="flex justify-center">
         <span className="inline-block animate-bounce">
-            <span className="material-symbols-outlined text-red-500 rotate-180">
-                arrow_shape_up_stack_2
-            </span>
+          <span className="material-symbols-outlined text-red-500 rotate-180">arrow_shape_up_stack_2</span>
         </span>
-    </span>
-
-    <span className="text-right text-transcendence-white font-transcendence-three text-3xl">{eloLoser}</span>
-
-    <span className="text-red-500 text-right font-transcendence-three text-3xl inline-block animate-bounce">
-        -{difLoser}
-    </span>
+      </span>
+      <span className="text-center font-bold text-transcendence-white hidden md:block">{eloLoser}</span>
+      <span className="text-center font-bold text-red-500 hidden lg:block">-{difLoser}</span>
     </div>
+
+  </div>
 </div>
+
     );
 };
