@@ -13,6 +13,19 @@ export default defineConfig({
 	minify: 'esbuild'
   },
   server: {
+	proxy: {
+		'/api': {
+			target: 'http://localhost:4241',
+			changeOrigin: true,
+			secure: false
+		},
+		'/ws': {
+			target: 'ws://localhost:4241',
+			ws: true,
+			changeOrigin: true,
+			secure: false
+		}
+	},
     host: '0.0.0.0',
     port: 8080,
   },
