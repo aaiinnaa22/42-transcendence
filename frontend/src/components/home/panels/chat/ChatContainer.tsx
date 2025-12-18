@@ -17,59 +17,44 @@ export type ChatUser = {
   lastMessage?: string;
 };
 
+type InviteState = {
+  startedAt: number;
+  expiresAt: number;
+};
+
 export const ChatContainer = () => {
-  const [users, setUsers] = useState<ChatUser[]>([]);
-  const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
-  const [messagesByUser, setMessagesByUser] = useState<Record<string, Message[]>>(
-    {}
-  );
+  	const [users, setUsers] = useState<ChatUser[]>([]);
+  	const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
+  	const [messagesByUser, setMessagesByUser] = useState<Record<string, Message[]>>({});
+	const [myUserId, setMyUserId] = useState<string | null>(null);
+	const myUserIdRef = useRef<string | null>(null);
+ 	const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
+  	const [invitesByUser, setInvitesByUser] = useState<Record<string, InviteState | null>>({});
+  	const [now, setNow] = useState(Date.now());
 
-  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
+  	const wsRef = useRef<WebSocket | null>(null);
 
-	const [inviteActive, setInviteActive] = useState(false);
-	const [inviteTimeLeft, setInviteTimeLeft] = useState(0);
-	const inviteStartTimeRef = useRef<number | null>(null);
+	useEffect(() => {
+		const id = setInterval(() => setNow(Date.now()), 1000);
+		return () => clearInterval(id);
+	}, []);
 
-	function startInviteTimer(inviteStartTimestamp: number) {
-		inviteStartTimeRef.current = inviteStartTimestamp;
-		setInviteActive(true);
-
-		const countdown = () => {
-			const now = Date.now();
-			const diff = Math.floor((inviteStartTimestamp + 120000 - now) / 1000); // 2 min = 120000 ms
-			if (diff <= 0) {
-				setInviteActive(false);
-				setInviteTimeLeft(0);
-				clearInterval(timerId);
-			} else {
-				setInviteTimeLeft(diff);
-		}
-	};
-
-	countdown(); // run immediately
-
-	const timerId = setInterval(countdown, 1000);
-}
-
-
-  const wsRef = useRef<WebSocket | null>(null);
-
-  useEffect(() => {
-    fetch("http://localhost:4241/chat/users", {
-      credentials: "include",
+  	useEffect(() => {
+    	fetch("http://localhost:4241/chat/users", {
+      	credentials: "include",
     })
       .then(res => res.json())
       .then(setUsers)
       .catch(err => console.error("Failed to load users", err));
-  }, []);
+  	}, []);
 
 
-  useEffect(() => {
-    const ws = new WebSocket("ws://localhost:4241/chat");
-    wsRef.current = ws;
+  	useEffect(() => {
+    	const ws = new WebSocket("ws://localhost:4241/chat");
+    	wsRef.current = ws;
 
-    ws.onopen = () => {
-      console.log("Chat WS connected");
+    	ws.onopen = () => {
+      	console.log("Chat WS connected");
     };
 
     ws.onmessage = (e) => {
@@ -102,27 +87,51 @@ export const ChatContainer = () => {
         );
     	}
 
+		if (data.type === "me") {
+			myUserIdRef.current = data.userId;
+			setMyUserId(data.userId);
+			return;
+		}
+
 		if (data.type === "invite") {
+			console.log("invite received. me=", myUserIdRef.current, "from=", data.from, "to=", data.to);
+			const me = myUserIdRef.current;
+			if (!me) return;
+			if (data.from === me) return;
+
 			const fromId = data.from as string;
-			const inviteStartTimeStamp = data.timestamp;
-			startInviteTimer(inviteStartTimeStamp);
-			const newMessage: Message = {
+			const { startedAt, expiresAt } = data;
+			const otherUserId = fromId === me ? data.to : fromId;
+
+			setInvitesByUser(prev => ({
+				...prev,
+				[otherUserId]: { startedAt, expiresAt },
+			}));
+
+			const inviteMessage: Message = {
 				id: Date.now(),
 				text: "I invite you to play a game with me!",
-				sender: "friend",
+				sender: fromId === me ? "me" : "friend",
 				isInvite: true,
 				}
 
 			setMessagesByUser(prev => ({
-        		...prev,
-        		[fromId]: [...(prev[fromId] ?? []), newMessage],
-        	}));
+			...prev,
+			[otherUserId]: [...(prev[otherUserId] ?? []), inviteMessage],
+			}));
 		}
 
+		if (data.type === "invite:expired") {
+   			const me = myUserIdRef.current;
+			if (!me) return;
+
+  			const [a, b] = data.users;
+  			const otherUserId = a === me ? b : a;``
+			setInvitesByUser(prev => ({ ...prev, [otherUserId]: null }));
+      	}
 		if (data.type === "presence:list") {
 		setOnlineUserIds(new Set<string>(data.users));
 		}
-
 		if (data.type === "presence") {
 		setOnlineUserIds(prev => {
 			const next = new Set(prev);
@@ -175,69 +184,70 @@ export const ChatContainer = () => {
       )
     );
   };
-	const usersWithPresence: ChatUser[] = users.map(u => ({
-	...u,
-	online: onlineUserIds.has(u.id),
+
+	const sendGameInvite = () => {
+    if (!selectedUser || !wsRef.current) return;
+	const startedAt = Date.now();
+  	const expiresAt = startedAt + 120_000;
+  	setInvitesByUser(prev => ({
+		...prev,
+		[selectedUser.id]: { startedAt, expiresAt },
 	}));
 
-	const sendGameInvite = () =>
-	{
-		if (!selectedUser) return;
-		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-		const timestamp = Date.now();
+    wsRef.current.send(JSON.stringify({
+      type: "invite",
+      to: selectedUser.id,
+    }));
 
-		wsRef.current.send(JSON.stringify({
-			type: "invite",
-			to: selectedUser.id,
-			message: "I invite you to play a game with me!",
-			timestamp
-		}));
-
-		startInviteTimer(timestamp);
-
-		const myMessage: Message = {
-			id: Date.now(),
-			text: "I invite you to play a game with me!",
-			sender: "me",
-			isInvite: true
-		}
-
-		setMessagesByUser(prev => ({
-     		 ...prev,
-      		[selectedUser.id]: [...(prev[selectedUser.id] ?? []), myMessage],
+    setMessagesByUser(prev => ({
+      ...prev,
+      [selectedUser.id]: [...(prev[selectedUser.id] ?? []), {
+        id: Date.now(),
+        text: "I invite you to play a game with me!",
+        sender: "me",
+        isInvite: true,
+    	}],
     	}));
+  	};
 
-		setUsers(prev =>
-			prev.map(u =>
-				u.id === selectedUser.id ? { ...u, lastMessage: "I invite you ..." } : u
-      ));
-	}
+	/* -------- derived invite state -------- */
+	const invite = selectedUser ? invitesByUser[selectedUser.id] : null;
+	const inviteTimeLeft = invite
+		? Math.max(0, Math.floor((invite.expiresAt - now) / 1000))
+		: 0;
 
-  return (
-	<div className="h-full">
+  	const inviteIsActive = inviteTimeLeft > 0;
 
-		{/* this renders user list */}
-		{!selectedUser && (
-		<Chat
-			users={usersWithPresence}
-			selectedUserId={null}
-			onChatClick={setSelectedUser}
-		/>
-		)}
+  	const usersWithPresence = users.map(u => ({
+    	...u,
+    	online: onlineUserIds.has(u.id),
+  	}));
 
-		{/* this renders chat window */}
-		{selectedUser && (
-		<Discussion
-			friend={selectedUser}
-			messages={messagesByUser[selectedUser.id] ?? []}
-			onSendMessage={sendMessage}
-			onExitClick={() => setSelectedUser(null)}
-			inviteIsActive={inviteActive}
-			inviteTimeLeft={inviteTimeLeft}
-			onSendInvite={sendGameInvite}
-		/>
-		)}
+  	return (
+		<div className="h-full">
 
-	</div>
+			{/* this renders user list */}
+			{!selectedUser && (
+			<Chat
+				users={usersWithPresence}
+				selectedUserId={null}
+				onChatClick={setSelectedUser}
+			/>
+			)}
+
+			{/* this renders chat window */}
+			{selectedUser && (
+			<Discussion
+				friend={selectedUser}
+				messages={messagesByUser[selectedUser.id] ?? []}
+				onSendMessage={sendMessage}
+				onExitClick={() => setSelectedUser(null)}
+				inviteIsActive={inviteIsActive}
+				inviteTimeLeft={inviteTimeLeft}
+				onSendInvite={sendGameInvite}
+			/>
+			)}
+
+		</div>
 	);
 };

@@ -2,9 +2,10 @@ import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "@fastify/websocket";
 
 import { addUser, removeUser } from "./presence.ts";
-import { sendDM, sendInvite } from "./directMessage.ts";
+import { sendDM } from "./directMessage.ts";
 import { onlineUsers } from "./state.ts";
 import { isBlocked, blockUser, unblockUser } from "./blocking.ts";
+import { createInvite } from "./invites.ts";
 
 const clients = new Map<WebSocket, number>();
 
@@ -41,6 +42,10 @@ export default async function chatComponent(server: FastifyInstance) {
 			console.log("WS authenticated user:", userId);
 			addUser(userId, socket);
 
+			socket.send(JSON.stringify({
+				type: "me",
+				userId,
+			}));
 			// initial presence list
 			socket.send(JSON.stringify({
 				type: "presence:list",
@@ -70,18 +75,9 @@ export default async function chatComponent(server: FastifyInstance) {
 				}
 
 				if (data.type === "invite") {
-					console.log(`User ${userId} sent a game invite`);
-
-					sendInvite(userId, data.to, data.message, data.timestamp);
-
-
-				// broadcast TO EVERYONE EXCEPT THE SENDER
-				// for (const client of clients) {
-				// 	if (client !== socket && client.readyState === client.OPEN) {
-				// 		client.send(payload);
-				// 	}
-				// }
-			}
+					console.log(`User ${userId} sent a game invite to ${data.to}`);
+					createInvite(userId, data.to);
+				}
 			});
 
 		// 3. ON DISCONNECT

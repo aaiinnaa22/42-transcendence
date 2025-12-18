@@ -30,34 +30,53 @@ export function sendDM(
 	return true;
 }
 
-export function sendInvite(
-	from: string,
-	to: string,
-	message: string,
-	timestamp: number
-): boolean {
-	const targets = onlineUsers.get(to);
-	if (!targets)
-	{
-		console.log("we failed for online users:(");
-		return false;
-	}
+export function sendInvitePayload(invite: {
+	from: string;
+	to: string;
+	startedAt: number;
+	expiresAt: number;
+	}) {
 
-	const payload = JSON.stringify({
-		type: "invite",
-		from,
-		message,
-		timestamp
-	});
+  	const targets = onlineUsers.get(invite.to);
+  	if (!targets) return;
 
-	for (const socket of targets)
+  	const payload = JSON.stringify({
+	    type: "invite",
+    	from: invite.from,
+		to: invite.to,
+    	startedAt: invite.startedAt,
+    	expiresAt: invite.expiresAt,
+  	});
+
+  	for (const userId of [invite.from, invite.to]) 
 	{
-		if (socket.readyState === WebSocket.OPEN)
+    	const targets = onlineUsers.get(userId);
+    	if (!targets) continue;
+
+    	for (const socket of targets)
 		{
-			socket.send(payload);
-			console.log("invite sent");
-		}
+    		if (socket.readyState === WebSocket.OPEN) 
+			{
+        		socket.send(payload);
+      		}
+    	}
 	}
+}
 
-	return true;
+export function sendInviteExpired(a: string, b: string) {
+	const payload = JSON.stringify({
+    	type: "invite:expired",
+    	users: [a, b],
+  	});
+
+  	for (const userId of [a, b]) {
+    	const targets = onlineUsers.get(userId);
+    	if (!targets) continue;
+
+    	for (const socket of targets) {
+      	if (socket.readyState === WebSocket.OPEN) {
+        	socket.send(payload);
+      	}
+    	}
+  	}
 }
