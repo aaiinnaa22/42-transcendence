@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 import { forceLogout } from "../../../api/forceLogout.ts";
 import { Waiting } from "./Waiting.tsx";
-import { GameEnd } from "./GameEnd.tsx";
+import { GameEnd } from "./GameEndTournament.tsx";
 
 const BUTTON_KEYS = {
     P1_UP: "p1_up",
@@ -24,7 +24,7 @@ export const GameTournament = () =>
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
 	const [waitingData, setWaitingData] = useState<{ opponent: string } | null>(null);
-	const [gameEndData, setGameEndData] = useState<{ winner: string; eloWinner?: number; message?: string } | null>(null);
+	const [gameEndData, setGameEndData] = useState<{ winner: string; loser: string; eloWinner?: number; eloLoser?: number; eloWinnerOld?: number; eloLoserOld?: number; pointsWinner?: number; pointsLoser?: number; message?: string } | null>(null);
 
 	//Touch screen button managers
 	const startHold = (key: string, dy: number) => {
@@ -205,7 +205,15 @@ export const GameTournament = () =>
 			{
 				console.log( data.message );
 				console.log( "The winner's new elo is " + data.elo.winner );
-				setGameEndData({ winner: data.winner, eloWinner: data.elo.winner, message: data.message });
+				setGameEndData({ winner: data.winner,
+					loser: data.loser,
+					eloWinner: data.elo.winner, 
+					eloLoser: data.elo.loser, 
+					eloWinnerOld: data.oldElo.winner, 
+					eloLoserOld: data.oldElo.loser,
+					pointsWinner: data.score.winner,
+					pointsLoser: data.score.loser,
+					message: data.message });
 				//The game is still running in the background use cancelAnimationFrame(animationFrameId); probably needs to be stored in useRef
 			}
 
@@ -256,7 +264,8 @@ export const GameTournament = () =>
 
     return (
 		<>
-		{gameEndData && <GameEnd winner={gameEndData.winner} eloWinner={gameEndData.eloWinner} message={gameEndData.message} />}
+		{gameEndData && <GameEnd winner={gameEndData.winner} loser={gameEndData.loser} eloWinner={gameEndData.eloWinner} eloLoser={gameEndData.eloLoser} 
+		eloWinnerOld={gameEndData.eloWinnerOld} eloLoserOld={gameEndData.eloLoserOld} pointsWinner={gameEndData.pointsWinner} pointsLoser={gameEndData.pointsLoser} message={gameEndData.message} />}
 		{waitingData && <Waiting opponent={waitingData.opponent} />}
 		{!waitingData && !gameEndData && <div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
 		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]

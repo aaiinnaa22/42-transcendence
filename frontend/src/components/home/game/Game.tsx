@@ -1,6 +1,7 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 import { forceLogout } from "../../../api/forceLogout.ts";
+import { GameEnd } from "./GameEndInvite.tsx";
 
 const BUTTON_KEYS = {
     P1_UP: "p1_up",
@@ -21,6 +22,7 @@ export const Game = () =>
     const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
+	const [gameEndData, setGameEndData] = useState<{ message?: string } | null>(null);
 
 	//Touch screen button managers
 	const startHold = (key: string, id: number, dy: number) => {
@@ -201,10 +203,7 @@ export const Game = () =>
 			else if (data.type === "end")
 			{
 				console.log( data.message );
-				if ( data.winner )
-				{
-					console.log( "The winner was the " + data.winner + " player with " + data.score.winner + " points!" );
-				}
+				setGameEndData({ message: data.message });
 			}
 			/* ADD ADDITIONAL STATES HERE */
 		};
@@ -252,7 +251,9 @@ export const Game = () =>
 	const screenIsPortrait = window.innerHeight > window.innerWidth;
 
     return (
-		<div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
+		<>
+		{gameEndData && <GameEnd message={gameEndData.message} />}
+		{ !gameEndData && <div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
 		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
 		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
 			<span
@@ -362,6 +363,7 @@ export const Game = () =>
 					className="w-full h-full "
 				/>
 			</div>
-        </div>
+        </div>}
+		</>
     );
 };

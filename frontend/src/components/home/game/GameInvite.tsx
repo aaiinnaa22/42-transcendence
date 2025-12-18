@@ -4,7 +4,7 @@ import { } from "../panels/chat/Discussion";
 import { useLocation } from "react-router-dom";
 import { forceLogout } from "../../../api/forceLogout.ts";	
 import { Waiting } from "./Waiting.tsx";
-import { GameEnd } from "./GameEnd.tsx";
+import { GameEnd } from "./GameEndInvite.tsx";
 
 const BUTTON_KEYS = {
     P1_UP: "p1_up",
@@ -27,7 +27,7 @@ export const GameInvite = () =>
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
 	const [waitingData, setWaitingData] = useState<{ opponent: string } | null>(null);
-	const [gameEndData, setGameEndData] = useState<{ winner: string; eloWinner?: number; message?: string } | null>(null);
+	const [gameEndData, setGameEndData] = useState<{ message?: string } | null>(null);
 
 	//Touch screen button managers
 	const startHold = (key: string, dy: number) => {
@@ -210,7 +210,7 @@ export const GameInvite = () =>
 			else if (data.type === "end")
 			{
 				console.log( data.message );
-				setGameEndData({ winner: data.winner, eloWinner: 42, message: data.message });
+				setGameEndData({ message: data.message });
 			}
 
 			/* ADD ADDITIONAL STATES HERE */
@@ -260,7 +260,7 @@ export const GameInvite = () =>
 
     return (
 		<>
-		{gameEndData && <GameEnd winner={gameEndData.winner} eloWinner={gameEndData.eloWinner} message={gameEndData.message} />}
+		{gameEndData && <GameEnd message={gameEndData.message} />}
 		{waitingData && <Waiting opponent={waitingData.opponent} />}
 		{!waitingData && !gameEndData && <div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
 		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
