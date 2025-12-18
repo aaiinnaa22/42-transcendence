@@ -69,12 +69,12 @@ export const Settings = () =>
 
 	return (
 		<>
-			<div className={"flex flex-col gap-6 lg:gap-15 items-center justify-center"}>
+			<div className="flex flex-col gap-6 lg:gap-15 portrait:items-center lg:landscape:items-center justify-center">
 				{error && <div className="text-red-500 text-sm landscape:text-xs lg:landscape:text-sm text-center">{error}</div>}
 				<LanguageSelector/>
-				<div className={"flex flex-col gap-2 text-center"}>
+				<div className="flex flex-col gap-2">
 					<button
-						className="text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
+						className="landscape:text-left lg:landscape:text-center text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
 						onClick={() => setIsTwoFAModalOpen(true)}
 					>
 						{isTwoFAEnabled
@@ -82,11 +82,11 @@ export const Settings = () =>
 							: "Enable two-factor authentication"}
 					</button>
 					<button
-						className="text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
+						className="landscape:text-left lg:landscape:text-center text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
 						onClick={handleLogOut}>
 						Log out
 					</button>
-					<button className="text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">Delete account</button>
+					<button className="landscape:text-left lg:landscape:text-center text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">Delete account</button>
 				</div>
 			</div>
             <TwoFAModal
