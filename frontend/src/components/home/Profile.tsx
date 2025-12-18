@@ -1,5 +1,6 @@
 import {useState, useEffect, useRef} from 'react'
 import {Settings} from "./settings/Settings"
+import { PendingFriendRequests } from './utils/PendingFriendRequests';
 
 export const Profile = () => {
 	const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -56,12 +57,12 @@ export const Profile = () => {
 		const profilePicFile = event.target.files?.[0];
 		if (!profilePicFile) return;
 
-		
+
 		if (profilePic?.startsWith("blob:"))
 		{
 			URL.revokeObjectURL(profilePic);
 		}
-		
+
 		// Preview the uploaded image
 		const profileUrl = URL.createObjectURL(profilePicFile);
     	setProfilePic(profileUrl);
@@ -92,7 +93,7 @@ export const Profile = () => {
 
 	return (
 		<div className="w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] grid grid-cols-[auto_auto_auto] grid-rows-[auto_auto_auto] py-[10vh]">
-			<div className="flex flex-col col-start-2 items-center gap-4">
+			<div className="flex flex-col col-start-2 items-center justify-center gap-4">
 				<h2 className="text-transcendence-white font-transcendence-three tracking-[0.2em] font-semibold text-3xl">Hi {username}!</h2>
 				<div className="relative inline-block">
 					{profilePic
@@ -112,7 +113,10 @@ export const Profile = () => {
 					</button>
 				</div>
 			</div>
-			<div className="col-start-2 row-start-2 flex flex-col items-center">
+			<div className='col-start-2 row-start-2 flex flex-col items-center justify-center'>
+				<PendingFriendRequests/>
+			</div>
+			<div className="col-start-2 row-start-3 flex flex-col items-center justify-center">
 				<Settings/>
 			</div>
 		</div>

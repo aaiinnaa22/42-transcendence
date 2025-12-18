@@ -27,7 +27,7 @@ export type ChatUser = {
   isFriend: boolean;
   isBlockedByMe: boolean;
   hasBlockedMe: boolean;
-  friendStatus?: "pending" | "accepted";
+  friendshipStatus?: "pending" | "accepted";
 };
 
 export const ChatContainer = () => {

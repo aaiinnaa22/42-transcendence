@@ -3,6 +3,76 @@ import { authenticate } from "../shared/middleware/auth.middleware.ts";
 
 export default async function chatUsersComponent(server: FastifyInstance)
 {
+	  //Aina added to get ONE user
+	server.get("/chat/users/:username", { preHandler: authenticate }, async (req, reply) => {
+		if (!req.user) {
+		reply.code(401);
+		return { error: "Unauthorized" };
+		}
+
+		const { userId } = req.user as { userId: string };
+		const targetUsername = (req.params as { username: string }).username;
+
+		const currentUser = await server.prisma.user.findUnique({ where: { id: userId } });
+		if (currentUser?.username === targetUsername) {
+		reply.code(400);
+		return { error: "Cannot fetch your own profile here" };
+		}
+
+		const u = await server.prisma.user.findUnique({
+		where: { username: targetUsername },
+		select: {
+			id: true,
+			username: true,
+			avatar: true,
+			playerStats: true,
+		},
+		});
+
+		if (!u) {
+		reply.code(404);
+		return { error: "User not found" };
+		}
+
+		if (u.id === userId) {
+		reply.code(400);
+		return { error: "Cannot fetch your own profile here" };
+		}
+
+		const blockedByMe = await server.prisma.block.findFirst({
+		where: { blockerId: userId, blockedId: u.id },
+		});
+
+		const blockedByThem = await server.prisma.block.findFirst({
+		where: { blockerId: u.id, blockedId: userId },
+		});
+
+		  const friendship = await server.prisma.friendship.findFirst({
+			where: {
+			OR: [
+				{ userId, friendId: u.id },
+				{ userId: u.id, friendId: userId },
+			],
+			},
+			select: {
+			status: true,
+			},
+		});
+
+		return {
+		id: u.id,
+		username: u.username ?? "(no name)",
+		profile: u.avatar ?? "",
+		stats: u.playerStats ?? null,
+		isFriend: friendship?.status === "accepted",
+		friendshipStatus: friendship?.status ?? null,
+		isBlockedByMe: Boolean(blockedByMe),
+		hasBlockedMe: Boolean(blockedByThem),
+		};
+
+	});
+
+
   server.get("/chat/users", { preHandler: authenticate }, async (req, reply) => {
 
     //auth check
@@ -64,4 +134,5 @@ export default async function chatUsersComponent(server: FastifyInstance)
       };
     });
   });
+
 }

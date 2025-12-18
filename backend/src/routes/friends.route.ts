@@ -51,6 +51,30 @@ export default async function friendsRoutes(server: FastifyInstance) {
 		}
 	);
 
+	//DELETE friend request (reject it)
+	server.delete(
+		"/friends/request/:fromUserId",
+		{ preHandler: authenticate },
+		async (req, reply) => {
+			const { userId } = req.user as { userId: string };
+			const { fromUserId } = req.params as { fromUserId: string };
+
+			const deleted = await server.prisma.friendship.deleteMany({
+			where: {
+				userId: fromUserId, // requester
+				friendId: userId,   // me
+				status: "pending",
+			},
+			});
+
+			if (deleted.count === 0) {
+			return reply.code(400).send({ error: "No pending request to reject" });
+			}
+
+			reply.send({ ok: true });
+		}
+	);
+
 	// POST /friends/accept
 	server.post(
 		"/friends/accept",
@@ -80,4 +104,40 @@ export default async function friendsRoutes(server: FastifyInstance) {
 		reply.send({ ok });
 	}
   );
+
+	server.get("/friends/request-list", { preHandler: authenticate }, async (req, reply) => {
+		if (!req.user) {
+			reply.code(401);
+			return { error: "Unauthorized" };
+		}
+
+		const { userId } = req.user as { userId: string };
+
+		const pendingRequests = await server.prisma.friendship.findMany({
+			where: {
+			friendId: userId,   // requests sent TO me
+			status: "pending",
+			},
+			select: {
+			id: true,          // friendship id
+			user: {            // requester
+				select: {
+				id: true,
+				username: true,
+				avatar: true,
+				},
+			},
+			},
+			orderBy: {
+			createdAt: "desc",
+			},
+		});
+
+		return pendingRequests.map(req => ({
+			requestId: req.id,
+			fromUserId: req.user.id,
+			fromUsername: req.user.username ?? "(no name)",
+			fromAvatar: req.user.avatar ?? "",
+		}));
+	});
 }
