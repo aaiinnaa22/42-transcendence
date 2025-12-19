@@ -5,21 +5,14 @@ interface GameEndProps {
     eloLoser?: number;      // new elo of loser
     eloWinnerOld?: number;  // old elo
     eloLoserOld?: number;   // old elo
-    pointsWinner?: number;  // game points
-    pointsLoser?: number;   // game points
     message?: string;       // tells the reason why the game ended could be "timeout", "disconnected", etc.
 }
 
-export const GameEnd = ({ winner, loser, eloWinner, eloLoser, eloWinnerOld, eloLoserOld, pointsWinner, pointsLoser, message }: GameEndProps) =>
+export const GameEnd = ({ winner, loser, eloWinner, eloLoser, eloWinnerOld, eloLoserOld, message }: GameEndProps) =>
 {
     const difWinner =
     eloWinner !== undefined && eloWinnerOld !== undefined
         ? eloWinner - eloWinnerOld
-        : null;
-
-    const difLoser =
-    eloLoser !== undefined && eloLoserOld !== undefined
-        ? eloLoserOld - eloLoser
         : null;
 
     return (
@@ -55,7 +48,7 @@ export const GameEnd = ({ winner, loser, eloWinner, eloLoser, eloWinnerOld, eloL
         </span>
       <span className="text-right font-bold text-transcendence-white">{eloLoser}</span>
       <span className="inline-block animate-bounce">
-        <span className="text-right font-bold text-red-500">-{difLoser}</span>
+        <span className="text-right font-bold text-red-500">-{difWinner}</span>
       </span>
     </div>
 
