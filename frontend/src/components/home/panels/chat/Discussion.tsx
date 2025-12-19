@@ -11,6 +11,7 @@ type DiscussionProps = {
   inviteIsActive: boolean;
   inviteTimeLeft: number;
   onSendInvite: () => void;
+  onAcceptInvite: () => void; 
 };
 
 export const Discussion = ({
@@ -20,6 +21,7 @@ export const Discussion = ({
   onExitClick,
   inviteIsActive,
   inviteTimeLeft,
+  onAcceptInvite,
   onSendInvite,
 }: DiscussionProps) => {
   const [message, setMessage] = useState("");
@@ -128,19 +130,20 @@ export const Discussion = ({
               </p>
 
               <div className="flex flex-row justify-center items-center border-2 border-transcendence-white rounded-lg p-1 gap-2">
-                {inviteIsActive && (
+                {inviteIsActive && !msg.isExpired && (
                   <span className="text-transcendence-white font-bold">
                     {formatTime(inviteTimeLeft)}
                   </span>
                 )}
                 <button
-                  disabled={!inviteIsActive}
+                  disabled={!inviteIsActive || msg.isExpired }
                   className="text-white font-bold"
-                  onClick={() =>
+                  onClick={() => {
+					onAcceptInvite(),
                     navigate("/home/play/invite", {
                       state: { invitee: friend.username },
                     })
-                  }
+                  }}
                 >
                   {inviteIsActive ? "Join the game" : "Invite expired"}
                 </button>

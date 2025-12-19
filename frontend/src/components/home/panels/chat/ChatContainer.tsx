@@ -7,6 +7,7 @@ export type Message = {
   text: string;
   sender: "me" | "friend";
   isInvite?: boolean;
+  isExpired?: boolean;
 };
 
 export type ChatUser = {
@@ -201,32 +202,7 @@ export const ChatContainer = () => {
     );
   };
 
-	const sendGameInvite = () => {
-    if (!selectedUser || !wsRef.current) return;
-	const startedAt = Date.now();
-  	const expiresAt = startedAt + 120_000;
-  	setInvitesByUser(prev => ({
-		...prev,
-		[selectedUser.id]: { startedAt, expiresAt, status: "pending", },
-	}));
-
-    wsRef.current.send(JSON.stringify({
-      type: "invite",
-      to: selectedUser.id,
-    }));
-
-    setMessagesByUser(prev => ({
-      ...prev,
-      [selectedUser.id]: [...(prev[selectedUser.id] ?? []), {
-        id: Date.now(),
-        text: "I invite you to play a game with me!",
-        sender: "me",
-        isInvite: true,
-    	}],
-    	}));
-  	};
-
-	const acceptAndJoinInvite = (userId: string) => {
+  	const acceptAndJoinInvite = (userId: string) => {
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
 
@@ -244,12 +220,36 @@ export const ChatContainer = () => {
 		}));
 	};
 
-	const clearInvite = (userId: string) => {
-		setInvitesByUser(prev => ({
-			...prev,
-			[userId]: null,
+	const sendGameInvite = () => {
+    if (!selectedUser || !wsRef.current) return;
+	const startedAt = Date.now();
+  	const expiresAt = startedAt + 120_000;
+  	setInvitesByUser(prev => ({
+		...prev,
+		[selectedUser.id]: { startedAt, expiresAt, status: "pending", },
+	}));
+
+    wsRef.current.send(JSON.stringify({
+      type: "invite",
+      to: selectedUser.id,
+    }));
+
+	setMessagesByUser(prev => ({
+		...prev,
+		[selectedUser.id]: [
+			...(prev[selectedUser.id] ?? []).map(m =>
+			m.isInvite ? { ...m, isExpired: true } : m
+			),
+			{
+			id: Date.now(),
+			text: "I invite you to play a game with me!",
+			sender: "me",
+			isInvite: true,
+			isExpired: false,
+			},
+		],
 		}));
-	};
+	}
 
 	/* -------- derived invite state -------- */
 	const invite = selectedUser ? invitesByUser[selectedUser.id] : null;
@@ -287,10 +287,8 @@ export const ChatContainer = () => {
 				inviteTimeLeft={inviteTimeLeft}
 				onSendInvite={sendGameInvite}
 				onAcceptInvite={() => acceptAndJoinInvite(selectedUser.id)}
-				inviteStatus={invite?.status}
 			/>
 			)}
-
 		</div>
 	);
 };
