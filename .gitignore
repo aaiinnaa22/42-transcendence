@@ -62,3 +62,4 @@ backend/prisma/*.d.ts.map
 .eslintcache
 
 backend/upload/avatars
+secrets/
