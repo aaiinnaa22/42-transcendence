@@ -1,0 +1,26 @@
+{
+	"languages": {
+		"en": "Englanti",
+		"fi": "Suomi",
+		"sv": "Ruotsi"
+	},
+	"welcome": {
+		"title": "PONG",
+		"button": {
+			"login": "KIRJAUDU",
+			"register": "REKISTERÖIDY"
+		},
+		"login": "Kirjaudu sisään",
+		"register": "Rekisteröidy"
+	},
+	"home": {
+		"button": {
+			"play": "PELAA"
+		}
+	},
+	"settings": {
+		"language": "Kieli",
+		"avatar": "Profiilikuva",
+		"twoFA": "Kaksivaiheinen tunnistautuminen"
+	}
+}

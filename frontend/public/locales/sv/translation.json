@@ -1,0 +1,26 @@
+{
+	"languages": {
+		"en": "Engelska",
+		"fi": "Finska",
+		"sv": "Svenska"
+	},
+	"welcome": {
+		"title": "PONG",
+		"button": {
+			"login": "LOGGA IN",
+			"register": "REGISTRERA"
+		},
+		"login": "Logga in",
+		"register": "Registrera"
+	},
+	"home": {
+		"button": {
+			"play": "SPELA"
+		}
+	},
+	"settings": {
+		"language": "Språk",
+		"avatar": "Profilbild",
+		"twoFA": "Tvåfaktorsautentisering"
+	}
+}

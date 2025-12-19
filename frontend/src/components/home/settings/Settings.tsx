@@ -4,6 +4,7 @@ import { LanguageSelector } from "./LanguageSelector"
 import { TwoFAModal } from "./TwoFAModal";
 import { apiUrl } from "../../../api/api";
 import { fetchWithAuth } from "../../../api/fetchWithAuth";
+import { useTranslation } from "react-i18next";
 
 export const Settings = () =>
 {
@@ -11,6 +12,8 @@ export const Settings = () =>
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const [isTwoFAEnabled, setIsTwoFAEnabled] = useState<boolean | null>(null);
 	const navigate = useNavigate();
+
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		const loadTwoFAStatus = async () => {
@@ -78,15 +81,17 @@ export const Settings = () =>
 						onClick={() => setIsTwoFAModalOpen(true)}
 					>
 						{isTwoFAEnabled
-							? "Disable two-factor authentication"
-							: "Enable two-factor authentication"}
+							?  t("twoFA.disable")
+							: t("twoFA.enable")}
 					</button>
 					<button
 						className="landscape:text-left lg:landscape:text-center text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
 						onClick={handleLogOut}>
-						Log out
+						{t("settings.logout")}
 					</button>
-					<button className="landscape:text-left lg:landscape:text-center text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">Delete account</button>
+					<button className="landscape:text-left lg:landscape:text-center text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">
+						{t("settings.deleteAccount")}
+					</button>
 				</div>
 			</div>
             <TwoFAModal

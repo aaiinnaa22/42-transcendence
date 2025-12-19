@@ -1,0 +1,40 @@
+{
+	"languages": {
+		"en": "English",
+		"fi": "Finnish",
+		"sv": "Swedish"
+	},
+	"welcome": {
+		"title": "PONG",
+		"button": {
+			"login": "LOGIN",
+			"register": "SIGN UP"
+		},
+		"login": "Login",
+		"register": "Sign up"
+	},
+	"home": {
+		"button": {
+			"play": "PLAY"
+		}
+	},
+	"settings": {
+		"language": "Language",
+		"avatar": "Profile picture",
+		"logout": "Log out",
+		"deleteAccount": "Delete account"
+	},
+	"twoFA": {
+		"enable": "Enable two-factor authentication",
+		"disable": "Disable two-factor authentication",
+		"scanToEnable": "Scan the QR code with your authenticator app, then enter the code.",
+		"codeToDisable": "Enter a code from your authenticator app to disable 2FA.",
+		"enterCode": "Please enter the 6-digit code from your authenticator app.",
+		"verifyMessage": "Verifying…",
+		"verifyToEnable": "Verify & Enable 2FA",
+		"verifyToDisable": "Verify & Disable 2FA",
+		"enableSuccess": "2FA enabled successfully!",
+		"disableSuccess": "2FA disabled successfully!",
+		"modalClosing": "Closing modal in {{countdown}} seconds"
+	}
+}
