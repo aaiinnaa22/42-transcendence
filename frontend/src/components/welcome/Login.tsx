@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TwoFALoginModal } from "./TwoFALoginModal";
 import { apiUrl } from "../../api/api";
+import { useTranslation } from "react-i18next";
 
 export const Login = () => {
 	const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ export const Login = () => {
 	const [twoFATempToken, setTwoFATempToken] = useState<string | null>(null);
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const navigate = useNavigate();
+	const {t} = useTranslation();
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -17,9 +19,10 @@ export const Login = () => {
 		if (params.get("twoFA") === "1") {
 			const token = params.get("token");
 
-			if (token) {
-			setTwoFATempToken(token);
-			setIsTwoFAModalOpen(true);
+			if (token)
+			{
+				setTwoFATempToken(token);
+				setIsTwoFAModalOpen(true);
 			}
 
 			// 🔐 remove token from URL
@@ -53,7 +56,7 @@ export const Login = () => {
 					return;
 				}
 
-				throw new Error(data.error || "Login failed. Please try again.");
+				throw new Error(data.error || t("error.loginRetry") );
 			}
 
 			// 2FA required flow - check this BEFORE normal login
@@ -73,12 +76,12 @@ export const Login = () => {
 			}
 			else
 			{
-				throw new Error(data.message || "Something went wrong. Please try again later.");
+				throw new Error(data.message || t("error.tryAgain") );
 			}
 		}
 		catch (err: any) {
 			console.error("Login error:", err);
-			setError(err.message || "Something went wrong. Please try again later.");
+			setError(err.message || t("error.tryAgain") );
 		};
 	};
 
@@ -87,17 +90,19 @@ export const Login = () => {
 			<form onSubmit={handleLogin} className="flex flex-col pt-[5vh] items-center font-transcendence-two text-transcendence-white text-left gap-10 landscape:gap-5 lg:landscape:gap-10">
 				<input
 					type="text"
-					placeholder="email"
+					placeholder={t("welcome.placeholder.email")}
 					onChange={(e) => setEmail(e.target.value)}
 					className="border-1 rounded-lg placeholder:text-lg px-3 text-lg w-75 h-10 landscape:placeholder:text-sm landscape:text-sm landscape:w-60 landscape:h-8 lg:landscape:w-75 lg:landscape:h-10 lg:landscape:text-lg lg:landscape:placeholder:text-lg"/>
 				<input
 					type="password"
-					placeholder="password"
+					placeholder={t("welcome.placeholder.password")}
 					onChange={(e) => setPassword(e.target.value)}
 					className="border-1 rounded-lg placeholder:text-lg px-3 text-2xl w-75 h-10 landscape:placeholder:text-sm landscape:text-sm landscape:w-60 landscape:h-8 lg:landscape:w-75 lg:landscape:h-10 lg:landscape:text-lg lg:landscape:placeholder:text-lg"/>
 				{error && <div className="text-red-500 text-sm landscape:text-xs lg:landscape:text-sm">{error}</div>}
 				<div className="bg-transcendence-beige flex rounded-2xl w-35 h-18 align-center text-md font-bold justify-center text-center mt-5 tracking-wider landscape:text-xs landscape:w-20 landscape:h-14 lg:landscape:text-lg lg:landscape:w-35 lg:landscape:h-18">
-					<button className="text-transcendence-black cursor-pointer hover:pt-2" type="submit">LOGIN</button>
+					<button className="text-transcendence-black cursor-pointer hover:pt-2" type="submit">
+						{t("welcome.button.login")}
+					</button>
 				</div>
 			</form>
 			<TwoFALoginModal

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 const navItems = ["play", "stats", "profile"] as const;
 
@@ -11,11 +12,14 @@ export const NavBar = ({onTogglePanel, currentPanel} :NavBarProps) =>
 {
 	const navigate = useNavigate();
 	const location = useLocation();
+	const {t} = useTranslation();
+
 	const isActive = (path:string) => location.pathname.startsWith(`/home/${path}`);
+
 	return (
 		<div className="z-10 border-b-4 border-transcendence-black flex flex-row items-center justify-between h-18 lg:h-32 bg-transcendence-beige px-5 lg:px-10">
 			<button className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]"
-				onClick={() => navigate("/home/play")}>PONG</button>
+				onClick={() => navigate("/home/play")}>{t("welcome.title")}</button>
 			<div className="hidden h-full lg:flex flex-row sm:gap-5 md:gap-10 lg:gap-20 2xl:gap-30 font-transcendence-two text-2xl">
 				{navItems.map((item) => {
 					return (

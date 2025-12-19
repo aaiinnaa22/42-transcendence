@@ -3,6 +3,7 @@ import { Settings } from "./settings/Settings"
 import { apiUrl } from '../../api/api';
 import { fetchWithAuth } from "../../api/fetchWithAuth";
 import { BaseModal } from "./settings/BaseModal";
+import { useTranslation } from 'react-i18next';
 
 export const Profile = () => {
 	const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -11,6 +12,8 @@ export const Profile = () => {
 	const [newUsername, setNewUsername] = useState("");
 	const [editError, setEditError] = useState<string | null>(null);
 	const profilePicInputRef = useRef<HTMLInputElement | null>(null);
+
+	const {t} = useTranslation();
 
 	useEffect(() => {
 		const getUserInfo = async() => {
@@ -22,7 +25,7 @@ export const Profile = () => {
 				});
 				const data = await response.json();
 
-				setUsername(data.username || "User");
+				setUsername(data.username || t("profile.defaultUsername"));
 
 				if (data.avatar)
 				{
@@ -38,8 +41,7 @@ export const Profile = () => {
 			};
 		};
 		getUserInfo();
-
-	}, []);
+	});
 
 	const handleProfilePicChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		const profilePicFile = event.target.files?.[0];
@@ -81,7 +83,7 @@ export const Profile = () => {
 				portrait:grid-cols-[auto_auto_auto] portrait:grid-rows-[auto_auto_auto]
 				gap-10 xl:gap-15">
 				<div className="col-start-2 lg:landscape:justify-center flex portrait:justify-center items-center gap-2">
-					<h2 className="text-transcendence-white font-transcendence-three tracking-[0.2em] font-semibold text-3xl">Hi {username}!</h2>
+					<h2 className="text-transcendence-white font-transcendence-three tracking-[0.2em] font-semibold text-3xl">{t("profile.greeting", { username } )}</h2>
 					<button
 						className="flex items-center justify-center w-8 h-8 rounded-full border border-transcendence-beige text-transcendence-black bg-transcendence-beige hover:opacity-90"
 						onClick={() => { setNewUsername(username); setIsEditOpen(true); }}
@@ -133,14 +135,14 @@ export const Profile = () => {
 								className="px-3 py-2 rounded-lg border border-transcendence-beige text-transcendence-beige"
 								onClick={() => setIsEditOpen(false)}
 							>
-								Cancel
+								{t("profile.cancel")}
 							</button>
 							<button
 								className="px-3 py-2 rounded-lg bg-transcendence-beige text-transcendence-black font-semibold"
 								onClick={async () => {
 									setEditError(null);
 									const name = newUsername.trim();
-									if (!name) { setEditError("Username cannot be empty"); return; }
+									if (!name) { setEditError( t("profile.userNotEmpty") ); return; }
 									try {
 										const resp = await fetchWithAuth( apiUrl("/users/me"), {
 											method: "PUT",
@@ -150,16 +152,16 @@ export const Profile = () => {
 										});
 										const data = await resp.json();
 										if (!resp.ok || data.error) {
-											throw new Error(data.error || data.message || "Failed to update username");
+											throw new Error(data.error || data.message || t("profile.updateFailed") );
 										}
 										setUsername(name);
 										setIsEditOpen(false);
 									} catch (err: any) {
-										setEditError((err && err.message) || "Update failed");
+										setEditError((err && err.message) || t("profile.updateFailed") );
 									}
 							}}
 						>
-							Save
+							{t("profile.save")}
 							</button>
 						</div>
 					</BaseModal>

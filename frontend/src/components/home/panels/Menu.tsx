@@ -1,5 +1,6 @@
 
 const navItems = ["play", "stats", "profile"] as const;
+import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 
 type MenuProps = {
@@ -12,6 +13,8 @@ export const Menu = ({onPageChoose}: MenuProps) =>
 	const location = useLocation();
 	const isActive = (path:string) => location.pathname.startsWith(`/home/${path}`);
 
+	const {t} = useTranslation();
+
 	const handleNavigation = (path : string) => {
 		navigate(`/home/${path}`);
 		onPageChoose();
@@ -20,7 +23,9 @@ export const Menu = ({onPageChoose}: MenuProps) =>
 		<div className="grid
 			portrait:grid-cols-1 portrait:grid-rows-[20%_80%]
 			grid-cols-1 grid-rows-[20%_80% gap-10 mt-[10vh]">
-			<h1 className="text-transcendence-black font-transcendence-two text-lg font-semibold pb-[2vh] text-center">Menu</h1>
+			<h1 className="text-transcendence-black font-transcendence-two text-lg font-semibold pb-[2vh] text-center">
+				{t("home.menu")}
+			</h1>
 			<div className="flex gap-20
 			portrait:flex-col portrait:justify-center portrait:items-center
 			flex-row justify-center">

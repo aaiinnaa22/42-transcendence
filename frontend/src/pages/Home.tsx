@@ -25,9 +25,7 @@ export const Home = () => {
 	};
 
 	useEffect(() => {
-		const handleResize = () => {
-		setScreenIsLarge(window.innerWidth >= 1024);
-		};
+		const handleResize = () => { setScreenIsLarge(window.innerWidth >= 1024); };
 
 		window.addEventListener('resize', handleResize);
 		return () => window.removeEventListener('resize', handleResize);

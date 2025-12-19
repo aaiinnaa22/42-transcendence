@@ -10,13 +10,21 @@
 			"login": "LOGIN",
 			"register": "SIGN UP"
 		},
+		"placeholder": {
+			"email": "email",
+			"username": "username",
+			"password": "password"
+		},
 		"login": "Login",
-		"register": "Sign up"
+		"register": "Sign up",
+		"or": "or",
+		"submit": "SUBMIT"
 	},
 	"home": {
 		"button": {
 			"play": "PLAY"
-		}
+		},
+		"menu": "Menu"
 	},
 	"settings": {
 		"language": "Language",
@@ -68,5 +76,33 @@
 		"inviteExpired": "invite expired",
 		"placeholder": "Chat with {{username}}",
 		"send": "send"
+	},
+	"utils": {
+		"close": "close",
+		"loading": "Loading..."
+	},
+	"profile": {
+		"greeting": "Hi {{username}}!",
+		"defaultUsername": "User",
+		"cancel": "Cancel",
+		"save": "Save",
+		"userNotEmpty": "Username cannot be empty",
+		"updateFailed": "Update failed"
+	},
+	"error": {
+		"loginRetry": "Login failed. Please try again.",
+		"registerRetry": "Signup failed. Please try again.",
+		"tryAgain": "Something went wrong. Please try again later."
+	},
+	"game": {
+		"button": {
+			"singleplayer": "play together",
+			"multiplayer": "tournament"
+		},
+		"description": {
+			"singleplayer": "play together with your friend on the same screen",
+			"multiplayer": "play with others around the world"
+		},
+		"choice": "Choose mode"
 	}
 }
