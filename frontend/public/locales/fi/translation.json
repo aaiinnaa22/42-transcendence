@@ -105,5 +105,10 @@
 			"multiplayer": "pelaa muiden kanssa ympäri maailmaa"
 		},
 		"choice": "Valitse pelitila"
+	},
+	"navbar": {
+		"play": "peli",
+		"stats": "tilasto",
+		"profile": "profiili"
 	}
 }

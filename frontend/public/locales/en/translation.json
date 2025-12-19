@@ -105,5 +105,10 @@
 			"multiplayer": "play with others around the world"
 		},
 		"choice": "Choose mode"
+	},
+	"navbar": {
+		"play": "game",
+		"stats": "stats",
+		"profile": "profile"
 	}
 }

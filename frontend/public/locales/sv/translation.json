@@ -105,5 +105,10 @@
 			"multiplayer": "spela med andra"
 		},
 		"choice": "Välj spelläge"
+	},
+	"navbar": {
+		"play": "spel",
+		"stats": "statistik",
+		"profile": "profil"
 	}
 }
