@@ -1,138 +1,161 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
+import { validateRequest } from "../shared/utility/validation.utility.ts";
+import { ChatUsersUsernameSchema } from "../schemas/chat.schema.ts";
+import {
+	BadRequestError,
+	NotFoundError,
+	sendErrorReply,
+	UnauthorizedError
+} from "../shared/utility/error.utility.ts";
 
-export default async function chatUsersComponent(server: FastifyInstance)
+export default async function chatUsersComponent( server: FastifyInstance )
 {
 	  //Aina added to get ONE user
-	server.get("/chat/users/:username", { preHandler: authenticate }, async (req, reply) => {
-		if (!req.user) {
-		reply.code(401);
-		return { error: "Unauthorized" };
+	server.get(
+		"/chat/users/:username",
+		{ preHandler: authenticate },
+		async ( req : FastifyRequest, reply: FastifyReply ) =>
+	{
+		try
+		{
+			if (!req.user)
+			{
+				throw UnauthorizedError();
+			}
+
+			const { userId } = req.user as { userId: string };
+			const { targetUsername } = validateRequest( ChatUsersUsernameSchema, req.params );
+
+			const currentUser = await server.prisma.user.findUnique({ where: { id: userId } });
+			if ( currentUser?.username === targetUsername )
+			{
+				throw BadRequestError( "Cannot fetch your own profile here" );
+			}
+
+			const targetUser = await server.prisma.user.findUnique({
+				where: { username: targetUsername },
+				select: {
+					id: true,
+					username: true,
+					avatar: true,
+					playerStats: true,
+				},
+			});
+
+			if ( !targetUser )
+			{
+				throw NotFoundError( "User not found" );
+			}
+
+			if ( targetUser.id === userId )
+			{
+				throw BadRequestError( "Cannot fetch your own profile here" );
+			}
+
+			const blockedByMe = await server.prisma.block.findFirst({
+				where: { blockerId: userId, blockedId: targetUser.id },
+			});
+
+			const blockedByThem = await server.prisma.block.findFirst({
+				where: { blockerId: targetUser.id, blockedId: userId },
+			});
+
+			  const friendship = await server.prisma.friendship.findFirst({
+				where: {
+				OR: [
+					{ userId, friendId: targetUser.id },
+					{ userId: targetUser.id, friendId: userId },
+				],
+				},
+				select: {
+				status: true,
+				},
+			});
+
+			return {
+				id: targetUser.id,
+				username: targetUser.username ?? "(no name)",
+				profile: targetUser.avatar ?? "",
+				stats: targetUser.playerStats ?? null,
+				isFriend: friendship?.status === "accepted",
+				friendshipStatus: friendship?.status ?? null,
+				isBlockedByMe: Boolean(blockedByMe),
+				hasBlockedMe: Boolean(blockedByThem),
+			};
 		}
-
-		const { userId } = req.user as { userId: string };
-		const targetUsername = (req.params as { username: string }).username;
-
-		const currentUser = await server.prisma.user.findUnique({ where: { id: userId } });
-		if (currentUser?.username === targetUsername) {
-		reply.code(400);
-		return { error: "Cannot fetch your own profile here" };
+		catch (error)
+		{
+			sendErrorReply( reply, error, "An error occurred in chat");
 		}
-
-		const u = await server.prisma.user.findUnique({
-		where: { username: targetUsername },
-		select: {
-			id: true,
-			username: true,
-			avatar: true,
-			playerStats: true,
-		},
-		});
-
-		if (!u) {
-		reply.code(404);
-		return { error: "User not found" };
-		}
-
-		if (u.id === userId) {
-		reply.code(400);
-		return { error: "Cannot fetch your own profile here" };
-		}
-
-		const blockedByMe = await server.prisma.block.findFirst({
-		where: { blockerId: userId, blockedId: u.id },
-		});
-
-		const blockedByThem = await server.prisma.block.findFirst({
-		where: { blockerId: u.id, blockedId: userId },
-		});
-
-		  const friendship = await server.prisma.friendship.findFirst({
-			where: {
-			OR: [
-				{ userId, friendId: u.id },
-				{ userId: u.id, friendId: userId },
-			],
-			},
-			select: {
-			status: true,
-			},
-		});
-
-		return {
-		id: u.id,
-		username: u.username ?? "(no name)",
-		profile: u.avatar ?? "",
-		stats: u.playerStats ?? null,
-		isFriend: friendship?.status === "accepted",
-		friendshipStatus: friendship?.status ?? null,
-		isBlockedByMe: Boolean(blockedByMe),
-		hasBlockedMe: Boolean(blockedByThem),
-		};
-
 	});
 
 
-  server.get("/chat/users", { preHandler: authenticate }, async (req, reply) => {
+	server.get("/chat/users", { preHandler: authenticate }, async (req, reply) =>
+	{
+		try
+		{
+			//auth check
+			if (!req.user)
+			{
+				throw UnauthorizedError();
+			}
+			const { userId } = req.user as { userId: string };
 
-    //auth check
-    if (!req.user)
-    {
-        reply.code(401);
-        return { error: "Unauthorized" };
-    }
-    const { userId } = req.user as { userId: string };
+			const users = await server.prisma.user.findMany({
+				where: {
+					id: { not: userId }, // everyone except me
+			  },
+				select: {
+					id: true, // remove id maybe?
+					username: true,
+					avatar: true,
+					playerStats: true,
+					friendships: {
+						where: { userId },
+						select: { status: true },
+					},
+					friendOf: {
+						where: { friendId: userId },
+						select: { status: true },
+					},
+					blockedUsers: {
+						where: { blockerId: userId },
+						select: { id: true },
+					},
+					blockedBy: {
+						where: { blockedId: userId },
+						select: { id: true },
+					},
+				},
+				orderBy: { username: "asc" },
+			});
 
-    const users = await server.prisma.user.findMany({
-      where: {
-        id: { not: userId }, // everyone except me
-      },
-      select: {
-        id: true, // remove id maybe?
-        username: true,
-        avatar: true,
-		    playerStats: true,
-        friendships: {
-          where: { userId },
-          select: { status: true },
-        },
-        friendOf: {
-          where: { friendId: userId },
-          select: { status: true },
-        },
-        blockedUsers: {
-          where: { blockerId: userId },
-          select: { id: true },
-        },
-        blockedBy: {
-          where: { blockedId: userId },
-          select: { id: true },
-        },
-      },
-      orderBy: { username: "asc" },
-    });
+			return users.map((u: any) => {
+				const friendship =
+					u.friendships[0] ?? u.friendOf[0] ?? null;
 
-    return users.map((u: any) => {
-      const friendship =
-        u.friendships[0] ?? u.friendOf[0] ?? null;
+				const isFriend = friendship?.status === "accepted";
+				const friendshipStatus = friendship?.status ?? null;
 
-      const isFriend = friendship?.status === "accepted";
-      const friendshipStatus = friendship?.status ?? null;
+				const isBlockedByMe = u.blockedUsers.length > 0;
+				const hasBlockedMe = u.blockedBy.length > 0;
+				return {
+					id: u.id,
+					username: u.username ?? "(no name)",
+					profile: u.avatar ?? "",
+					stats: u.playerStats ?? null,
 
-      const isBlockedByMe = u.blockedUsers.length > 0;
-      const hasBlockedMe = u.blockedBy.length > 0;
-      return {
-        id: u.id,
-        username: u.username ?? "(no name)",
-        profile: u.avatar ?? "",
-        stats: u.playerStats ?? null,
-
-        isFriend,
-        friendshipStatus,
-        isBlockedByMe,
-        hasBlockedMe,
-      };
-    });
-  });
-
+					isFriend,
+					friendshipStatus,
+					isBlockedByMe,
+					hasBlockedMe,
+				};
+			});
+		}
+		catch (error)
+		{
+			sendErrorReply( reply, error, "An error occurred in chat" );
+		}
+	});
 }
