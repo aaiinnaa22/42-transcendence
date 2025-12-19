@@ -6,9 +6,18 @@ type VisualGameProps =
 	pointsRef2: React.RefObject<HTMLSpanElement | null>;
 	canvasRef: React.RefObject<HTMLCanvasElement | null>;
 	screenIsPortrait: boolean;
+	startHold: (key: string, id: number, dy: number) => void;
+	stopHold: (key: string) => void;
 };
 
-export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait}: VisualGameProps) => {
+const BUTTON_KEYS = {
+    P1_UP: "p1_up",
+    P1_DOWN: "p1_down",
+    P2_UP: "p2_up",
+    P2_DOWN: "p2_down",
+} as const;
+
+export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait, startHold, stopHold}: VisualGameProps) => {
 	return (
 		<div className="w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
 		{screenIsPortrait && (
@@ -40,12 +49,12 @@ export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait}:
 			</span>
 			<span ref={pointsRef}
 				className="text-transcendence-white font-transcendence-three text-4xl
-					col-start-1 row-start-1 text-right self-center
-					portrait:self-end portrait:text-right w-10">0</span>
+					col-start-1 row-start-1 text-right self-start
+					portrait:self-start portrait:text-right w-full">0</span>
 			<span ref={pointsRef2}
 				className="text-transcendence-white font-transcendence-three text-4xl
-					col-start-3 row-start-1 text-left self-center
-					portrait:self-start portrait:text-left w-10">0</span>
+					col-start-3 row-start-1 text-left self-start
+					portrait:self-end portrait:text-left w-10">0</span>
 			<span
 				className="
 					col-start-3 row-start-1

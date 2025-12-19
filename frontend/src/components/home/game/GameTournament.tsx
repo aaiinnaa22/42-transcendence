@@ -3,13 +3,6 @@ import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.
 import { VisualGame } from "./VisualGame.tsx";
 import { forceLogout } from "../../../api/forceLogout.ts";
 
-const BUTTON_KEYS = {
-    P1_UP: "p1_up",
-    P1_DOWN: "p1_down",
-    P2_UP: "p2_up",
-    P2_DOWN: "p2_down",
-} as const;
-
 export const GameTournament = () =>
 {
     // I am using useRef instead of useState so things persist when components load again and things wont't rerender
@@ -216,25 +209,6 @@ export const GameTournament = () =>
         };
         gameLoop();
 
-		//Handle resize
-		// const handleResize = () => {
-		// 	const canvas = canvasRef.current;
-		// 	const isPortrait = window.innerHeight > window.innerWidth;
-		// 	if (canvas)
-		// 	{
-		// 		if (isPortrait)
-		// 		{
-		// 			canvas.width = HEIGHT;
-		// 			canvas.height = WIDTH;
-		// 		}
-		// 		else
-		// 		{
-		// 			canvas.width = WIDTH;
-		// 			canvas.height = HEIGHT;
-		// 		}
-		// 	}
-		// };
-
 		const getScreenOrientation = () => {
 			const isPortrait = window.matchMedia("(orientation: portrait)").matches;
 			setScreenIsPortrait(isPortrait);
@@ -243,7 +217,6 @@ export const GameTournament = () =>
 		getScreenOrientation();
 		window.addEventListener("orientationchange", getScreenOrientation);
 		window.addEventListener("resize", getScreenOrientation);
-		//window.addEventListener("resize", handleResize);
 
         // Clean up things
         return () => {
@@ -252,11 +225,16 @@ export const GameTournament = () =>
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
 			window.removeEventListener("blur", handleBlur);
-			//window.removeEventListener("resize", handleResize);
 			window.removeEventListener("orientationchange", getScreenOrientation);
 			window.removeEventListener("resize", getScreenOrientation);
         };
     },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
 
-	return (<VisualGame pointsRef={PointsRef} pointsRef2={PointsRef2} canvasRef={canvasRef} screenIsPortrait={screenIsPortrait}/>)
+	return (<VisualGame
+		pointsRef={PointsRef}
+		pointsRef2={PointsRef2}
+		canvasRef={canvasRef}
+		screenIsPortrait={screenIsPortrait}
+		startHold={startHold}
+		stopHold={stopHold}/>)
 };
