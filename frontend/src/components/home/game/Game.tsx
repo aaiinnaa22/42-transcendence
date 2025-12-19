@@ -222,7 +222,6 @@ export const Game = () =>
 
 		const touchScreenMediaQuery = window.matchMedia("(pointer: coarse)");
 		const checkTouch = () => {
-			console.log("TOUCH POINTER:COARSE MATCHES: ", touchScreenMediaQuery.matches)
 			setIsTouchScreen(touchScreenMediaQuery.matches);
 		};
 
