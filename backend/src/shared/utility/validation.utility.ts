@@ -65,6 +65,7 @@ export const leaderboardPageField = z.string()
 	.transform(Number)
 	.refine((num) => num >= 1 && num <= 10, {message: "Page must be between 1 and 10"});
 
+export const idField = z.uuid( { version: "v4", message: "Invalid id" } );
 
 // Verification function
 
