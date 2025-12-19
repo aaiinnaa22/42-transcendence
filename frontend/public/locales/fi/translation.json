@@ -46,14 +46,15 @@
 		"modalClosing": "Ikkuna sulkeutuu {{countdown}} sekunnissa"
 	},
 	"leaderboard": {
+		"myStats": "Tilastoni",
 		"loading": "Ladataan tulostaulua...",
 		"retry": "Yritä uudelleen",
 		"yourRank": "Sijasi",
 		"yourUnranked": "Et ole sijoittunut. Pelaa lisää saadaksesi sijoituksen.",
 		"rank": "Sija",
 		"name": "Nimi",
-		"rating": "Rating",
-		"ratio": "Suhde",
+		"rating": "Vahvuusluku",
+		"ratio": "Voittosuhde",
 		"wins": "Voitot",
 		"losses": "Tappiot",
 		"you": "Sinä",
@@ -67,7 +68,7 @@
 		"wins": "voitot",
 		"losses": "tappiot",
 		"total": "Yhteensä olet pelannut {{amount}} peliä",
-		"rating": "ARVOSANA"
+		"rating": "VAHVUUSLUKU"
 	},
 	"chat": {
 		"inviteToGame": "Kutsu {{username}} peliin",
@@ -104,7 +105,7 @@
 			"singleplayer": "pelaa yhdessä ystäväsi kanssa samalla näytöllä",
 			"multiplayer": "pelaa muiden kanssa ympäri maailmaa"
 		},
-		"choice": "Valitse pelitila"
+		"choice": "Valitse pelimuoto"
 	},
 	"navbar": {
 		"play": "peli",

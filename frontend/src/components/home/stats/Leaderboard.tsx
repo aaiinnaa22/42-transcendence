@@ -204,7 +204,9 @@ export const Leaderboard = () => {
 			text-xs xl:text-sm cursor-pointer"
 			onClick={() => navigate("/home/stats")}>
 				<span className="material-symbols-outlined">arrow_forward</span>
-				<h3 className="h-full">My stats</h3>
+				<h3 className="h-full">
+					{t("leaderboard.myStats")}
+				</h3>
 			</button>
 
 			{/* Player rank */}

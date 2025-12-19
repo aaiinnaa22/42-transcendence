@@ -46,6 +46,7 @@
 		"modalClosing": "Closing modal in {{countdown}} seconds"
 	},
 	"leaderboard": {
+		"myStats": "My stats",
 		"loading": "Loading leaderboard...",
 		"retry": "Retry",
 		"yourRank": "You are rank",

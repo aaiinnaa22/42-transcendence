@@ -66,8 +66,8 @@
 		"leaderboard": "Topplista",
 		"wins": "vinster",
 		"losses": "förluster",
-		"total": "Totalt har du spelat {{amount}} spel",
-		"rating": "BETYG"
+		"total": "Du har totalt spelat {{amount}} spel",
+		"rating": "RATING"
 	},
 	"chat": {
 		"inviteToGame": "Bjud in {{username}} till ett spel",
