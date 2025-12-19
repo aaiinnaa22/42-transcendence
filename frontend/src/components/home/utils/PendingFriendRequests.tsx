@@ -36,7 +36,7 @@ export const PendingFriendRequests = () =>
 	}, []);
 
 	return (
-		<div className="flex flex-col items-center gap-4 bg-transcendence-white w-full h-full max-w-70 max-h-50 rounded-lg p-2">
+		<div className="flex flex-col items-center gap-4 bg-transcendence-white w-full h-full rounded-lg p-2">
 			<div className="bg-transcendence-beige p-2 rounded-full border-2">
 				<h2 className="font-transcendence-three text-md font-bold tracking-wider">friend requests</h2>
 			</div>
