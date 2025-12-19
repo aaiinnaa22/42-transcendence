@@ -1,5 +1,6 @@
 import {useState, useEffect, useRef} from 'react'
 import {Settings} from "./settings/Settings"
+import { PendingFriendRequests } from './utils/PendingFriendRequests';
 import { fetchWithAuth } from "../../api/fetchWithAuth";
 import { BaseModal } from "./settings/BaseModal";
 
@@ -100,12 +101,12 @@ export const Profile = () => {
 	};
 
 	return (
-		<div className='w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] flex flex-col justify-center items-center'>
-			<div className=" grid
-				landscape:grid-cols-[auto_auto] landscape:grid-rows-[auto_auto] lg:landscape:grid-cols-[auto_auto_auto] lg:landscape:grid-rows-[auto_auto_auto]
-				portrait:grid-cols-[auto_auto_auto] portrait:grid-rows-[auto_auto_auto]
-				gap-10 xl:gap-15">
-				<div className="col-start-2 lg:landscape:justify-center flex portrait:justify-center items-center gap-2">
+		<div className='w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] flex flex-col justify-center items-center p-5'>
+			<div className="overflow-y-auto [&::-webkit-scrollbar]:hidden grid
+				landscape:grid-cols-[auto_auto_auto] landscape:grid-rows-[auto_auto] lg:landscape:grid-cols-[auto_auto_auto] lg:landscape:grid-rows-[auto_auto_auto_auto]
+				portrait:grid-cols-[auto_auto_auto] portrait:grid-rows-[auto_auto_auto_auto]
+				gap-5 xl:gap-15">
+				<div className="col-start-1 col-span-3 justify-center  lg:landscape:justify-center flex portrait:justify-center items-center gap-2">
 					<h2 className="text-transcendence-white font-transcendence-three tracking-[0.2em] font-semibold text-3xl">Hi {username}!</h2>
 					<button
 						className="flex items-center justify-center w-8 h-8 rounded-full border border-transcendence-beige text-transcendence-black bg-transcendence-beige hover:opacity-90"
@@ -115,12 +116,12 @@ export const Profile = () => {
 					</button>
 				</div>
 				<div className="flex flex-col
-					landscape:row-span-2 landscape:row-start-1 lg:landscape:row-span-1 lg:landscape:col-start-2 lg:landscape:row-start-2
+					landscape:col-start-1 landscape:row-start-2 lg:landscape:col-start-2 lg:landscape:row-start-2
 					portrait:col-start-2 portrait:row-start-2
 					justify-center items-center gap-4">
 						<div className="relative">
 						{profilePic
-						? <img className="h-40 w-40 xl:h-60 xl:w-60 rounded-full" src={profilePic}></img>
+						? <img className="h-40 w-40 xl:h-60 xl:w-60 rounded-full object-cover" src={profilePic}></img>
 						: <span className="material-symbols-outlined text-transcendence-white !text-9xl">account_circle</span>}
 						<button
 							className="absolute top-1 right-2 bg-transcendence-white w-8 h-8 rounded-full border-2 border-transcendence-black flex flex-col justify-center items-center cursor-pointer"
@@ -134,10 +135,16 @@ export const Profile = () => {
 								onChange={handleProfilePicChange}>
 							</input>
 						</button>
-					</div>
+						</div>
 				</div>
-				<div className="landscape:col-start-2 landscape:row-start-2 lg:landscape:col-start-2 lg:landscape:row-start-3 lg:landscape:items-center
-					portrait:col-start-2 portrait:row-start-3 portrait:items-center
+				<div className='portrait:col-start-2 portrait:row-start-3
+					landscape:col-start-3 landscape:row-start-2
+					lg:landscape:col-start-2 lg:landscape:row-start-3
+					flex flex-col items-center justify-center h-35'>
+					<PendingFriendRequests/>
+				</div>
+				<div className="landscape:col-start-2 landscape:row-start-2 lg:landscape:col-start-2 lg:landscape:row-start-4 lg:landscape:items-center
+					portrait:col-start-2 portrait:row-start-4 portrait:items-center
 					flex flex-col justify-center">
 					<Settings/>
 				</div>

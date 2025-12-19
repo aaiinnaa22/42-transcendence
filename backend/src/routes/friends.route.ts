@@ -1,6 +1,8 @@
-import { type FastifyInstance } from "fastify";
+import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import { sendFriendRequest, acceptFriendRequest, removeFriend } from "../chat/friends.ts";
+import { validateRequest } from "../shared/utility/validation.utility.ts";
+import { FriendRequestDeleteSchema } from "../schemas/friends.schema.ts";
 
 export default async function friendsRoutes(server: FastifyInstance) {
 	// GET /friends
@@ -51,6 +53,31 @@ export default async function friendsRoutes(server: FastifyInstance) {
 		}
 	);
 
+	//DELETE friend request (reject it)
+	server.delete(
+		"/friends/request/:id",
+		{ preHandler: authenticate },
+		async ( req: FastifyRequest, reply: FastifyReply ) => {
+			const { userId } = req.user as { userId: string };
+			const { id } = validateRequest( FriendRequestDeleteSchema, req.params );
+
+			const deleted = await server.prisma.friendship.deleteMany({
+				where: {
+					userId: id, 		// requester
+					friendId: userId,   // me
+					status: "pending",
+				},
+			});
+
+			if (deleted.count === 0)
+			{
+				return reply.code(400).send({ error: "No pending request to reject" });
+			}
+
+			reply.send({ ok: true });
+		}
+	);
+
 	// POST /friends/accept
 	server.post(
 		"/friends/accept",
@@ -80,4 +107,40 @@ export default async function friendsRoutes(server: FastifyInstance) {
 		reply.send({ ok });
 	}
   );
+
+	server.get("/friends/request-list", { preHandler: authenticate }, async (req, reply) => {
+		if (!req.user)
+		{
+			return reply.code(401).send( { error: "Unauthorized" } );
+		}
+
+		const { userId } = req.user as { userId: string };
+
+		const pendingRequests = await server.prisma.friendship.findMany({
+			where: {
+				friendId: userId,   // requests sent TO me
+				status: "pending",
+			},
+			select: {
+				id: true,          // friendship id
+				user: {            // requester
+					select: {
+						id: true,
+						username: true,
+						avatar: true,
+					},
+				},
+			},
+			orderBy: {
+				createdAt: "desc",
+			},
+		});
+
+		return pendingRequests.map(req => ({
+			requestId: req.id,
+			fromUserId: req.user.id,
+			fromUsername: req.user.username ?? "(no name)",
+			fromAvatar: req.user.avatar ?? "",
+		}));
+	});
 }
