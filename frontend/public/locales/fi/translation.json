@@ -1,8 +1,8 @@
 {
 	"languages": {
-		"en": "Englanti",
+		"en": "English",
 		"fi": "Suomi",
-		"sv": "Ruotsi"
+		"sv": "Svenska"
 	},
 	"welcome": {
 		"title": "PONG",
@@ -10,17 +10,100 @@
 			"login": "KIRJAUDU",
 			"register": "REKISTERÖIDY"
 		},
-		"login": "Kirjaudu sisään",
-		"register": "Rekisteröidy"
+		"placeholder": {
+			"email": "sähköposti",
+			"username": "käyttäjänimi",
+			"password": "salasana"
+		},
+		"login": "Kirjaudu",
+		"register": "Rekisteröidy",
+		"or": "tai",
+		"submit": "LÄHETÄ"
 	},
 	"home": {
 		"button": {
 			"play": "PELAA"
-		}
+		},
+		"menu": "Valikko"
 	},
 	"settings": {
 		"language": "Kieli",
 		"avatar": "Profiilikuva",
-		"twoFA": "Kaksivaiheinen tunnistautuminen"
+		"logout": "Kirjaudu ulos",
+		"deleteAccount": "Poista tili"
+	},
+	"twoFA": {
+		"enable": "Ota kaksivaiheinen tunnistautuminen käyttöön",
+		"disable": "Poista kaksivaiheinen tunnistautuminen käytöstä",
+		"scanToEnable": "Skannaa QR-koodi todennussovelluksella ja anna sen jälkeen koodi.",
+		"codeToDisable": "Anna koodi todennussovelluksestasi poistaaksesi 2FA:n käytöstä.",
+		"enterCode": "Anna 6-numeroinen koodi todennussovelluksestasi.",
+		"verifyMessage": "Vahvistetaan…",
+		"verifyToEnable": "Vahvista ja ota 2FA käyttöön",
+		"verifyToDisable": "Vahvista ja poista 2FA käytöstä",
+		"enableSuccess": "2FA otettu käyttöön onnistuneesti!",
+		"disableSuccess": "2FA poistettu käytöstä onnistuneesti!",
+		"modalClosing": "Ikkuna sulkeutuu {{countdown}} sekunnissa"
+	},
+	"leaderboard": {
+		"loading": "Ladataan tulostaulua...",
+		"retry": "Yritä uudelleen",
+		"yourRank": "Sijasi",
+		"yourUnranked": "Et ole sijoittunut. Pelaa lisää saadaksesi sijoituksen.",
+		"rank": "Sija",
+		"name": "Nimi",
+		"rating": "Rating",
+		"ratio": "Suhde",
+		"wins": "Voitot",
+		"losses": "Tappiot",
+		"you": "Sinä",
+		"loadingMore": "Ladataan lisää pelaajia...",
+		"scrollMore": "Selaa nähdäksesi lisää",
+		"noPlayers": "Ei sijoitettuja pelaajia vielä",
+		"end": "Tulostaulun loppu"
+	},
+	"stats": {
+		"leaderboard": "Tulostaulu",
+		"wins": "voitot",
+		"losses": "tappiot",
+		"total": "Yhteensä olet pelannut {{amount}} peliä",
+		"rating": "ARVOSANA"
+	},
+	"chat": {
+		"inviteToGame": "Kutsu {{username}} peliin",
+		"pendingInvite": "Sinulla on odottava pelikutsu",
+		"joinGame": "liity peliin",
+		"inviteExpired": "kutsu vanhentui",
+		"placeholder": "Keskustele {{username}} kanssa",
+		"send": "lähetä"
+	},
+	"utils": {
+		"close": "sulje",
+		"loading": "Ladataan..."
+	},
+	"profile": {
+		"greeting": "Hei {{username}}!",
+		"defaultUsername": "Käyttäjä",
+		"cancel": "Peruuta",
+		"save": "Tallenna",
+		"userNotEmpty": "Käyttäjänimi ei voi olla tyhjä",
+		"updateFailed": "Päivitys epäonnistui"
+	},
+	"error": {
+		"loginRetry": "Kirjautuminen epäonnistui. Yritä uudelleen.",
+		"registerRetry": "Rekisteröinti epäonnistui. Yritä uudelleen.",
+		"tryAgain": "Jokin meni pieleen. Yritä hetken päästä uudelleen.",
+		"logoutFailure": "Ulos kirjautuminen epäonnistui."
+	},
+	"game": {
+		"button": {
+			"singleplayer": "pelaa yhdessä",
+			"multiplayer": "turnaus"
+		},
+		"description": {
+			"singleplayer": "pelaa yhdessä ystäväsi kanssa samalla näytöllä",
+			"multiplayer": "pelaa muiden kanssa ympäri maailmaa"
+		},
+		"choice": "Valitse pelitila"
 	}
 }

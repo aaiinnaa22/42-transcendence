@@ -59,14 +59,14 @@ export const Settings = () =>
 			if (!response.ok)
 			{
 				const data = await response.json();
-				throw new Error(data.error || "Logout failed");
+				throw new Error(data.error || t("error.logoutFailure") );
 			}
 
 			navigate("/");
 		}
 		catch (err: any) {
 			console.error("Login error:", err);
-			setError(err.message || "Something went wrong. Please try again later.");
+			setError(err.message || t("error.tryAgain") );
 		};
 	}
 

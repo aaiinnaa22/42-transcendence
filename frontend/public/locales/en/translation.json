@@ -92,7 +92,8 @@
 	"error": {
 		"loginRetry": "Login failed. Please try again.",
 		"registerRetry": "Signup failed. Please try again.",
-		"tryAgain": "Something went wrong. Please try again later."
+		"tryAgain": "Something went wrong. Please try again later.",
+		"logoutFailure": "Logout failed."
 	},
 	"game": {
 		"button": {
