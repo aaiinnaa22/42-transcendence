@@ -25,10 +25,11 @@ export const GameInvite = () =>
 	const [isTouchScreen, setIsTouchScreen] = useState<boolean>(false);
 
 	//Touch screen button managers
-	const startHold = (key: string, dy: number) => {
+	const startHold = (key: string, o: number,dy: number) => {
 		if (holdIntervals.current[key]) {
 			clearInterval(holdIntervals.current[key]!);
 		}
+		void o;
 		sendMove(dy);
 		holdIntervals.current[key] = window.setInterval(() => {
 			sendMove(dy);
