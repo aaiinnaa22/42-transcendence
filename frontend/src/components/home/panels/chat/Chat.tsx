@@ -24,11 +24,11 @@ export const Chat = ({ users, selectedUserId, onChatClick, onProfileClick }: Cha
 					<div className="flex flex-row gap-3 py-3">
 						<ChatProfilePic friend={user} onProfileClick={onProfileClick}/>
 						<button onClick={() => onChatClick(user)} className="flex flex-col gap-1 text-left">
-							<h3 className="font-semibold text-md truncate font-transcendence-two">
+							<h3 className="font-semibold text-md truncate font-transcendence-two w-40">
 								{user.username}
 							</h3>
 							{user.lastMessage && (
-								<p className="text-xs font-transcendence-two text-gray-500 truncate">
+								<p className="text-xs font-transcendence-two text-gray-500 truncate w-40">
 								{user.lastMessage}
 								</p>
 							)}
