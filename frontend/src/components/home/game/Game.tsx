@@ -18,6 +18,7 @@ export const Game = () =>
 	);
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
+	const [isTouchScreen, setIsTouchScreen] = useState<boolean>(false);
 
 	//Touch screen button managers
 	const startHold = (key: string, id: number, dy: number) => {
@@ -219,9 +220,17 @@ export const Game = () =>
 			setScreenIsPortrait(isPortrait);
 		}
 
+		const touchScreenMediaQuery = window.matchMedia("(pointer: coarse)");
+		const checkTouch = () => {
+			console.log("TOUCH POINTER:COARSE MATCHES: ", touchScreenMediaQuery.matches)
+			setIsTouchScreen(touchScreenMediaQuery.matches);
+		};
+
+ 		checkTouch();
 		getScreenOrientation();
 		window.addEventListener("orientationchange", getScreenOrientation);
 		window.addEventListener("resize", getScreenOrientation);
+		touchScreenMediaQuery.addEventListener("change", checkTouch);
 
         // Clean up things
         return () => {
@@ -232,14 +241,15 @@ export const Game = () =>
 			window.removeEventListener("blur", handleBlur);
 			window.removeEventListener("orientationchange", getScreenOrientation);
 			window.removeEventListener("resize", getScreenOrientation);
+			touchScreenMediaQuery.removeEventListener("change", checkTouch);
         };
     },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
-
 	return (<VisualGame
 		pointsRef={PointsRef}
 		pointsRef2={PointsRef2}
 		canvasRef={canvasRef}
 		screenIsPortrait={screenIsPortrait}
 		startHold={startHold}
-		stopHold={stopHold}/>)
+		stopHold={stopHold}
+		isTouchScreen={isTouchScreen}/>)
 };
