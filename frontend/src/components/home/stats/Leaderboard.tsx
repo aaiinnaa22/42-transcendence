@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback, type JSX } from 'react'
 import { apiUrl } from '../../../api/api';
 import { fetchWithAuth } from '../../../api/fetchWithAuth';
+import { useTranslation } from 'react-i18next';
 
 
 type LeaderboardEntry =
@@ -27,6 +28,8 @@ export const Leaderboard = () => {
 	const [error, setError] = useState<string | null>(null);
 
 	const observerTarget = useRef<HTMLDivElement>(null);
+
+	const {t} = useTranslation();
 
 	// Fetch the current user's rank
 	useEffect(() => {
@@ -168,7 +171,7 @@ export const Leaderboard = () => {
 		return (
 			<div className="flex items-center justify-center h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]">
 				<div className="text-transcendence-white font-transcendence-three text-2xl animate-pulse">
-					Loading leaderboard...
+					{t("leaderboard.loading")}
 				</div>
 			</div>
 		);
@@ -186,7 +189,7 @@ export const Leaderboard = () => {
 					<button
 						onClick={() => window.location.reload()}
 						className="bg-transcendence-beige text-black px-6 py-2 rounded-lg font-bold hover:bg-gray-200">
-						Retry
+						{t("leaderboard.retry")}
 					</button>
 				</div>
 			</div>
@@ -210,10 +213,10 @@ export const Leaderboard = () => {
 					{
 						myRank ? (
 							<>
-								You are rank <span className='text-transcendence-beige'>#{myRank.rank}</span>
+								{t("leaderboard.yourRank")} <span className='text-transcendence-beige'>#{myRank.rank}</span>
 							</>
 						) : (
-							<span>You are unranked. Play more to get a rank.</span>
+							<span>{t("leaderboard.yourUnranked")}</span>
 						)
 					}
 				</h1>
@@ -227,12 +230,12 @@ export const Leaderboard = () => {
 					<div className='leaderboard-grid px-4 py-2
 					bg-transcendence-black text-transcendence-beige
 					text-xs font-bold uppercase tracking-wider'>
-						<span className='text-center'>Rank</span>
-						<span className='text-left ml-2'>Name</span>
-						<span className='text-center'>Rating</span>
-						<span className='text-center hidden sm:block'>Ratio</span>
-						<span className='text-center hidden md:block'>Wins</span>
-						<span className='text-center hidden lg:block'>Losses</span>
+						<span className='text-center'>{t("leaderboard.rank")}</span>
+						<span className='text-left ml-2'>{t("leaderboard.name")}</span>
+						<span className='text-center'>{t("leaderboard.rating")}</span>
+						<span className='text-center hidden sm:block'>{t("leaderboard.ratio")}</span>
+						<span className='text-center hidden md:block'>{t("leaderboard.wins")}</span>
+						<span className='text-center hidden lg:block'>{t("leaderboard.losses")}</span>
 					</div>
 				</div>
 
@@ -263,7 +266,7 @@ export const Leaderboard = () => {
 												<span className="material-symbols-outlined text-base">
 													arrow_left
 												</span>
-												You
+												{t("leaderboard.you")}
 											</span>
 										)}
 									</div>
@@ -297,10 +300,10 @@ export const Leaderboard = () => {
 						<div ref={observerTarget} className='text-transcendence-black/40 py-4 text-center text-sm'>
 							{loadingMore ? (
 								<span className='animate-pulse'>
-									Loading more players...
+									{t("leaderboard.loadingMore")}
 								</span>
 							) : (
-								<span>Scroll for more</span>
+								<span>{t("leaderboard.scrollMore")}</span>
 							)}
 						</div>
 					)}
@@ -309,14 +312,13 @@ export const Leaderboard = () => {
 					{!hasMore && (
 						<div className='text-transcendence-black/40 py-4 text-center text-sm'>
 							{users.length === 0 ? (
-								<p>No ranked players yet</p>
+								<p>{t("leaderboard.noPlayers")}</p>
 							) : (
-								<p>End of leaderboard</p>
+								<p>{t("leaderboard.end")}</p>
 							)}
 						</div>
 					)}
 				</ul>
-
 			</div>
 		</div>
 	);

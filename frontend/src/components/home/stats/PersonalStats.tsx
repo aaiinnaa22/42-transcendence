@@ -3,6 +3,7 @@ import {useEffect, useState} from 'react';
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../../api/api";
 import { fetchWithAuth } from "../../../api/fetchWithAuth";
+import { useTranslation } from "react-i18next";
 
 export const PersonalStats = () =>
 {
@@ -13,8 +14,12 @@ export const PersonalStats = () =>
 		gamesPlayed: 0,
 		rating: 0
 	});
+
 	const percentageWon = (playerStats.wins / playerStats.gamesPlayed) * 100;
 	const percentageLost = 100 - percentageWon;
+
+	const {t} = useTranslation();
+
 	useEffect(() => {
 		const getStats = async () => {
 			try
@@ -48,12 +53,12 @@ export const PersonalStats = () =>
 			text-xs xl:text-sm cursor-pointer"
 			onClick={() => navigate("/home/stats/leaderboard")}>
 				<span className="material-symbols-outlined">arrow_forward</span>
-				<h3 className="h-full">Leaderboard</h3>
+				<h3 className="h-full">{t("stats.leaderboard")}</h3>
 			</button>
 			<div className="w-full h-full flex flex-col items-center justify-center gap-1">
 				<h2
 					className="text-transcendence-white font-transcendence-three tracking-[0.2em]
-					text-lg lg:text-2xl md:portrait:text-2xl">wins</h2>
+					text-lg lg:text-2xl md:portrait:text-2xl">{t("stats.wins")}</h2>
 				<div
 					className="rounded-xl border-3 w-fit px-[1vw] border-transcendence-white bg-transcendence-beige flex flex-col items-center justify-center
 					h-10 min-w-20 lg:h-20 lg:min-w-40 md:portrait:h-20 md:portrait:min-w-40">
@@ -64,7 +69,7 @@ export const PersonalStats = () =>
 			<div className="w-full h-full flex flex-col items-center justify-center gap-1">
 				<h2
 					className="text-transcendence-white font-transcendence-three tracking-[0.2em]
-					text-lg lg:text-2xl md:portrait:text-2xl">losses</h2>
+					text-lg lg:text-2xl md:portrait:text-2xl">{t("stats.losses")}</h2>
 				<div
 					className="rounded-xl border-3 w-fit px-[1vw] border-transcendence-white flex flex-col items-center justify-center
 					h-10 min-w-20 lg:h-20 lg:min-w-40 md:portrait:h-20 md:portrait:min-w-40">
@@ -75,9 +80,7 @@ export const PersonalStats = () =>
 				className="border-t-2 border-transcendence-white flex flex-col items-center justify-center text-center text-transcendence-white font-transcendence-three tracking-[0.2em] col-span-2
 				text-xl lg:text-3xl md:portrait:text-3xl
 				gap-1 lg:gap-4 md:portrait:gap-4">
-				<h2>In total you have played</h2>
-				<h2>{playerStats.gamesPlayed}</h2>
-				<h2>games</h2>
+				<h2>{t("stats.total", {amount: playerStats.gamesPlayed} )}</h2>
 			</div>
 			<div
 				className="w-full h-full flex flex-col items-center justify-center border-t-2 border-transcendence-white border-l-2
@@ -85,7 +88,7 @@ export const PersonalStats = () =>
 				<div className="min-w-[15%] portrait:min-w-[40%] portrait:h-[30%] w-fit h-[50%] px-[2vw] bg-transcendence-white rounded-2xl flex flex-col items-center justify-center">
 				<h2
 					className="font-transcendence-three tracking-[0.1em] font-bold
-					text-xl lg:text-3xl md:portrait:text-3xl">RATING: {playerStats.rating}</h2>
+					text-xl lg:text-3xl md:portrait:text-3xl">{t("stats.rating")}: {playerStats.rating}</h2>
 				</div>
 			</div>
 		</div>

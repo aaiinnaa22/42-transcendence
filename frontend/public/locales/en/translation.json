@@ -1,8 +1,8 @@
 {
 	"languages": {
 		"en": "English",
-		"fi": "Finnish",
-		"sv": "Swedish"
+		"fi": "Suomi",
+		"sv": "Svenska"
 	},
 	"welcome": {
 		"title": "PONG",
@@ -36,5 +36,29 @@
 		"enableSuccess": "2FA enabled successfully!",
 		"disableSuccess": "2FA disabled successfully!",
 		"modalClosing": "Closing modal in {{countdown}} seconds"
+	},
+	"leaderboard": {
+		"loading": "Loading leaderboard...",
+		"retry": "Retry",
+		"yourRank": "You are rank",
+		"yourUnranked": "You are unranked. Play more to get a rank.",
+		"rank": "Rank",
+		"name": "Name",
+		"rating": "Rating",
+		"ratio": "Ratio",
+		"wins": "Wins",
+		"losses": "Losses",
+		"you": "You",
+		"loadingMore": "Loading more players...",
+		"scrollMore": "Scroll for more",
+		"noPlayers": "No ranked players yet",
+		"end": "End of leaderboard"
+	},
+	"stats": {
+		"leaderboard": "Leaderboard",
+		"wins": "wins",
+		"losses": "losses",
+		"total": "In total you have played {{amount}} games",
+		"rating": "RATING"
 	}
 }
