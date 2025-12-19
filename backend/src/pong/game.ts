@@ -11,7 +11,8 @@ export enum Location {
 
 export enum GameMode {
 	Singleplayer = "singleplayer",
-	Tournament = "tournament"
+	Tournament = "tournament",
+	Invite = "invite"
 };
 
 export type GameEndReason = "win" | "disconnect" | "inactivity";
@@ -77,7 +78,7 @@ class Game
 		{
 			player = this.players.find( p => p.location === identifier );
 		}
-		else if ( this.mode === GameMode.Tournament && typeof identifier === "string" )
+		else if ( (this.mode === GameMode.Tournament || this.mode === GameMode.Invite) && typeof identifier === "string" )
 		{
 			player = this.players.find( p => p.userId === identifier )
 		}

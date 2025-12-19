@@ -5,6 +5,7 @@ import { Leaderboard } from "../components/home/stats/Leaderboard";
 import { Profile } from "../components/home/Profile";
 import { Game } from "../components/home/game/Game";
 import { GameTournament } from '../components/home/game/GameTournament';
+import { GameInvite } from '../components/home/game/GameInvite';
 import { Menu } from "../components/home/panels/Menu"
 import { SideTab } from "../components/home/utils/SideTab"
 import { PopUp } from "../components/home/utils/PopUp"
@@ -47,6 +48,7 @@ export const Home = () => {
 				<Route path="stats" element={<PersonalStats/>}/>
 				<Route path="stats/leaderboard" element={<Leaderboard/>}/>
 				<Route path="profile" element={<Profile/>}/>
+				<Route path="play/invite" element={<GameInvite/> } />
 			</Routes>
 				{screenIsLarge &&
 					<SideTab isOpen={currentPanel === "chat"}><ChatContainer/></SideTab>}

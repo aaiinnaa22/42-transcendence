@@ -60,3 +60,5 @@ backend/prisma/*.d.ts.map
 
 # Lint caches
 .eslintcache
+
+backend/upload/avatars

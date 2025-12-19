@@ -1,6 +1,8 @@
 
-import { useState, useEffect, useRef, useCallback, type JSX } from 'react'
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef, useCallback, type JSX } from 'react';
+import { fetchWithAuth } from "../../../api/fetchWithAuth";
+
 
 type LeaderboardEntry =
 {
@@ -30,7 +32,7 @@ export const Leaderboard = () => {
 		const fetchMyRank = async () => {
 			try
 			{
-				const response = await fetch("http://localhost:4241/leaderboard/me",{
+				const response = await fetchWithAuth("http://localhost:4241/leaderboard/me",{
 					credentials: "include"
 				});
 
@@ -60,7 +62,7 @@ export const Leaderboard = () => {
 			{
 				setLoading(true);
 
-				const response = await fetch("http://localhost:4241/leaderboard/1",{
+				const response = await fetchWithAuth("http://localhost:4241/leaderboard/1",{
 					credentials: "include"
 				});
 
@@ -100,7 +102,7 @@ export const Leaderboard = () => {
 		{
 			setLoadingMore(true);
 			const nextPage = currentPage + 1;
-			const response = await fetch(`http://localhost:4241/leaderboard/${nextPage}`,{
+			const response = await fetchWithAuth(`http://localhost:4241/leaderboard/${nextPage}`,{
 				credentials: "include"
 			});
 
