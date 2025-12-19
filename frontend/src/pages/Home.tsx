@@ -5,6 +5,7 @@ import { Leaderboard } from "../components/home/stats/Leaderboard";
 import { Profile } from "../components/home/Profile";
 import { Game } from "../components/home/game/Game";
 import { GameTournament } from '../components/home/game/GameTournament';
+import { GameInvite } from '../components/home/game/GameInvite';
 import { Menu } from "../components/home/panels/Menu"
 import { SideTab } from "../components/home/utils/SideTab"
 import { PopUp } from "../components/home/utils/PopUp"
@@ -32,25 +33,9 @@ export const Home = () => {
 		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
-	useEffect(() => {
-		function setVhVw() {
-		const vh = window.innerHeight * 0.01;
-		const vw = window.innerWidth * 0.01;
-		document.documentElement.style.setProperty('--vh', `${vh}px`);
-		document.documentElement.style.setProperty('--vw', `${vw}px`);
-		}
-
-		setVhVw();
-		window.addEventListener('resize', setVhVw);
-
-		return () => window.removeEventListener('resize', setVhVw);
-}, []);
 
 	return (
-		<div className="bg-transcendence-black w-[100vw] flex flex-col md:shadow-transcendence-beige"
-		        style={{
-    height: 'calc(var(--vh, 1vh) * 100)',
-  }}>
+		<div className="bg-transcendence-black w-[100vw] h-screen flex flex-col md:shadow-transcendence-beige">
 			<NavBar currentPanel={currentPanel} onTogglePanel={togglePanel}/>
 			<Routes>
 				<Route index element={<Navigate to="play" replace/>}/>
@@ -64,6 +49,7 @@ export const Home = () => {
 				<Route path="stats" element={<PersonalStats/>}/>
 				<Route path="stats/leaderboard" element={<Leaderboard/>}/>
 				<Route path="profile" element={<Profile/>}/>
+				<Route path="play/invite" element={<GameInvite/> } />
 			</Routes>
 				{screenIsLarge &&
 					<SideTab isOpen={currentPanel === "chat"}><ChatContainer/></SideTab>}

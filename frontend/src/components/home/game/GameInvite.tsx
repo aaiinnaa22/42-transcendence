@@ -1,7 +1,8 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
-import { VisualGame } from "./VisualGame.tsx";
-import { forceLogout } from "../../../api/forceLogout.ts";
+import { } from "../panels/chat/Discussion";
+import { useLocation } from "react-router-dom";
+import { forceLogout } from "../../../api/forceLogout.ts";	
 
 const BUTTON_KEYS = {
     P1_UP: "p1_up",
@@ -10,7 +11,7 @@ const BUTTON_KEYS = {
     P2_DOWN: "p2_down",
 } as const;
 
-export const Game = () =>
+export const GameInvite = () =>
 {
     // I am using useRef instead of useState so things persist when components load again and things wont't rerender
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -19,21 +20,19 @@ export const Game = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
-	const [screenIsPortrait, setScreenIsPortrait] = useState<boolean>(
-		window.matchMedia("(orientation: portrait)").matches
-	);
+    const ball = useRef<{ x: number; y: number; countdown?: number; waiting?: string}>({ x: 0, y: 0 , countdown: 5, waiting: undefined});
+	const location = useLocation();
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
 
 	//Touch screen button managers
-	const startHold = (key: string, id: number, dy: number) => {
+	const startHold = (key: string, dy: number) => {
 		if (holdIntervals.current[key]) {
 			clearInterval(holdIntervals.current[key]!);
 		}
-		sendMove(id, dy);
+		sendMove(dy);
 		holdIntervals.current[key] = window.setInterval(() => {
-			sendMove(id, dy);
+			sendMove(dy);
 		}, 20);
 	};
 
@@ -45,20 +44,18 @@ export const Game = () =>
 	};
 
     // sends move command to backend server when player wants to move
-    const sendMove = (id: number, dy: number) => {
+    const sendMove = (dy: number) => {
         const ws = wsRef.current;
         if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: "move", id, dy }));
+            ws.send(JSON.stringify({ type: "move", dy }));
         }
     };
 
     //registers what key was pressed and call sendMove function
     const updateGame = () => {
         //Perform action based on the keypressed
-        if (keysPressed.current["ArrowUp"]) sendMove(2, -1);
-        if (keysPressed.current["ArrowDown"]) sendMove(2, 1);
-        if (keysPressed.current["w"]) sendMove(1, -1);
-        if (keysPressed.current["s"]) sendMove(1, 1);
+        if (keysPressed.current["ArrowUp"] || keysPressed.current["w"]) sendMove(-1);
+        if (keysPressed.current["ArrowDown"] || keysPressed.current["s"]) sendMove(1);
     };
 
 	const axisScale = () => {
@@ -84,7 +81,7 @@ export const Game = () =>
         ctx.clearRect(0,0, canvas.width, canvas.height);
         ctx.fillStyle = 'white';
 
-        // Draw players
+        // Draw players might fuck up the id is not a number
         for (const id in players.current)
         {
 			const player = players.current[id];
@@ -123,7 +120,10 @@ export const Game = () =>
 			const scaleCenterX = (WIDTH / 2) * scaleX;
 			const scaleCenterY = (HEIGHT / 2) * scaleY;
 
-			ctx.fillText(`${ball.current.countdown}`, scaleCenterX, scaleCenterY);
+			if (ball.current.countdown == 5)
+				ctx.fillText(`${ball.current.waiting}`, scaleCenterX, scaleCenterY);
+			else
+				ctx.fillText(`${ball.current.countdown}`, scaleCenterX, scaleCenterY);
 
 			// Reset alignment
 			ctx.textAlign = "left";
@@ -143,8 +143,10 @@ export const Game = () =>
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
-        const ws = new WebSocket('ws://localhost:4241/game/singleplayer');
-
+		const invitee = location.state?.invitee;
+   		console.log("DEBUG: invitee =", invitee); 
+		ball.current.waiting = `Waiting ${invitee}`;
+        const ws = new WebSocket(`ws://localhost:4241/game/chat?friendName=${invitee}`);
         wsRef.current = ws;
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
@@ -158,7 +160,7 @@ export const Game = () =>
 			console.log("Connected!");
 			didOpenRef.current = true;
 		}
-		ws.onclose = (e) => {
+        ws.onclose = (e) => {
 		console.log("Game WS closed", e.code, e.reason);
 		if (!didOpenRef.current) {
 			console.warn("Game WS handshake failed, forcing logout");
@@ -168,7 +170,7 @@ export const Game = () =>
 		if (e.code === 1008) {
 			console.warn("Unauthorized game socket, forcing logout");
 			forceLogout();
-			return;
+			return; 
 		}
 		wsRef.current = null;
 		console.log("Game socket disconnected normally");
@@ -182,10 +184,10 @@ export const Game = () =>
                 players.current = data.players;
                 ball.current = data.ball;
 				ball.current.countdown = data.countdown;
-        	}
+			}
 			else if (data.type === "waiting")
 			{
-				console.log("Waiting in queue.");
+				console.log("Waiting in queue. Position: ", data.position);
 			}
 			else if (data.type === "error")
 			{
@@ -205,11 +207,11 @@ export const Game = () =>
 			else if (data.type === "end")
 			{
 				console.log( data.message );
-				if ( data.winner )
-				{
-					console.log( "The winner was the " + data.winner + " player with " + data.score.winner + " points!" );
-				}
+				ball.current.countdown = 5;
+				ball.current.waiting = `Winner is ${data.winner}`;
+				//console.log( "The winner's new elo is " + data.elo.winner );
 			}
+
 			/* ADD ADDITIONAL STATES HERE */
 		};
 
@@ -222,33 +224,24 @@ export const Game = () =>
         gameLoop();
 
 		// Handle resize
-		// const handleResize = () => {
-		// 	const canvas = canvasRef.current;
-		// 	const isPortrait = window.innerHeight > window.innerWidth;
-		// 	if (canvas)
-		// 	{
-		// 		if (isPortrait)
-		// 		{
-		// 			canvas.width = HEIGHT;
-		// 			canvas.height = WIDTH;
-		// 		}
-		// 		else
-		// 		{
-		// 			canvas.width = WIDTH;
-		// 			canvas.height = HEIGHT;
-		// 		}
-		// 	}
-		// };
-
-		const getScreenOrientation = () => {
-			const isPortrait = window.matchMedia("(orientation: portrait)").matches;
-			setScreenIsPortrait(isPortrait);
-		}
-
-		getScreenOrientation();
-		window.addEventListener("orientationchange", getScreenOrientation);
-		window.addEventListener("resize", getScreenOrientation);
-		//window.addEventListener("resize", handleResize);
+		const handleResize = () => {
+			const canvas = canvasRef.current;
+			const isPortrait = window.innerHeight > window.innerWidth;
+			if (canvas)
+			{
+				if (isPortrait)
+				{
+					canvas.width = HEIGHT;
+					canvas.height = WIDTH;
+				}
+				else
+				{
+					canvas.width = WIDTH;
+					canvas.height = HEIGHT;
+				}
+			}
+		};
+		window.addEventListener("resize", handleResize);
 
         // Clean up things
         return () => {
@@ -257,11 +250,124 @@ export const Game = () =>
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
 			window.removeEventListener("blur", handleBlur);
-			//window.removeEventListener("resize", handleResize);
-			window.removeEventListener("orientationchange", getScreenOrientation);
-			window.removeEventListener("resize", getScreenOrientation);
+			window.removeEventListener("resize", handleResize);
         };
     },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
 
-	return (<VisualGame pointsRef={PointsRef} pointsRef2={PointsRef2} canvasRef={canvasRef} screenIsPortrait={screenIsPortrait}/>)
+    // Aina's stuff after this line
+	const screenIsPortrait = window.innerHeight > window.innerWidth;
+
+		    return (
+		<div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
+		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
+		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
+			<span
+				className="
+					col-start-1 row-start-1
+					flex flex-col gap-10
+					text-right self-center
+					portrait:self-end
+					xl:hidden
+				"
+				>
+				<button
+					onPointerDown={() => startHold(BUTTON_KEYS.P1_UP, -1)}
+					onPointerUp={() => stopHold(BUTTON_KEYS.P1_UP)}
+					onPointerLeave={() => stopHold(BUTTON_KEYS.P1_UP)}
+					className="
+						text-transcendence-white
+						text-5xl
+						flex items-center justify-center
+						rounded-full
+						active:scale-90
+						transition
+						select-none
+					"
+					aria-label="Player 1 Up"
+					>
+					<span className="material-symbols-outlined rotate-270">play_circle</span>
+					</button>
+				<button
+					onPointerDown={() => startHold(BUTTON_KEYS.P1_DOWN, 1)}
+					onPointerUp={() => stopHold(BUTTON_KEYS.P1_DOWN)}
+					onPointerLeave={() => stopHold(BUTTON_KEYS.P1_DOWN)}
+					className="
+						text-transcendence-white
+						text-5xl
+						flex items-center justify-center
+						rounded-full
+						active:scale-90
+						transition
+						select-none
+					"
+					aria-label="Player 1 Up"
+					>
+					<span className="material-symbols-outlined rotate-90">play_circle</span>
+					</button>
+				</span>
+			<span ref={PointsRef}
+				className="text-transcendence-white font-transcendence-three text-4xl
+					col-start-1 row-start-1 text-right self-start
+					portrait:self-start portrait:text-right">0</span>
+			<span ref={PointsRef2}
+				className="text-transcendence-white font-transcendence-three text-4xl
+					col-start-3 row-start-1 text-left self-start
+					portrait:self-end portrait:text-left">0</span>
+			<span
+				className="
+					col-start-3 row-start-1
+					flex flex-col gap-10
+					text-left self-center
+					portrait:self-start
+					xl:hidden
+				"
+				>
+				<button
+					onPointerDown={() => startHold(BUTTON_KEYS.P2_UP, -1)}
+					onPointerUp={() => stopHold(BUTTON_KEYS.P2_UP)}
+					onPointerLeave={() => stopHold(BUTTON_KEYS.P2_UP)}
+					className="
+						text-transcendence-white
+						text-5xl
+						flex items-center justify-center
+						rounded-full
+						active:scale-90
+						transition
+						select-none
+					"
+					aria-label="Player 2 Up"
+					>
+					<span className="material-symbols-outlined rotate-270">play_circle</span>
+					</button>
+				<button
+					onPointerDown={() => startHold(BUTTON_KEYS.P2_DOWN, 1)}
+					onPointerUp={() => stopHold(BUTTON_KEYS.P2_DOWN)}
+					onPointerLeave={() => stopHold(BUTTON_KEYS.P2_DOWN)}
+					className="
+						text-transcendence-white
+						text-5xl
+						flex items-center justify-center
+						rounded-full
+						active:scale-90
+						transition
+						select-none
+					"
+					aria-label="Player 2 Up"
+					>
+					<span className="material-symbols-outlined rotate-90">play_circle</span>
+					</button>
+				</span>
+			<div className="
+				flex-grow flex items-center justify-center
+				border-4 border-transcendence-white rounded-xl overflow-hidden
+				col-start-2 portrait:col-span-1">
+				<canvas
+					ref={canvasRef}
+					width={screenIsPortrait ? HEIGHT : WIDTH}
+					height={screenIsPortrait ? WIDTH : HEIGHT}
+					className="w-full h-full "
+				/>
+			</div>
+        </div>
+    );
 };

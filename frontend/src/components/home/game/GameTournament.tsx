@@ -1,7 +1,14 @@
 import { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
 import { VisualGame } from "./VisualGame.tsx";
+import { forceLogout } from "../../../api/forceLogout.ts";
 
+const BUTTON_KEYS = {
+    P1_UP: "p1_up",
+    P1_DOWN: "p1_down",
+    P2_UP: "p2_up",
+    P2_DOWN: "p2_down",
+} as const;
 
 export const GameTournament = () =>
 {
@@ -16,6 +23,26 @@ export const GameTournament = () =>
 	const [screenIsPortrait, setScreenIsPortrait] = useState<boolean>(
 		window.matchMedia("(orientation: portrait)").matches
 	);
+	const holdIntervals = useRef<Record<string, number | null>>({});
+	const didOpenRef = useRef(false);
+
+	//Touch screen button managers
+	const startHold = (key: string, dy: number) => {
+		if (holdIntervals.current[key]) {
+			clearInterval(holdIntervals.current[key]!);
+		}
+		sendMove(dy);
+		holdIntervals.current[key] = window.setInterval(() => {
+			sendMove(dy);
+		}, 20);
+	};
+
+	const stopHold = (key: string) => {
+		if (holdIntervals.current[key]) {
+			clearInterval(holdIntervals.current[key]!);
+			holdIntervals.current[key] = null;
+		}
+	};
 
     // sends move command to backend server when player wants to move
     const sendMove = (dy: number) => {
@@ -124,8 +151,25 @@ export const GameTournament = () =>
         window.addEventListener("keyup", handleKeyUp);
 		window.addEventListener("blur", handleBlur);
 
-        ws.onopen = () => {console.log("Connected!");}
-        ws.onclose = () => {console.log("Disconnected!");};
+        ws.onopen = () => {
+			console.log("Connected!");
+			didOpenRef.current = true;
+		}
+		ws.onclose = (e) => {
+		console.log("Game WS closed", e.code, e.reason);
+		if (!didOpenRef.current) {
+			console.warn("Game WS handshake failed, forcing logout");
+			forceLogout();
+			return;
+		}
+		if (e.code === 1008) {
+			console.warn("Unauthorized game socket, forcing logout");
+			forceLogout();
+			return;
+		}
+		wsRef.current = null;
+		console.log("Game socket disconnected normally");
+		};
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -142,6 +186,11 @@ export const GameTournament = () =>
 			}
 			else if (data.type === "error")
 			{
+				if (data.reason === "unauthorized") {
+					console.warn("WebSocket unauthorized, forcing logout");
+					forceLogout();
+					return;
+				}
 				console.error("Error from server: ", data.message);
 				if (data.error) console.error("Validation errors: ", data.error);
 			}
