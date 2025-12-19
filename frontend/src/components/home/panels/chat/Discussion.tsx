@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import type { ChatUser } from "./ChatContainer";
 import type { Message } from "./ChatContainer";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 type DiscussionProps = {
 	friend: ChatUser;
@@ -27,6 +28,8 @@ export const Discussion = ({
 	const discussionEndRef = useRef<HTMLDivElement | null>(null);
 	const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 	const navigate = useNavigate();
+
+	const {t} = useTranslation();
 
 	useEffect(() => {
 		discussionEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -82,9 +85,13 @@ export const Discussion = ({
 			<div className="self-end p-2">
 				<button className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
 					disabled={inviteIsActive} onClick={onSendInvite}>
-				<p className="text-xs lg:text-sm text-left">{!inviteIsActive ? `Invite ${friend.username} to a game` : "You have a pending game invite"}</p>
-				<div className="!text-xl lg:!text-3xl material-symbols-outlined">
-				sports_esports</div>
+					<p className="text-xs lg:text-sm text-left">{!inviteIsActive
+						? t("chat.inviteToGame", { username: friend.username })
+						: t("chat.pendingInvite")}
+					</p>
+					<div className="!text-xl lg:!text-3xl material-symbols-outlined">
+						sports_esports
+					</div>
 				</button>
 			</div>
 
@@ -105,9 +112,11 @@ export const Discussion = ({
 							className={"flex flex-col gap-3 p-3 rounded-lg  max-w-[70%] bg-purple-600 " + (msg.sender === "me" ? "self-end" : "self-start")}>
 							<p className="break-words text-transcendence-white">{msg.text}</p>
 							<div className="flex flex-row justify-center items-center border-2 border-transcendence-white rounded-lg p-1 gap-2">
-								{inviteIsActive && <span className="text-transcendence-white font-bold">{formatTime(inviteTimeLeft)}</span>}
+								{inviteIsActive && <span className="text-transcendence-white font-bold">
+									{formatTime(inviteTimeLeft)}
+								</span>}
 								<button disabled={!inviteIsActive} className="text-white font-bold"
-									onClick={() => navigate("/home/play/invite", { state: {invitee: friend.username}})}>{inviteIsActive ? "join the game" : "invite expired"}</button>
+									onClick={() => navigate("/home/play/invite", { state: {invitee: friend.username}})}>{inviteIsActive ? t("chat.joinGame") : t("chat.inviteExpired")}</button>
 							</div>
 						</div>
 					)
@@ -124,14 +133,14 @@ export const Discussion = ({
 					value={message}
 					onChange={handleMessageInput}
 					onKeyDown={handleMessageSubmit}
-					placeholder={`Chat with ${friend.username}`} //placeholder changes when friend isnt online and u cant chat?
+					placeholder={t("chat.placeholder", { username: friend.username })} //placeholder changes when friend isnt online and u cant chat?
 					rows={1}
 					className="focus:outline-none w-full resize-none p-2"
 					disabled={!friend.online}
 					/>
 				</div>
 				<button type="submit" className="material-symbols-outlined self-end"
-					disabled={!friend.online}>send</button>
+					disabled={!friend.online}>{t("chat.send")}</button>
 				</form>
 			</div>
 

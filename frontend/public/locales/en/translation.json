@@ -60,5 +60,13 @@
 		"losses": "losses",
 		"total": "In total you have played {{amount}} games",
 		"rating": "RATING"
+	},
+	"chat": {
+		"inviteToGame": "Invite {{username}} to a game",
+		"pendingInvite": "You have a pending game invite",
+		"joinGame": "join the game",
+		"inviteExpired": "invite expired",
+		"placeholder": "Chat with {{username}}",
+		"send": "send"
 	}
 }
