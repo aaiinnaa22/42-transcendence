@@ -110,16 +110,20 @@ export const ChatContainer = () => {
 				[otherUserId]: { startedAt, expiresAt, status: "pending", },
 			}));
 
-			const inviteMessage: Message = {
-				id: Date.now(),
-				text: "I invite you to play a game with me!",
-				sender: fromId === me ? "me" : "friend",
-				isInvite: true,
-				}
-
 			setMessagesByUser(prev => ({
-			...prev,
-			[otherUserId]: [...(prev[otherUserId] ?? []), inviteMessage],
+				...prev,
+				[otherUserId]: [
+					...(prev[otherUserId] ?? []).map(m =>
+					m.isInvite ? { ...m, isExpired: true } : m
+					),
+					{
+					id: Date.now(),
+					text: "I invite you to play a game with me!",
+					sender: "friend",
+					isInvite: true,
+					isExpired: false, // 👈 ONLY ACTIVE INVITE
+					},
+				],
 			}));
 		}
 
