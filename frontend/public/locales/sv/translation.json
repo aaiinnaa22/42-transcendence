@@ -1,7 +1,7 @@
 {
 	"languages": {
-		"en": "Engelska",
-		"fi": "Finska",
+		"en": "English",
+		"fi": "Suomi",
 		"sv": "Svenska"
 	},
 	"welcome": {
@@ -10,17 +10,100 @@
 			"login": "LOGGA IN",
 			"register": "REGISTRERA"
 		},
+		"placeholder": {
+			"email": "e-post",
+			"username": "användarnamn",
+			"password": "lösenord"
+		},
 		"login": "Logga in",
-		"register": "Registrera"
+		"register": "Registrera",
+		"or": "eller",
+		"submit": "SKICKA"
 	},
 	"home": {
 		"button": {
 			"play": "SPELA"
-		}
+		},
+		"menu": "Meny"
 	},
 	"settings": {
 		"language": "Språk",
 		"avatar": "Profilbild",
-		"twoFA": "Tvåfaktorsautentisering"
+		"logout": "Logga ut",
+		"deleteAccount": "Radera konto"
+	},
+	"twoFA": {
+		"enable": "Aktivera tvåfaktorsautentisering",
+		"disable": "Avaktivera tvåfaktorsautentisering",
+		"scanToEnable": "Skanna QR-koden med din autentiseringsapp och ange sedan koden.",
+		"codeToDisable": "Ange en kod från din autentiseringsapp för att avaktivera 2FA.",
+		"enterCode": "Ange den 6-siffriga koden från din autentiseringsapp.",
+		"verifyMessage": "Verifierar…",
+		"verifyToEnable": "Verifiera & Aktivera 2FA",
+		"verifyToDisable": "Verifiera & Avaktivera 2FA",
+		"enableSuccess": "2FA aktiverat!",
+		"disableSuccess": "2FA avaktiverat!",
+		"modalClosing": "Stänger modalen om {{countdown}} sekunder"
+	},
+	"leaderboard": {
+		"loading": "Laddar topplistan...",
+		"retry": "Försök igen",
+		"yourRank": "Din placering",
+		"yourUnranked": "Du är oplacerad. Spela mer för att få en placering.",
+		"rank": "Placering",
+		"name": "Namn",
+		"rating": "Rating",
+		"ratio": "Kvot",
+		"wins": "Vinster",
+		"losses": "Förluster",
+		"you": "Du",
+		"loadingMore": "Laddar fler spelare...",
+		"scrollMore": "Skrolla för mer",
+		"noPlayers": "Inga rankade spelare ännu",
+		"end": "Slutet av topplistan"
+	},
+	"stats": {
+		"leaderboard": "Topplista",
+		"wins": "vinster",
+		"losses": "förluster",
+		"total": "Totalt har du spelat {{amount}} spel",
+		"rating": "BETYG"
+	},
+	"chat": {
+		"inviteToGame": "Bjud in {{username}} till ett spel",
+		"pendingInvite": "Du har en väntande spelinbjudan",
+		"joinGame": "anslut till spelet",
+		"inviteExpired": "inbjudan har gått ut",
+		"placeholder": "Chatta med {{username}}",
+		"send": "skicka"
+	},
+	"utils": {
+		"close": "stäng",
+		"loading": "Laddar..."
+	},
+	"profile": {
+		"greeting": "Hej {{username}}!",
+		"defaultUsername": "Användare",
+		"cancel": "Avbryt",
+		"save": "Spara",
+		"userNotEmpty": "Användarnamn får inte vara tomt",
+		"updateFailed": "Uppdatering misslyckades"
+	},
+	"error": {
+		"loginRetry": "Inloggning misslyckades. Försök igen.",
+		"registerRetry": "Registrering misslyckades. Försök igen.",
+		"tryAgain": "Något gick fel. Försök igen senare.",
+		"logoutFailure": "Utloggning misslyckades."
+	},
+	"game": {
+		"button": {
+			"singleplayer": "spela tillsammans",
+			"multiplayer": "turnering"
+		},
+		"description": {
+			"singleplayer": "spela tillsammans med din vän på samma skärm",
+			"multiplayer": "spela med andra"
+		},
+		"choice": "Välj spelläge"
 	}
 }
