@@ -16,7 +16,11 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 	const refreshUser = async () => {
 		const freshUser = await fetchUserFromBackend(currentUser.username);
 		if (freshUser)
-			setCurrentUser(freshUser);
+			setCurrentUser(prev => ({
+			...prev,
+			...freshUser,
+			online: prev.online,  // keep the existing online status if not included in freshUser
+		}));
 	}
 
 	useEffect(() => {
