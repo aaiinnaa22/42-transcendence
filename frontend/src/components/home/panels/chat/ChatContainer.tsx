@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Chat } from "./Chat";
 import { Discussion } from "./Discussion";
 import { apiUrl, wsUrl } from "../../../../api/api";
+import { ChatProfile } from "./ChatProfile";
 import { forceLogout } from "../../../../api/forceLogout";
 import { fetchWithAuth } from "../../../../api/fetchWithAuth";
 
@@ -12,12 +13,24 @@ export type Message = {
   isInvite?: boolean;
 };
 
+type userStats = {
+	wins:  number,
+	losses: number,
+	playedGames: number,
+	eloRating: number
+}
+
 export type ChatUser = {
   id: string;
   username: string;
   profile: string;
   online?: boolean;
   lastMessage?: string;
+  stats: userStats;
+  isFriend: boolean;
+  isBlockedByMe: boolean;
+  hasBlockedMe: boolean;
+  friendshipStatus?: "pending" | "accepted";
 };
 
 export const ChatContainer = () => {
@@ -227,6 +240,13 @@ export const ChatContainer = () => {
       ));
 	}
 
+	const [profileUser, setProfileUser] = useState<ChatUser | null>(null);
+
+	if (profileUser)
+	{
+		return (<ChatProfile user={profileUser} onExitClick={() => setProfileUser(null)}/>)
+	}
+
   return (
 	<div className="h-full">
 
@@ -236,6 +256,7 @@ export const ChatContainer = () => {
 			users={usersWithPresence}
 			selectedUserId={null}
 			onChatClick={setSelectedUser}
+			onProfileClick={setProfileUser}
 		/>
 		)}
 
@@ -249,6 +270,7 @@ export const ChatContainer = () => {
 			inviteIsActive={inviteActive}
 			inviteTimeLeft={inviteTimeLeft}
 			onSendInvite={sendGameInvite}
+			onProfileClick={setProfileUser}
 		/>
 		)}
 

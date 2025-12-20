@@ -33,9 +33,8 @@ export const Home = () => {
 		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
-
 	return (
-		<div className="bg-transcendence-black w-[100vw] h-screen flex flex-col md:shadow-transcendence-beige">
+		<div className="bg-transcendence-black w-[100vw] h-screen flex flex-col">
 			<NavBar currentPanel={currentPanel} onTogglePanel={togglePanel}/>
 			<Routes>
 				<Route index element={<Navigate to="play" replace/>}/>
