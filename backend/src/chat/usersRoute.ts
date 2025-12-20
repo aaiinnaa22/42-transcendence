@@ -8,6 +8,7 @@ import {
 	sendErrorReply,
 	UnauthorizedError
 } from "../shared/utility/error.utility.js";
+import { getAvatarUrl } from "../shared/utility/avatar.utility.js";
 
 export default async function chatUsersComponent( server: FastifyInstance )
 {
@@ -39,6 +40,7 @@ export default async function chatUsersComponent( server: FastifyInstance )
 						id: true,
 						username: true,
 						avatar: true,
+						avatarType: true,
 						playerStats: true,
 					},
 				} );
@@ -76,7 +78,7 @@ export default async function chatUsersComponent( server: FastifyInstance )
 				return {
 					id: targetUser.id,
 					username: targetUser.username ?? "(no name)",
-					profile: targetUser.avatar ?? "",
+					profile: getAvatarUrl( targetUser.avatar, targetUser.avatarType ),
 					stats: targetUser.playerStats ?? null,
 					isFriend: friendship?.status === "accepted",
 					friendshipStatus: friendship?.status ?? null,
@@ -111,6 +113,7 @@ export default async function chatUsersComponent( server: FastifyInstance )
 					id: true, // remove id maybe?
 					username: true,
 					avatar: true,
+					avatarType: true,
 					playerStats: true,
 					friendships: {
 						where: { userId },
@@ -145,7 +148,7 @@ export default async function chatUsersComponent( server: FastifyInstance )
 				return {
 					id: u.id,
 					username: u.username ?? "(no name)",
-					profile: u.avatar ?? "",
+					profile: getAvatarUrl( u.avatar, u.avatarType ),
 					stats: u.playerStats ?? null,
 
 					isFriend,
