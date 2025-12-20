@@ -11,7 +11,7 @@ type DiscussionProps = {
   inviteIsActive: boolean;
   inviteTimeLeft: number;
   onSendInvite: () => void;
-  onAcceptInvite: () => void; 
+  onAcceptInvite: (userId: string) => void; 
 };
 
 export const Discussion = ({
@@ -32,6 +32,10 @@ export const Discussion = ({
   useEffect(() => {
     discussionEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const hasReceivedInvite = messages.some(
+    m => m.isInvite && m.sender === "friend" && !m.isExpired
+  );
 
   const sendMessage = () => {
     if (!message.trim()) return;
@@ -91,7 +95,7 @@ export const Discussion = ({
           <p className="text-xs lg:text-sm text-left">
             {!inviteIsActive
               ? `Invite ${friend.username} to a game`
-              : "You have a pending game invite"}
+              : "Game invite pending"}
           </p>
           <div className="!text-xl lg:!text-3xl material-symbols-outlined">
             sports_esports
@@ -139,10 +143,10 @@ export const Discussion = ({
                   disabled={!inviteIsActive || msg.isExpired }
                   className="text-white font-bold"
                   onClick={() => {
-					onAcceptInvite(),
+                    onAcceptInvite(friend.id);
                     navigate("/home/play/invite", {
                       state: { invitee: friend.username },
-                    })
+                    });
                   }}
                 >
                   {inviteIsActive ? "Join the game" : "Invite expired"}

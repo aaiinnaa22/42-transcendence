@@ -55,6 +55,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			where: { userId: id },
 			select: { eloRating: true, user: { select: { username: true }} },
 		} );
+		
 
 		const eloRating = stats?.eloRating ?? 1000;
 		const userName = stats?.user?.username ?? "Unknown";
@@ -80,6 +81,16 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 		// Store connection info and queue the player
 		activePlayers.set( id, playerConnection );
+		
+		//check to see if player is already in queue
+		if (friendQueue.some(f => f.userId === id)) {
+			socket.send(JSON.stringify({
+			  type: "waiting",
+			  message: "Already waiting for friend"
+			}));
+			return;
+		}
+
 		friendQueue.push( waitingFriend );
 
 		server.log.info( `Game: Player ${userName} waiting ${friend} to join the game Invite game.`);

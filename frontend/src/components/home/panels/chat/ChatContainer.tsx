@@ -33,6 +33,8 @@ export const ChatContainer = () => {
  	const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
   	const [invitesByUser, setInvitesByUser] = useState<Record<string, InviteState | null>>({});
   	const [now, setNow] = useState(Date.now());
+	const usersRef = useRef<ChatUser[]>([]);
+
 
   	const wsRef = useRef<WebSocket | null>(null);
 
@@ -50,6 +52,9 @@ export const ChatContainer = () => {
       .catch(err => console.error("Failed to load users", err));
   	}, []);
 
+	useEffect(() => {
+		usersRef.current = users;
+	}, [users]);
 
   	useEffect(() => {
     	const ws = new WebSocket("ws://localhost:4241/chat");
@@ -57,9 +62,9 @@ export const ChatContainer = () => {
 
     	ws.onopen = () => {
       	console.log("Chat WS connected");
-    };
+    	};
 
-    ws.onmessage = (e) => {
+    	ws.onmessage = (e) => {
     	let data;
     	try {
     		data = JSON.parse(e.data);
@@ -95,38 +100,6 @@ export const ChatContainer = () => {
 			return;
 		}
 
-		if (data.type === "invite") {
-			console.log("invite received. me=", myUserIdRef.current, "from=", data.from, "to=", data.to);
-			const me = myUserIdRef.current;
-			if (!me) return;
-			if (data.from === me) return;
-
-			const fromId = data.from as string;
-			const { startedAt, expiresAt } = data;
-			const otherUserId = fromId === me ? data.to : fromId;
-
-			setInvitesByUser(prev => ({
-				...prev,
-				[otherUserId]: { startedAt, expiresAt, status: "pending", },
-			}));
-
-			setMessagesByUser(prev => ({
-				...prev,
-				[otherUserId]: [
-					...(prev[otherUserId] ?? []).map(m =>
-					m.isInvite ? { ...m, isExpired: true } : m
-					),
-					{
-					id: Date.now(),
-					text: "I invite you to play a game with me!",
-					sender: "friend",
-					isInvite: true,
-					isExpired: false, // 👈 ONLY ACTIVE INVITE
-					},
-				],
-			}));
-		}
-
 		if (data.type === "invite:joined") {
 			const me = myUserIdRef.current;
 			if (!me) return;
@@ -137,10 +110,88 @@ export const ChatContainer = () => {
 			setInvitesByUser(prev => ({
 				...prev,
 				[otherUserId]: prev[otherUserId]
-				? { ...prev[otherUserId]!, status: "joined" }
-				: null,
+				  ? { ...prev[otherUserId]!, status: "joined" }
+				  : null,
+			}));
+			
+			setMessagesByUser(prev => ({
+				...prev,
+				[otherUserId]: (prev[otherUserId] ?? []).map(m =>
+				  m.isInvite ? { ...m, isExpired: true } : m
+				),
 			}));
 		}
+
+		if (data.type === "invite:received") {
+			setInvitesByUser(prev => ({
+			  ...prev,
+			  [data.from]: {
+				startedAt: data.startedAt,
+				expiresAt: data.expiresAt,
+				status: "pending",
+			  },
+			}));
+			const expireOldInvites = (msgs: Message[] = []) =>
+				msgs.map(m => (m.isInvite ? { ...m, isExpired: true } : m));
+		  
+			setMessagesByUser(prev => ({
+				...prev,
+				[data.from]: [
+				  ...expireOldInvites(prev[data.from]),
+				  {
+					id: Date.now(),
+					text: `${data.fromUsername ?? "Someone"} invited you to a game`,
+					sender: "friend",
+					isInvite: true,
+					isExpired: false,
+				  },
+				],
+			}));
+			//show invite as the last message
+			setUsers(prev =>
+				prev.map(u =>
+				  u.id === data.from
+					? { ...u, lastMessage: "Invited you to a game" }
+					: u
+				)
+			);
+		}
+
+		if (data.type === "invite:sent") {
+			setInvitesByUser(prev => ({
+			  ...prev,
+			  [data.to]: {
+				startedAt: data.startedAt,
+				expiresAt: data.expiresAt,
+				status: "pending",
+			  },
+			}));
+			
+			const expireOldInvites = (msgs: Message[] = []) =>
+				msgs.map(m => (m.isInvite ? { ...m, isExpired: true } : m));
+			setMessagesByUser(prev => ({
+				...prev,
+				[data.to]: [
+				  ...expireOldInvites(prev[data.to]),
+				  {
+					id: Date.now(),
+					text: `You invited ${data.toUsername ?? "this user"} to a game`,
+					sender: "me",
+					isInvite: true,
+					isExpired: false,
+				  },
+				],
+			}));
+			//show invite as the last message
+			setUsers(prev =>
+				prev.map(u =>
+				  u.id === data.to
+					? { ...u, lastMessage: "You invited them to a game" }
+					: u
+				)
+			);
+		}
+		  
 
 		if (data.type === "invite:expired") {
    			const me = myUserIdRef.current;
@@ -148,7 +199,27 @@ export const ChatContainer = () => {
 
   			const [a, b] = data.users;
   			const otherUserId = a === me ? b : a;
-			setInvitesByUser(prev => ({ ...prev, [otherUserId]: null }));
+
+			setInvitesByUser(prev => ({
+				...prev,
+				[otherUserId]: null,
+			}));
+			
+			setMessagesByUser(prev => ({
+				...prev,
+				[otherUserId]: (prev[otherUserId] ?? []).map(m =>
+				  m.isInvite ? { ...m, isExpired: true } : m
+				),
+			}));
+
+			//show info about expired invite
+			setUsers(prev =>
+				prev.map(u =>
+				  u.id === otherUserId
+					? { ...u, lastMessage: "Game invite expired" }
+					: u
+				)
+			);
       	}
 		if (data.type === "presence:list") {
 		setOnlineUserIds(new Set<string>(data.users));
@@ -206,54 +277,37 @@ export const ChatContainer = () => {
     );
   };
 
-  	const acceptAndJoinInvite = (userId: string) => {
+	const acceptAndJoinInvite = (userId: string) => {
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-
-
+	
 		setInvitesByUser(prev => ({
 			...prev,
-			[userId]: prev[userId]
-			? { ...prev[userId]!, status: "joined" }
-			: null,
+			[userId]: null,
 		}));
-
-		// 2️⃣ notify server
-		wsRef.current.send(JSON.stringify({
-			type: "invite:joined",
-			to: userId,
+		
+		setMessagesByUser(prev => ({
+			...prev,
+			[userId]: (prev[userId] ?? []).map(m =>
+			  m.isInvite ? { ...m, isExpired: true } : m
+			),
 		}));
+		if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+			wsRef.current.send(JSON.stringify({
+			  type: "invite:joined",
+			  to: userId,
+			}));
+		}
 	};
 
 	const sendGameInvite = () => {
-    if (!selectedUser || !wsRef.current) return;
-	const startedAt = Date.now();
-  	const expiresAt = startedAt + 120_000;
-  	setInvitesByUser(prev => ({
-		...prev,
-		[selectedUser.id]: { startedAt, expiresAt, status: "pending", },
-	}));
-
-    wsRef.current.send(JSON.stringify({
-      type: "invite",
-      to: selectedUser.id,
-    }));
-
-	setMessagesByUser(prev => ({
-		...prev,
-		[selectedUser.id]: [
-			...(prev[selectedUser.id] ?? []).map(m =>
-			m.isInvite ? { ...m, isExpired: true } : m
-			),
-			{
-			id: Date.now(),
-			text: "I invite you to play a game with me!",
-			sender: "me",
-			isInvite: true,
-			isExpired: false,
-			},
-		],
+		if (!selectedUser) return;
+		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+	  
+		wsRef.current.send(JSON.stringify({
+		  type: "invite",
+		  to: selectedUser.id,
 		}));
-	}
+	};
 
 	/* -------- derived invite state -------- */
 	const invite = selectedUser ? invitesByUser[selectedUser.id] : null;
