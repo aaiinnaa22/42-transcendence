@@ -15,7 +15,7 @@ services:
       TZ: "Europe/Helsinki"
       FRONTEND_HOST: frontend
       FRONTEND_PORT: 443
-      PUBLIC_DOMAIN: localhost
+      PUBLIC_DOMAIN: localhost:8443
     volumes:
       - db-data:/app/data
       - upload-data:/app/data/upload
