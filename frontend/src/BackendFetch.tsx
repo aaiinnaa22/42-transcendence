@@ -52,7 +52,7 @@ export function useBefriendUser() {
 	{
 		try
 		{
-			const response = await fetchWithAuth ( apiUrl("/friends/request"), {
+			const response = await fetchWithAuth ( apiUrl("/friends/requests"), {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -118,7 +118,7 @@ export async function fetchPendingFriendRequests()
 {
 	try
 	{
-		const response = await fetchWithAuth( apiUrl(`/friends/request-list`), {
+		const response = await fetchWithAuth( apiUrl("/friends/requests"), {
 			method: "GET",
 			credentials: "include",
 		});
@@ -137,9 +137,13 @@ export function useAcceptFriendRequest() {
 	{
 		try {
 			// Had inconsistent passing of data
-			const response = await fetchWithAuth( apiUrl(`/friends/accept/${fromUserId}`), {
+			const response = await fetchWithAuth( apiUrl("/friends/requests/accept"), {
 				method: "POST",
 				credentials: "include",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({fromUserId}),
 			});
 			const data = await response.json();
 			if (!response.ok || data.error) return false;
@@ -154,7 +158,7 @@ export function useAcceptFriendRequest() {
 	async function rejectFriendRequest(fromUserId: string): Promise<boolean>
 	{
 		try {
-			const response = await fetchWithAuth( apiUrl(`/friends/request/${fromUserId}`), {
+			const response = await fetchWithAuth( apiUrl(`/friends/requests/${fromUserId}`), {
 				method: "DELETE",
 				credentials: "include",
 			});

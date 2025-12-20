@@ -3,8 +3,14 @@ import { authenticate } from "../shared/middleware/auth.middleware.js";
 import { sendFriendRequest, acceptFriendRequest, removeFriend } from "../chat/friends.js";
 import type { Prisma } from "@prisma/client";
 import { validateRequest } from "../shared/utility/validation.utility.js";
-import { FriendRequestDeleteSchema } from "../schemas/friends.schema.js";
+import {
+	FriendRequestAcceptSchema,
+	FriendRequestCreateSchema,
+	FriendRequestDeleteSchema,
+	UserIdParamSchema
+} from "../schemas/friends.schema.js";
 import { blockUser, unblockUser } from "../chat/blocking.js";
+import { getAvatarUrl } from "../shared/utility/avatar.utility.js";
 
 type FriendSelect = Prisma.FriendshipGetPayload<{
 	include: {
@@ -12,18 +18,22 @@ type FriendSelect = Prisma.FriendshipGetPayload<{
 			id: true;
 			username: true;
 			avatar: true;
+			avatarType: true;
 		}};
 		friend: { select: {
 			id: true;
 			username: true;
 			avatar: true;
+			avatarType: true;
 		}};
 	};
 }>;
 
 export default async function friendsRoutes( server: FastifyInstance )
 {
-	// GET /friends
+	/// =================== FRIENDS =====================
+
+	// GET /friends - List all accepted friends
 	server.get(
 		"/friends",
 		{ preHandler: authenticate },
@@ -39,115 +49,47 @@ export default async function friendsRoutes( server: FastifyInstance )
 					status: "accepted",
 				},
 				include: {
-					user: { select: { id: true, username: true, avatar: true, }, },
-					friend: { select: { id: true, username: true, avatar: true, }, },
+					user: { select: { id: true, username: true, avatar: true, avatarType: true }, },
+					friend: { select: { id: true, username: true, avatar: true, avatarType: true }, },
 				},
 			} );
 
 			return friendships.map( ( f: FriendSelect ) =>
 			{
-				const other =
-					f.userId === userId ? f.friend : f.user;
+				const other = f.userId === userId ? f.friend : f.user;
 
 				return {
 					id: other.id,
 					username: other.username,
-					profile: other.avatar ?? "",
+					profile: getAvatarUrl( other.avatar, other.avatarType ),
 				};
 			} );
 		}
 	);
 
-	// POST /friends/request
-	server.post(
-		"/friends/request",
-		{ preHandler: authenticate },
-		async ( req: FastifyRequest, reply: FastifyReply ) =>
-		{
-			const { userId } = req.user as { userId: string };
-			// TODO: validate body
-			const { toUserId } = req.body as { toUserId: string };
-
-			const ok = await sendFriendRequest( server, userId, toUserId );
-			if ( !ok )
-			{
-				return reply.code( 400 ).send( { error: "Invalid friend request" } );
-			}
-
-			reply.send( { ok: true } );
-		}
-	);
-
-	//DELETE friend request (reject it)
-	server.delete(
-		"/friends/request/:id",
-		{ preHandler: authenticate },
-		async ( req: FastifyRequest, reply: FastifyReply ) =>
-		{
-			const { userId } = req.user as { userId: string };
-			const { id } = validateRequest( FriendRequestDeleteSchema, req.params );
-
-			const deleted = await server.prisma.friendship.deleteMany( {
-				where: {
-					userId: id, 		// requester
-					friendId: userId, // me
-					status: "pending",
-				},
-			} );
-
-			if ( deleted.count === 0 )
-			{
-				return reply.code( 400 ).send( { error: "No pending request to reject" } );
-			}
-
-			reply.send( { ok: true } );
-		}
-	);
-
-	// POST /friends/accept
-	server.post(
-		"/friends/accept/:id",
-		{ preHandler: authenticate },
-		async ( req: FastifyRequest, reply: FastifyReply ) =>
-		{
-			const { userId } = req.user as { userId: string };
-			// TODO: validate params
-			const { id } = req.params as { id: string };
-
-			const ok = await acceptFriendRequest( server, id, userId );
-			if ( !ok )
-			{
-				return reply.code( 400 ).send( { error: "No pending request" } );
-			}
-
-			reply.send( { ok: true } );
-		}
-	);
-
-	// DELETE /friends/:userId
+	// DELETE /friends/:userId - Remove a friend
 	server.delete(
 		"/friends/:userId",
 		{ preHandler: authenticate },
-		async ( req, reply ) =>
+		async ( req: FastifyRequest, reply: FastifyReply ) =>
 		{
 			const { userId } = req.user as { userId: string };
-			// TODO: validate params
-			const friendId = ( req.params as { userId: string } ).userId;
+			const { userId: friendId } = validateRequest( UserIdParamSchema, req.params );
 
 			const ok = await removeFriend( server, userId, friendId );
 			reply.send( { ok } );
 		}
 	);
 
+	/// =================== FRIEND REQUESTS =====================
+
+	// GET /friends/requests - List pending incoming requests
 	server.get(
-		"/friends/request-list",
+		"/friends/requests",
 		{ preHandler: authenticate },
-		async ( req, reply ) =>
+		async ( req: FastifyRequest, reply: FastifyReply ) =>
 		{
-			if ( !req.user )
-			{
-				return reply.code( 401 ).send( { error: "Unauthorized" } );
-			}
+			void reply;
 
 			const { userId } = req.user as { userId: string };
 
@@ -163,6 +105,7 @@ export default async function friendsRoutes( server: FastifyInstance )
 							id: true,
 							username: true,
 							avatar: true,
+							avatarType: true,
 						},
 					},
 				},
@@ -171,25 +114,92 @@ export default async function friendsRoutes( server: FastifyInstance )
 				},
 			} );
 
-			return pendingRequests.map( req => ( {
-				requestId: req.id,
-				fromUserId: req.user.id,
-				fromUsername: req.user.username ?? "(no name)",
-				fromAvatar: req.user.avatar ?? "",
+			return pendingRequests.map( friendRequest => ( {
+				requestId: friendRequest.id,
+				fromUserId: friendRequest.user.id,
+				fromUsername: friendRequest.user.username ?? "(no name)",
+				fromAvatar: getAvatarUrl( friendRequest.user.avatar, friendRequest.user.avatarType ),
 			} ) );
 		}
 	);
 
-	// Block user
+	// POST /friends/requests - Send a friend request
 	server.post(
-		"/friends/block/:id",
+		"/friends/requests",
 		{ preHandler: authenticate },
-		async ( request, reply ) =>
+		async ( req: FastifyRequest, reply: FastifyReply ) =>
+		{
+			const { userId } = req.user as { userId: string };
+			const { toUserId } = validateRequest( FriendRequestCreateSchema, req.body );
+
+			const ok = await sendFriendRequest( server, userId, toUserId );
+
+			if ( !ok )
+			{
+				return reply.code( 400 ).send( { error: "Invalid friend request" } );
+			}
+
+			reply.code( 201 ).send( { ok: true } );
+		}
+	);
+
+	// POST /friends/requests/accept
+	server.post(
+		"/friends/requests/accept",
+		{ preHandler: authenticate },
+		async ( req: FastifyRequest, reply: FastifyReply ) =>
+		{
+			const { userId } = req.user as { userId: string };
+			const { fromUserId } = validateRequest( FriendRequestAcceptSchema, req.body );
+
+			const ok = await acceptFriendRequest( server, fromUserId, userId );
+			if ( !ok )
+			{
+				return reply.code( 400 ).send( { error: "No pending request" } );
+			}
+
+			return reply.code( 200 ).send( { ok: true } );
+		}
+	);
+
+	// DELETE /friends/requests/:userId - Reject or cancel a friend request
+	server.delete(
+		"/friends/requests/:userId",
+		{ preHandler: authenticate },
+		async ( req: FastifyRequest, reply: FastifyReply ) =>
+		{
+			const { userId } = req.user as { userId: string };
+			const { userId: fromUserId } = validateRequest( FriendRequestDeleteSchema, req.params );
+
+			const deleted = await server.prisma.friendship.deleteMany( {
+				where: {
+					userId: fromUserId,	// requester
+					friendId: userId,	// me
+					status: "pending",
+				},
+			} );
+
+			if ( deleted.count === 0 )
+			{
+				return reply.code( 404 ).send( { error: "No pending request to reject" } );
+			}
+
+			return reply.code( 204 ).send();
+		}
+	);
+
+	/// =================== BLOCKING =====================
+
+	// POST /friends/block/:userId - Block a user
+	server.post(
+		"/friends/block/:userId",
+		{ preHandler: authenticate },
+		async ( request: FastifyRequest, reply: FastifyReply ) =>
 		{
 			try
 			{
 				const { userId } = request.user as { userId: string };
-				const { id: targetUserId } = request.params as { id: string };
+				const { userId: targetUserId } = validateRequest( UserIdParamSchema, request.params );
 
 				const success = await blockUser( server, userId, targetUserId );
 
@@ -208,16 +218,16 @@ export default async function friendsRoutes( server: FastifyInstance )
 		}
 	);
 
-	// Unblock user
+	// DELETE /friends/block/:userId - Unblock a user
 	server.delete(
-		"/friends/block/:id",
+		"/friends/block/:userId",
 		{ preHandler: authenticate },
-		async ( request, reply ) =>
+		async ( request: FastifyRequest, reply: FastifyReply ) =>
 		{
 			try
 			{
 				const { userId } = request.user as { userId: string };
-				const { id: targetUserId } = request.params as { id: string };
+				const { userId: targetUserId } = validateRequest( UserIdParamSchema, request.params );
 
 				const success = await unblockUser( server, userId, targetUserId );
 
