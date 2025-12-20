@@ -67,8 +67,6 @@ export const Settings = () =>
 		};
 	}
 
-	// Delete flow handled by DeleteAccountModal
-
 	return (
 		<>
 			<div className="flex flex-col gap-6 lg:gap-15 portrait:items-center lg:landscape:items-center justify-center">
