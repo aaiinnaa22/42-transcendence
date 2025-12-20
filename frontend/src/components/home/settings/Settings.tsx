@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import {LanguageSelector} from "./LanguageSelector"
 import { TwoFAModal } from "./TwoFAModal";
 import { fetchWithAuth } from "../../../api/fetchWithAuth";
+import { DeleteAccountModal } from "./DeleteAccountModal";
 
 export const Settings = () =>
 {
 	const [error, setError] = useState<string | null>(null);
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const [isTwoFAEnabled, setIsTwoFAEnabled] = useState<boolean | null>(null);
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -65,6 +67,8 @@ export const Settings = () =>
 		};
 	}
 
+	// Delete flow handled by DeleteAccountModal
+
 	return (
 		<>
 			<div className="flex flex-col gap-6 lg:gap-15 portrait:items-center lg:landscape:items-center justify-center">
@@ -84,7 +88,11 @@ export const Settings = () =>
 						onClick={handleLogOut}>
 						Log out
 					</button>
-					<button className="landscape:text-left lg:landscape:text-center text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">Delete account</button>
+					<button
+						className="landscape:text-left lg:landscape:text-center text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full"
+						onClick={() => setIsDeleteModalOpen(true)}>
+							Delete account
+					</button>
 				</div>
 			</div>
             <TwoFAModal
@@ -93,6 +101,10 @@ export const Settings = () =>
                 onClose={() => setIsTwoFAModalOpen(false)}
                 onStatusChange={handleTwoFAStatusChange}
             />
+				<DeleteAccountModal
+					isOpen={isDeleteModalOpen}
+					onClose={() => setIsDeleteModalOpen(false)}
+				/>
 		</>
 	);
 }
