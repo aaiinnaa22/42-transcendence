@@ -75,7 +75,7 @@ const PUBLIC_URL = isProduction
 	: `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}:${_env.PORT}`;
 
 // Public callback path served by Nginx and proxied to backend /api/auth
-const GOOGLE_CALLBACK_URL = `${PUBLIC_URL}/auth/google/callback`;
+const GOOGLE_CALLBACK_URL = `${PUBLIC_URL}/api/auth/google/callback`;
 
 // Export the validated environment
 export const env = {
