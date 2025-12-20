@@ -11,10 +11,10 @@ export default function NotFound() {
         </p>
         <div className="flex gap-3 justify-center">
           <button
-            onClick={() => navigate("/play")}
+            onClick={() => navigate("/")}
             className="inline-block px-4 py-2 rounded-lg font-semibold bg-transcendence-beige text-transcendence-black"
           >
-            Back to Play
+            Back to Home
           </button>
         </div>
       </section>
