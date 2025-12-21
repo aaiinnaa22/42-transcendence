@@ -105,7 +105,8 @@ export const Profile = () => {
 			<div className="overflow-y-auto [&::-webkit-scrollbar]:hidden grid
 				landscape:grid-cols-[auto_auto_auto] landscape:grid-rows-[auto_auto] lg:landscape:grid-cols-[auto_auto_auto] lg:landscape:grid-rows-[auto_auto_auto_auto]
 				portrait:grid-cols-[auto_auto_auto] portrait:grid-rows-[auto_auto_auto_auto]
-				gap-5 xl:gap-15">
+				landscape:gap-5 lg:landscape:gap-25
+				portrait:gap-15">
 				<div className="col-start-1 col-span-3 justify-center  lg:landscape:justify-center flex portrait:justify-center items-center gap-2">
 					<h2 className="text-transcendence-white font-transcendence-three tracking-[0.2em] font-semibold text-3xl">Hi {username}!</h2>
 					<button
