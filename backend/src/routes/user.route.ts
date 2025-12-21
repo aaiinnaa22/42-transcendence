@@ -1,10 +1,8 @@
 import { env } from "../config/environment.js";
-
 import { type FastifyInstance } from "fastify";
 import { authenticate } from "../shared/middleware/auth.middleware.js";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { blockUser, unblockUser } from "../chat/blocking.js";
 import { HttpError, NotFoundError, sendErrorReply } from "../shared/utility/error.utility.js";
 import { validateRequest } from "../shared/utility/validation.utility.js";
 import { UpdateUserSchema } from "../schemas/user.schema.js";
@@ -110,57 +108,6 @@ const userRoutes = async ( server: FastifyInstance ) =>
 			reply.code( 500 ).send( { error: "Failed to update user profile" } );
 		}
 	} );
-
-	//Block user
-	server.post(
-		"/users/:id/block",
-		{ preHandler: authenticate },
-		async ( request, reply ) =>
-		{
-			try
-			{
-				const { userId } = request.user as { userId: string };
-				const { id: targetUserId } = request.params as { id: string };
-
-				const success = await blockUser( server, userId, targetUserId );
-
-				if ( !success )
-				{
-					return reply.code( 400 ).send( { error: "Invalid block request" } );
-				}
-
-				reply.send( { ok: true } );
-			}
-			catch ( err: any )
-			{
-				server.log.error( { error: err }, "Block user failed" );
-				reply.code( 500 ).send( { error: "Failed to block user" } );
-			}
-		}
-	);
-
-	//Unblock user
-	server.delete(
-		"/users/:id/block",
-		{ preHandler: authenticate },
-		async ( request, reply ) =>
-		{
-			try
-			{
-				const { userId } = request.user as { userId: string };
-				const { id: targetUserId } = request.params as { id: string };
-
-				const success = await unblockUser( server, userId, targetUserId );
-
-				reply.send( { ok: success } );
-			}
-			catch ( err: any )
-			{
-				server.log.error( { error: err }, "Unblock user failed" );
-				reply.code( 500 ).send( { error: "Failed to unblock user" } );
-			}
-		}
-	);
 
 	server.delete( "/users/me", { preHandler: authenticate }, async ( request, reply ) =>
 	{

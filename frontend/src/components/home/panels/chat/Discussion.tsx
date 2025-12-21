@@ -10,6 +10,7 @@ type DiscussionProps = {
 	messages: Message[];
 	onSendMessage: (text: string) => void;
 	onExitClick: () => void;
+	onProfileClick: (user: ChatUser) => void;
 	inviteIsActive: boolean;
 	inviteTimeLeft: number;
 	onSendInvite: () => void;
@@ -22,7 +23,8 @@ export const Discussion = ({
   onExitClick,
   inviteIsActive,
   inviteTimeLeft,
-  onSendInvite
+  onSendInvite,
+  onProfileClick
 }: DiscussionProps) => {
 	const [message, setMessage] = useState("");
 	const discussionEndRef = useRef<HTMLDivElement | null>(null);
@@ -74,13 +76,13 @@ export const Discussion = ({
 	};
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex flex-col h-full lg:rounded-l-2xl lg:border-2">
 
 			{/* Header */}
-			<div className="flex flex-row justify-between items-center bg-white w-full lg:rounded-tl-xl  p-2 border-b-2">
-				<button onClick={onExitClick} className="material-symbols-outlined !text-xs lg:!text-md">arrow_back_ios_new</button>
-				<h2 className="font-semibold text-sm lg:text-md">{friend.username}</h2>
-				<ChatProfilePic friend={friend}/>
+			<div className="flex flex-row justify-between items-center bg-white w-full lg:rounded-tl-2xl p-2 border-b-2">
+				<button onClick={onExitClick} className="material-symbols-outlined !text-md">arrow_back_ios_new</button>
+				<h2 className="font-semibold">{friend.username}</h2>
+				<ChatProfilePic friend={friend} onProfileClick={onProfileClick}/>
 			</div>
 			<div className="self-end p-2">
 				<button className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"

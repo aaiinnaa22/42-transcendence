@@ -25,6 +25,7 @@ import {
 } from "../schemas/auth.schema.js";
 import { pseudonym } from "../shared/utility/anonymize.utility..js";
 import { ACCESS_TOKEN_MAX_AGE, COOKIE_OPTIONS, REFRESH_TOKEN_MAX_AGE } from "../config/cookie.constants.js";
+import { getAvatarUrl } from "../shared/utility/avatar.utility.js";
 
 // Augment Fastify instance with oauth2 namespace added by the plugin
 declare module "fastify" {
@@ -240,17 +241,9 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			if ( !user ) throw NotFoundError( "User not found" );
 
-			// Helper for providig the correct path to the authenticated user's avatar
-			const getAvatarUrl = () =>
-			{
-				if ( user.avatarType === "local" ) return `/avatars/${user.avatar}`;
-				else if ( user.avatarType === "provider" ) return user.avatar;
-				else return "/avatars/00000000-0000-0000-0000-000000000000.webp";
-			};
-
 			reply.send( {
 				username: user.username,
-				avatar: getAvatarUrl(),
+				avatar: getAvatarUrl( user.avatar, user.avatarType ),
 				twoFAEnabled: user.twoFAEnabled
 			} );
 		}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Settings } from "./settings/Settings"
 import { apiUrl } from '../../api/api';
+import { PendingFriendRequests } from './utils/PendingFriendRequests';
 import { fetchWithAuth } from "../../api/fetchWithAuth";
 import { BaseModal } from "./settings/BaseModal";
 import { useTranslation } from 'react-i18next';
@@ -92,12 +93,12 @@ export const Profile = () => {
 					</button>
 				</div>
 				<div className="flex flex-col
-					landscape:row-span-2 landscape:row-start-1 lg:landscape:row-span-1 lg:landscape:col-start-2 lg:landscape:row-start-2
+					landscape:col-start-1 landscape:row-start-2 lg:landscape:col-start-2 lg:landscape:row-start-2
 					portrait:col-start-2 portrait:row-start-2
 					justify-center items-center gap-4">
 						<div className="relative">
 						{profilePic
-						? <img className="h-40 w-40 xl:h-60 xl:w-60 rounded-full" src={profilePic}></img>
+						? <img className="h-40 w-40 xl:h-60 xl:w-60 rounded-full object-cover" src={profilePic}></img>
 						: <span className="material-symbols-outlined text-transcendence-white !text-9xl">account_circle</span>}
 						<button
 							className="absolute top-1 right-2 bg-transcendence-white w-8 h-8 rounded-full border-2 border-transcendence-black flex flex-col justify-center items-center cursor-pointer"
@@ -111,10 +112,16 @@ export const Profile = () => {
 								onChange={handleProfilePicChange}>
 							</input>
 						</button>
-					</div>
+						</div>
 				</div>
-				<div className="landscape:col-start-2 landscape:row-start-2 lg:landscape:col-start-2 lg:landscape:row-start-3 lg:landscape:items-center
-					portrait:col-start-2 portrait:row-start-3 portrait:items-center
+				<div className='portrait:col-start-2 portrait:row-start-3
+					landscape:col-start-3 landscape:row-start-2
+					lg:landscape:col-start-2 lg:landscape:row-start-3
+					flex flex-col items-center justify-center h-35'>
+					<PendingFriendRequests/>
+				</div>
+				<div className="landscape:col-start-2 landscape:row-start-2 lg:landscape:col-start-2 lg:landscape:row-start-4 lg:landscape:items-center
+					portrait:col-start-2 portrait:row-start-4 portrait:items-center
 					flex flex-col justify-center">
 					<Settings/>
 				</div>
