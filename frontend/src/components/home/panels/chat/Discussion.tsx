@@ -153,7 +153,7 @@ export const Discussion = ({
                     if (status !== "pending") return;
                     onAcceptInvite(msg.id);
                     navigate("/home/play/invite", {
-                      state: { invitee: friend.username },
+                      state: { invitee: friend.username, expiresAt: invite.expiresAt, },
                     });
                   }}
                 >
