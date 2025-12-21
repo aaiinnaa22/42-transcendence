@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Chat } from "./Chat";
 import { Discussion } from "./Discussion";
+import { ChatProfile } from "./ChatProfile";
+import { forceLogout } from "../../../../api/forceLogout";
+import { fetchWithAuth } from "../../../../api/fetchWithAuth";
+import { SideTab } from "../../utils/SideTab";
+import { PopUp } from "../../utils/PopUp";
 
 export type Message = {
     id: number;
@@ -17,35 +22,45 @@ export type Message = {
   	};
 };
 
+type userStats = {
+	wins:  number,
+	losses: number,
+	playedGames: number,
+	eloRating: number
+}
+
 export type ChatUser = {
   id: string;
   username: string;
   profile: string;
   online?: boolean;
   lastMessage?: string;
+  stats: userStats;
+  isFriend: boolean;
+  isBlockedByMe: boolean;
+  hasBlockedMe: boolean;
+  friendshipStatus?: "pending" | "accepted";
 };
 
-export const ChatContainer = () => {
+type ChatContainerProps = {
+  chatIsOpen: boolean;
+};
+
+export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
   	const [users, setUsers] = useState<ChatUser[]>([]);
   	const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
   	const [messagesByUser, setMessagesByUser] = useState<Record<string, Message[]>>({});
-	const [myUserId, setMyUserId] = useState<string | null>(null);
 	const myUserIdRef = useRef<string | null>(null);
  	const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
-  	const [now, setNow] = useState(Date.now());
+	const [profileUser, setProfileUser] = useState<ChatUser | null>(null);
+
+  	const wsRef = useRef<WebSocket | null>(null);
 	const usersRef = useRef<ChatUser[]>([]);
 
 
-  	const wsRef = useRef<WebSocket | null>(null);
-
-	useEffect(() => {
-		const id = setInterval(() => setNow(Date.now()), 1000);
-		return () => clearInterval(id);
-	}, []);
-
   	useEffect(() => {
-    	fetch("http://localhost:4241/chat/users", {
-      	credentials: "include",
+    fetchWithAuth("http://localhost:4241/chat/users", {
+      credentials: "include",
     })
       .then(res => res.json())
       .then(setUsers)
@@ -60,30 +75,37 @@ export const ChatContainer = () => {
     	const ws = new WebSocket("ws://localhost:4241/chat");
     	wsRef.current = ws;
 
-    	ws.onopen = () => {
-      	console.log("Chat WS connected");
-    	};
 
-    	ws.onmessage = (e) => {
+    ws.onopen = () => {
+      console.log("Chat WS connected");
+    };
+
+    ws.onmessage = (e) => {
     	let data;
     	try {
     		data = JSON.parse(e.data);
     	} catch {
     	return;
-    	}
+    }
+		//attempt to auth socket requests
+	if (data.type === "error" && data.reason === "unauthorized") {
+		console.warn("WebSocket unauthorized, forcing logout");
+		forceLogout();
+		return;
+	}
 
-    	if (data.type === "dm") {
-        	const fromId = data.from as string;
-        	const messageText = data.message as string;
+    if (data.type === "dm") {
+    	const fromId = data.from as string;
+    	const messageText = data.message as string;
 
-        	const newMessage: Message = {
-          		id: Date.now(),
-          		text: messageText,
-          		sender: "friend",
-				type: "text",
-        	};
+    	const newMessage: Message = {
+      		id: Date.now(),
+      		text: messageText,
+      		sender: "friend",
+			type: "text",
+        };
 
-        setMessagesByUser(prev => ({
+    	setMessagesByUser(prev => ({
         	...prev,
         	[fromId]: [...(prev[fromId] ?? []), newMessage],
         }));
@@ -97,7 +119,6 @@ export const ChatContainer = () => {
 
 		if (data.type === "me") {
 			myUserIdRef.current = data.userId;
-			setMyUserId(data.userId);
 			return;
 		}
 
@@ -204,6 +225,27 @@ export const ChatContainer = () => {
 					: u
 				)
 			);
+
+			setMessagesByUser(prev => {
+				const msgs = prev[otherUserId] ?? [];
+				const lastPendingIndex = [...msgs]
+					.map((m, i) => ({ m, i }))
+					.filter(x => x.m.type === "invite" && x.m.invite?.status === "pending")
+					.at(-1)?.i;
+
+				if (lastPendingIndex === undefined) return prev;
+
+				const updated = [...msgs];
+				updated[lastPendingIndex] = {
+					...updated[lastPendingIndex],
+					invite: {
+					...updated[lastPendingIndex].invite!,
+					status: "expired",
+					},
+				};
+
+				return { ...prev, [otherUserId]: updated };
+			});
       	}
 
 		if (data.type === "presence:list") {
@@ -222,10 +264,16 @@ export const ChatContainer = () => {
 		if (data.type === "error" && data.reason === "blocked") {
 			alert("You cannot message this user.");
 		}
+
+		if (data.type === "error") {
+			console.error("Error received from server:", data.reason);
+		}
     };
 
-    ws.onclose = () => {
+    ws.onclose = e => {
     	console.log("Chat WS disconnected");
+		if (e.code === 1008)
+			forceLogout();
     	wsRef.current = null;
     };
 
@@ -301,29 +349,67 @@ export const ChatContainer = () => {
     	online: onlineUserIds.has(u.id),
   	}));
 
-  	return (
-		<div className="h-full">
-
-			{/* this renders user list */}
-			{!selectedUser && (
-			<Chat
-				users={usersWithPresence}
-				selectedUserId={null}
-				onChatClick={setSelectedUser}
+	return (
+	<div className="fixed inset-0 z-50 pointer-events-none">
+		<SideTab isOpen={chatIsOpen}>
+		<div className="pointer-events-auto h-full w-full">
+			{profileUser ? (
+			<ChatProfile
+				user={profileUser}
+				onExitClick={() => setProfileUser(null)}
 			/>
-			)}
-
-			{/* this renders chat window */}
-			{selectedUser && (
+			) : selectedUser ? (
 			<Discussion
 				friend={selectedUser}
 				messages={messagesByUser[selectedUser.id] ?? []}
 				onSendMessage={sendMessage}
 				onExitClick={() => setSelectedUser(null)}
 				onSendInvite={sendGameInvite}
-				onAcceptInvite={(inviteId) => acceptAndJoinInvite(selectedUser.id, inviteId)}
+				onAcceptInvite={(inviteId) =>
+				acceptAndJoinInvite(selectedUser.id, inviteId)
+				}
+				onProfileClick={setProfileUser}
+			/>
+			) : (
+			<Chat
+				users={usersWithPresence}
+				selectedUserId={null}
+				onChatClick={setSelectedUser}
+				onProfileClick={setProfileUser}
 			/>
 			)}
 		</div>
+		</SideTab>
+
+    <PopUp isOpen={chatIsOpen}>
+		<div className="pointer-events-auto h-full w-full">
+			{profileUser ? (
+			<ChatProfile
+				user={profileUser}
+				onExitClick={() => setProfileUser(null)}
+			/>
+			) : selectedUser ? (
+			<Discussion
+				friend={selectedUser}
+				messages={messagesByUser[selectedUser.id] ?? []}
+				onSendMessage={sendMessage}
+				onExitClick={() => setSelectedUser(null)}
+				onSendInvite={sendGameInvite}
+				onAcceptInvite={(inviteId) =>
+				acceptAndJoinInvite(selectedUser.id, inviteId)
+				}
+				onProfileClick={setProfileUser}
+			/>
+			) : (
+			<Chat
+				users={usersWithPresence}
+				selectedUserId={null}
+				onChatClick={setSelectedUser}
+				onProfileClick={setProfileUser}
+			/>
+			)}
+		</div>
+		</PopUp>
+	</div>
 	);
 };

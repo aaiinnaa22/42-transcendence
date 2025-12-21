@@ -25,12 +25,12 @@ export function createInvite(from: string, to: string) {
   }
 
   	const startedAt = Date.now();
-  	const expiresAt = startedAt + 120_000;
+  	const expiresAt = startedAt + 60_000;
 
   	const timeoutId = setTimeout(() => {
     	invites.delete(key);
     	sendInviteExpired(from, to);
-  	}, 120_000);
+  	}, 60_000);
 
   	invites.set(key, {
     	from,

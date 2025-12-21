@@ -1,6 +1,7 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
-
+import { VisualGame } from "./VisualGame.tsx";
+import { forceLogout } from "../../../api/forceLogout.ts";
 
 export const GameTournament = () =>
 {
@@ -12,6 +13,31 @@ export const GameTournament = () =>
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
     const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
+	const [screenIsPortrait, setScreenIsPortrait] = useState<boolean>(
+		window.matchMedia("(orientation: portrait)").matches
+	);
+	const holdIntervals = useRef<Record<string, number | null>>({});
+	const didOpenRef = useRef(false);
+	const [isTouchScreen, setIsTouchScreen] = useState<boolean>(false);
+
+	//Touch screen button managers
+	const startHold = (key: string, o: number, dy: number) => {
+		if (holdIntervals.current[key]) {
+			clearInterval(holdIntervals.current[key]!);
+		}
+		void o;
+		sendMove(dy);
+		holdIntervals.current[key] = window.setInterval(() => {
+			sendMove(dy);
+		}, 20);
+	};
+
+	const stopHold = (key: string) => {
+		if (holdIntervals.current[key]) {
+			clearInterval(holdIntervals.current[key]!);
+			holdIntervals.current[key] = null;
+		}
+	};
 
     // sends move command to backend server when player wants to move
     const sendMove = (dy: number) => {
@@ -120,8 +146,25 @@ export const GameTournament = () =>
         window.addEventListener("keyup", handleKeyUp);
 		window.addEventListener("blur", handleBlur);
 
-        ws.onopen = () => {console.log("Connected!");}
-        ws.onclose = () => {console.log("Disconnected!");};
+        ws.onopen = () => {
+			console.log("Connected!");
+			didOpenRef.current = true;
+		}
+		ws.onclose = (e) => {
+		console.log("Game WS closed", e.code, e.reason);
+		if (!didOpenRef.current) {
+			console.warn("Game WS handshake failed, forcing logout");
+			forceLogout();
+			return;
+		}
+		if (e.code === 1008) {
+			console.warn("Unauthorized game socket, forcing logout");
+			forceLogout();
+			return;
+		}
+		wsRef.current = null;
+		console.log("Game socket disconnected normally");
+		};
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -138,6 +181,11 @@ export const GameTournament = () =>
 			}
 			else if (data.type === "error")
 			{
+				if (data.reason === "unauthorized") {
+					console.warn("WebSocket unauthorized, forcing logout");
+					forceLogout();
+					return;
+				}
 				console.error("Error from server: ", data.message);
 				if (data.error) console.error("Validation errors: ", data.error);
 			}
@@ -163,25 +211,21 @@ export const GameTournament = () =>
         };
         gameLoop();
 
-		// Handle resize
-		const handleResize = () => {
-			const canvas = canvasRef.current;
-			const isPortrait = window.innerHeight > window.innerWidth;
-			if (canvas)
-			{
-				if (isPortrait)
-				{
-					canvas.width = HEIGHT;
-					canvas.height = WIDTH;
-				}
-				else
-				{
-					canvas.width = WIDTH;
-					canvas.height = HEIGHT;
-				}
-			}
+		const getScreenOrientation = () => {
+			const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+			setScreenIsPortrait(isPortrait);
+		}
+
+		const touchScreenMediaQuery = window.matchMedia("(pointer: coarse)");
+		const checkTouch = () => {
+			setIsTouchScreen(touchScreenMediaQuery.matches);
 		};
-		window.addEventListener("resize", handleResize);
+
+ 		checkTouch();
+		getScreenOrientation();
+		window.addEventListener("orientationchange", getScreenOrientation);
+		window.addEventListener("resize", getScreenOrientation);
+		touchScreenMediaQuery.addEventListener("change", checkTouch);
 
         // Clean up things
         return () => {
@@ -190,36 +234,18 @@ export const GameTournament = () =>
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
 			window.removeEventListener("blur", handleBlur);
-			window.removeEventListener("resize", handleResize);
+			window.removeEventListener("orientationchange", getScreenOrientation);
+			window.removeEventListener("resize", getScreenOrientation);
+			touchScreenMediaQuery.removeEventListener("change", checkTouch);
         };
     },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
 
-    // Aina's stuff after this line
-	const screenIsPortrait = window.innerHeight > window.innerWidth;
-
-    return (
-		<div className="relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
-		gap-[2vw] w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
-		p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
-			<span ref={PointsRef}
-				className="text-transcendence-white font-transcendence-three text-4xl
-					col-start-1 row-start-1 text-right self-center
-					portrait:self-end portrait:text-right">0</span>
-			<span ref={PointsRef2}
-				className="text-transcendence-white font-transcendence-three text-4xl
-					col-start-3 row-start-1 text-left self-center
-					portrait:self-start portrait:text-left">0</span>
-			<div className="
-				flex-grow flex items-center justify-center
-				border-4 border-transcendence-white rounded-xl overflow-hidden
-				col-start-2 portrait:col-span-1">
-				<canvas
-					ref={canvasRef}
-					width={screenIsPortrait ? HEIGHT : WIDTH}
-					height={screenIsPortrait ? WIDTH : HEIGHT}
-					className="w-full h-full"
-				/>
-			</div>
-        </div>
-    );
+	return (<VisualGame
+		pointsRef={PointsRef}
+		pointsRef2={PointsRef2}
+		canvasRef={canvasRef}
+		screenIsPortrait={screenIsPortrait}
+		startHold={startHold}
+		stopHold={stopHold}
+		isTouchScreen={isTouchScreen}/>)
 };

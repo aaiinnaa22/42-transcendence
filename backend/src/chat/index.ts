@@ -6,38 +6,15 @@ import { sendDM } from "./directMessage.ts";
 import { onlineUsers } from "./state.ts";
 import { isBlocked, blockUser, unblockUser } from "./blocking.ts";
 import { createInvite } from "./invites.ts";
+import { authenticate } from "../shared/middleware/auth.middleware.ts";
 
 const clients = new Map<WebSocket, number>();
 
 // TO DO: add prehandler authenticate (?)
 export default async function chatComponent(server: FastifyInstance) {
-	server.get("/chat", { websocket: true }, (socket, req) => {
+	server.get("/chat", { websocket: true, preHandler: authenticate }, (socket, req) => {
 
-			let userId: string;
-			try
-			{
-				const signed = req.cookies.accessToken;
-				if (!signed) {
-					socket.close();
-					return;
-				}
-
-				const unsign = req.unsignCookie(signed);
-				if (!unsign.valid) {
-					socket.close();
-					return;
-				}
-
-				const payload = server.jwt.verify(unsign.value) as { userId: string };
-
-				req.user = payload;
-				userId = payload.userId;
-			}
-			catch (err)
-			{
-				socket.close();
-				return;
-			}
+			const { userId } = req.user as { userId: string };
 
 			console.log("WS authenticated user:", userId);
 			addUser(userId, socket);

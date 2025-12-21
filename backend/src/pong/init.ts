@@ -445,9 +445,13 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 	// Multiplayer game handler with matchmaking
 	server.get( "/game/multiplayer",
-		{ websocket: true, preHandler: authenticate },
+		{ websocket: true, onRequest: authenticate },
 		async ( socket, request: FastifyRequest ) =>
 	{
+		if (!request.user) {
+			socket.close(1008, "Unauthorized");
+			return;
+		}
 		const ws = socket as unknown as WsWebSocket;
         const { userId } = request.user as { userId: string };
 		// Check if the player is already in a match
@@ -543,9 +547,13 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	} );
 
 	server.get( "/game/singleplayer",
-		{ websocket: true, preHandler: authenticate },
+		{ websocket: true, onRequest: authenticate },
 		async ( socket, request: FastifyRequest ) =>
 	{
+		if (!request.user) {
+			socket.close(1008, "Unauthorized");
+			return;
+		}
 		const ws = socket as unknown as WsWebSocket;
         const { userId } = request.user as { userId: string };
 
@@ -634,9 +642,13 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 		// ============================= INVITE GAME ===============================
 	server.get( "/game/chat",
-		{ websocket: true, preHandler: authenticate },
+		{ websocket: true, onRequest: authenticate },
 		async ( socket, request: FastifyRequest ) =>
 	{
+		if (!request.user) {
+			socket.close(1008, "Unauthorized");
+			return;
+		}
 		const ws = socket as unknown as WsWebSocket;
         const { userId } = request.user as { userId: string };
 
