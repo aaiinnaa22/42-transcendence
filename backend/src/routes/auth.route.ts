@@ -6,7 +6,7 @@ import { OAuth2Client } from "google-auth-library";
 import { authenticate } from "../shared/middleware/auth.middleware.ts";
 import bcrypt from "bcrypt";
 import { validateRequest } from "../shared/utility/validation.utility.ts";
-import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReplyForAuth, NotFoundError, ConflictError, UnauthorizedError } from "../shared/utility/error.utility.ts";
+import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErrorReply, NotFoundError, ConflictError, UnauthorizedError } from "../shared/utility/error.utility.ts";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
 import { LoginSchema, RegisterSchema, TwoFADisableSchema, TwoFALoginSchema, TwoFAVerifySchema } from "../schemas/auth.schema.ts";
@@ -207,7 +207,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 		catch (err: unknown) {
 			server.log.error(`Login failed: ${(err as Error)?.message || err}`);
-			return sendErrorReplyForAuth(reply, err, "Login failed");
+			return sendErrorReply(reply, err, "Login failed");
 		}
 	} );
 
@@ -240,7 +240,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		{
 			const msg = err instanceof Error ? err.message : String( err );
 			server.log.error( `Get user failed: ${msg}` );
-			return sendErrorReplyForAuth( reply, err );
+			return sendErrorReply( reply, err );
 		}
 	} );
 
@@ -308,7 +308,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		{
 			const msg = err instanceof Error ? err.message : String( err );
 			server.log.error( `Registration failed: ${msg}` );
-			return sendErrorReplyForAuth( reply, err, "Registration failed" );
+			return sendErrorReply( reply, err, "Registration failed" );
 		}
 	} );
 
@@ -378,7 +378,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		{
 			const msg = err instanceof Error ? err.message : String( err );
 			server.log.error( `Login failed: ${msg}` );
-			return sendErrorReplyForAuth( reply, err, "Login failed" );
+			return sendErrorReply( reply, err, "Login failed" );
 		}
 	} );
 
@@ -406,7 +406,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		{
 			const msg = err instanceof Error ? err.message : String( err );
 			server.log.error( `Refresh failed: ${msg}` );
-			return sendErrorReplyForAuth( reply, err );
+			return sendErrorReply( reply, err );
 		}
 	} );
 
@@ -436,7 +436,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		} catch (err: unknown) {
 			const errorMessage = err instanceof Error ? err.stack || err.message : String(err);
 			server.log.error({ err: errorMessage }, "2FA setup error");
-			return sendErrorReplyForAuth(reply, err);
+			return sendErrorReply(reply, err);
 		}
 	});
 
@@ -469,7 +469,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String( err );
 			server.log.error( `2FA verify error: ${msg}` );
-			return sendErrorReplyForAuth( reply, err );
+			return sendErrorReply( reply, err );
 		}
 	});
 
@@ -506,7 +506,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			server.log.error(`2FA login error: ${msg}`);
-			return sendErrorReplyForAuth(reply, err);
+			return sendErrorReply(reply, err);
 		}
 	});
 
@@ -535,7 +535,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			reply.send({ message: "2FA disabled" });
 		} catch (err: unknown) {
-			return sendErrorReplyForAuth( reply, err );
+			return sendErrorReply( reply, err );
 		}
 	});
 };

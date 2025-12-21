@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { type FastifyReply } from "fastify";
 import { type ZodError } from "zod";
 
@@ -23,15 +24,7 @@ export const ConflictError = ( message: string = "Conflict" ) => new HttpError( 
 export const InternalServerError = ( message: string = "Internal Server Error" ) => new HttpError( message, 500 );
 export const ServiceUnavailableError = ( message: string = "Service Unavailable" ) => new HttpError( message, 503 );
 
-
-// Utility for sending replies with the HttpError class
-export const sendErrorReply = ( reply: FastifyReply, error: any, message: string = "An error occured" ) => {
-	const statusCode = error instanceof HttpError ? error.statusCode : 500;
-	const replyMessage = error instanceof HttpError ? error.message : message;
-	reply.code( statusCode ).send( { error: replyMessage } );
-};
-
-export const sendErrorReplyForAuth = (
+export const sendErrorReply = (
   reply: FastifyReply,
   error: unknown,
   fallbackMessage: string = "An unexpected error occurred"
@@ -39,7 +32,10 @@ export const sendErrorReplyForAuth = (
   let statusCode = 500;
   let userMessage: string = fallbackMessage;
 
-  if (error instanceof HttpError) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    statusCode = 500;
+    userMessage = "An unexpected database error occurred.";
+  } else if (error instanceof HttpError) {
     statusCode = error.statusCode;
     userMessage = error.message;
   } else if (error instanceof Error) {
