@@ -3,11 +3,18 @@ import { Chat } from "./Chat";
 import { Discussion } from "./Discussion";
 
 export type Message = {
-  id: number;
-  text: string;
-  sender: "me" | "friend";
-  isInvite?: boolean;
-  isExpired?: boolean;
+    id: number;
+ 	text: string;
+	sender: "me" | "friend";
+
+	type: "text" | "invite";
+
+  // invite-specific
+	invite?: {
+    	startedAt: number;
+    	expiresAt: number;
+    	status: "pending" | "expired" | "joined";
+  	};
 };
 
 export type ChatUser = {
@@ -18,12 +25,6 @@ export type ChatUser = {
   lastMessage?: string;
 };
 
-type InviteState = {
-  startedAt: number;
-  expiresAt: number;
-  status: "pending" | "joined" | "declined";
-};
-
 export const ChatContainer = () => {
   	const [users, setUsers] = useState<ChatUser[]>([]);
   	const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
@@ -31,7 +32,6 @@ export const ChatContainer = () => {
 	const [myUserId, setMyUserId] = useState<string | null>(null);
 	const myUserIdRef = useRef<string | null>(null);
  	const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
-  	const [invitesByUser, setInvitesByUser] = useState<Record<string, InviteState | null>>({});
   	const [now, setNow] = useState(Date.now());
 	const usersRef = useRef<ChatUser[]>([]);
 
@@ -80,6 +80,7 @@ export const ChatContainer = () => {
           		id: Date.now(),
           		text: messageText,
           		sender: "friend",
+				type: "text",
         	};
 
         setMessagesByUser(prev => ({
@@ -107,50 +108,53 @@ export const ChatContainer = () => {
 			const { from, to } = data;
 			const otherUserId = from === me ? to : from;
 
-			setInvitesByUser(prev => ({
-				...prev,
-				[otherUserId]: prev[otherUserId]
-				  ? { ...prev[otherUserId]!, status: "joined" }
-				  : null,
-			}));
-			
-			setMessagesByUser(prev => ({
-				...prev,
-				[otherUserId]: (prev[otherUserId] ?? []).map(m =>
-				  m.isInvite ? { ...m, isExpired: true } : m
-				),
-			}));
+			setMessagesByUser(prev => {
+			const msgs = prev[otherUserId] ?? [];
+
+			const idx = [...msgs]
+			.map((m, i) => ({ m, i }))
+			.filter(x => x.m.type === "invite" && x.m.invite?.status === "pending")
+			.at(-1)?.i;
+
+			if (idx === undefined) return prev;
+
+			const updated = [...msgs];
+			updated[idx] = {
+			...updated[idx],
+			invite: {
+				...updated[idx].invite!,
+				status: "joined",
+			},
+			};
+
+			return {
+			...prev,
+			[otherUserId]: updated,
+			};
+		});
 		}
 
 		if (data.type === "invite:received") {
-			setInvitesByUser(prev => ({
-			  ...prev,
-			  [data.from]: {
+			const inviteMessage: Message = {
+				id: Date.now(),
+				sender: "friend",
+				text: `${data.fromUsername ?? "Someone"} invited you to a game`,
+				type: "invite",
+				invite: {
 				startedAt: data.startedAt,
 				expiresAt: data.expiresAt,
 				status: "pending",
-			  },
-			}));
-			const expireOldInvites = (msgs: Message[] = []) =>
-				msgs.map(m => (m.isInvite ? { ...m, isExpired: true } : m));
-		  
+				},
+			};
+
 			setMessagesByUser(prev => ({
 				...prev,
-				[data.from]: [
-				  ...expireOldInvites(prev[data.from]),
-				  {
-					id: Date.now(),
-					text: `${data.fromUsername ?? "Someone"} invited you to a game`,
-					sender: "friend",
-					isInvite: true,
-					isExpired: false,
-				  },
-				],
+				[data.from]: [...(prev[data.from] ?? []), inviteMessage],
 			}));
-			//show invite as the last message
+
 			setUsers(prev =>
 				prev.map(u =>
-				  u.id === data.from
+				u.id === data.from
 					? { ...u, lastMessage: "Invited you to a game" }
 					: u
 				)
@@ -158,34 +162,26 @@ export const ChatContainer = () => {
 		}
 
 		if (data.type === "invite:sent") {
-			setInvitesByUser(prev => ({
-			  ...prev,
-			  [data.to]: {
+			const inviteMessage: Message = {
+				id: Date.now(),
+				sender: "me",
+				text: `You invited ${data.toUsername ?? "this user"} to a game`,
+				type: "invite",
+				invite: {
 				startedAt: data.startedAt,
 				expiresAt: data.expiresAt,
 				status: "pending",
-			  },
-			}));
-			
-			const expireOldInvites = (msgs: Message[] = []) =>
-				msgs.map(m => (m.isInvite ? { ...m, isExpired: true } : m));
+				},
+			};
+
 			setMessagesByUser(prev => ({
 				...prev,
-				[data.to]: [
-				  ...expireOldInvites(prev[data.to]),
-				  {
-					id: Date.now(),
-					text: `You invited ${data.toUsername ?? "this user"} to a game`,
-					sender: "me",
-					isInvite: true,
-					isExpired: false,
-				  },
-				],
+				[data.to]: [...(prev[data.to] ?? []), inviteMessage],
 			}));
-			//show invite as the last message
+
 			setUsers(prev =>
 				prev.map(u =>
-				  u.id === data.to
+				u.id === data.to
 					? { ...u, lastMessage: "You invited them to a game" }
 					: u
 				)
@@ -199,19 +195,7 @@ export const ChatContainer = () => {
 
   			const [a, b] = data.users;
   			const otherUserId = a === me ? b : a;
-
-			setInvitesByUser(prev => ({
-				...prev,
-				[otherUserId]: null,
-			}));
 			
-			setMessagesByUser(prev => ({
-				...prev,
-				[otherUserId]: (prev[otherUserId] ?? []).map(m =>
-				  m.isInvite ? { ...m, isExpired: true } : m
-				),
-			}));
-
 			//show info about expired invite
 			setUsers(prev =>
 				prev.map(u =>
@@ -221,9 +205,11 @@ export const ChatContainer = () => {
 				)
 			);
       	}
+
 		if (data.type === "presence:list") {
 		setOnlineUserIds(new Set<string>(data.users));
 		}
+
 		if (data.type === "presence") {
 		setOnlineUserIds(prev => {
 			const next = new Set(prev);
@@ -263,6 +249,7 @@ export const ChatContainer = () => {
       id: Date.now(),
       text,
       sender: "me",
+	  type: "text",
     };
 
     setMessagesByUser(prev => ({
@@ -277,19 +264,19 @@ export const ChatContainer = () => {
     );
   };
 
-	const acceptAndJoinInvite = (userId: string) => {
+	const acceptAndJoinInvite = (userId: string, inviteId: number) => {
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-	
-		setInvitesByUser(prev => ({
-			...prev,
-			[userId]: null,
-		}));
 		
-		setMessagesByUser(prev => ({
-			...prev,
-			[userId]: (prev[userId] ?? []).map(m =>
-			  m.isInvite ? { ...m, isExpired: true } : m
-			),
+		   setMessagesByUser(prev => ({
+		 	...prev,
+		 	[userId]: (prev[userId] ?? []).map(m =>
+		 	m.id === inviteId
+		 		? {
+		 			...m,
+		 			invite: { ...m.invite!, status: "joined" },
+		 		}
+		 		: m
+		 	),
 		}));
 		if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
 			wsRef.current.send(JSON.stringify({
@@ -308,14 +295,6 @@ export const ChatContainer = () => {
 		  to: selectedUser.id,
 		}));
 	};
-
-	/* -------- derived invite state -------- */
-	const invite = selectedUser ? invitesByUser[selectedUser.id] : null;
-	const inviteTimeLeft = invite && invite.status === "pending"
-		? Math.max(0, Math.floor((invite.expiresAt - now) / 1000))
-		: 0;
-
-  	const inviteIsActive = invite?.status === "pending" && inviteTimeLeft > 0;
 
   	const usersWithPresence = users.map(u => ({
     	...u,
@@ -341,10 +320,8 @@ export const ChatContainer = () => {
 				messages={messagesByUser[selectedUser.id] ?? []}
 				onSendMessage={sendMessage}
 				onExitClick={() => setSelectedUser(null)}
-				inviteIsActive={inviteIsActive}
-				inviteTimeLeft={inviteTimeLeft}
 				onSendInvite={sendGameInvite}
-				onAcceptInvite={() => acceptAndJoinInvite(selectedUser.id)}
+				onAcceptInvite={(inviteId) => acceptAndJoinInvite(selectedUser.id, inviteId)}
 			/>
 			)}
 		</div>

@@ -8,10 +8,8 @@ type DiscussionProps = {
   messages: Message[];
   onSendMessage: (text: string) => void;
   onExitClick: () => void;
-  inviteIsActive: boolean;
-  inviteTimeLeft: number;
   onSendInvite: () => void;
-  onAcceptInvite: (userId: string) => void; 
+  onAcceptInvite: (inviteId: number) => void; 
 };
 
 export const Discussion = ({
@@ -19,8 +17,6 @@ export const Discussion = ({
   messages,
   onSendMessage,
   onExitClick,
-  inviteIsActive,
-  inviteTimeLeft,
   onAcceptInvite,
   onSendInvite,
 }: DiscussionProps) => {
@@ -33,8 +29,11 @@ export const Discussion = ({
     discussionEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const hasReceivedInvite = messages.some(
-    m => m.isInvite && m.sender === "friend" && !m.isExpired
+  const now = Date.now();
+  const hasActiveInvite = messages.some(m =>
+    m.type === "invite" &&
+    m.invite?.status === "pending" &&
+    m.invite.expiresAt > now
   );
 
   const sendMessage = () => {
@@ -89,11 +88,11 @@ export const Discussion = ({
       <div className="self-end p-2">
         <button
           className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
-          disabled={inviteIsActive}
+          disabled={hasActiveInvite}
           onClick={onSendInvite}
         >
           <p className="text-xs lg:text-sm text-left">
-            {!inviteIsActive
+            {!hasActiveInvite
               ? `Invite ${friend.username} to a game`
               : "Game invite pending"}
           </p>
@@ -106,7 +105,7 @@ export const Discussion = ({
       {/* Messages */}
       <div className="flex flex-col gap-3 p-3 overflow-y-auto flex-grow min-h-0">
         {messages.map(msg => {
-          if (!msg.isInvite) {
+          if (msg.type !== "invite") {
             return (
               <div
                 key={msg.id}
@@ -119,8 +118,22 @@ export const Discussion = ({
               </div>
             );
           }
+                    const invite = msg.invite!;
+          const isExpired =
+            invite.status === "pending" && invite.expiresAt <= now;
 
-          // 👇 INVITE MESSAGE (MULTIPLE BOXES)
+          const status =
+            invite.status === "joined"
+              ? "joined"
+              : isExpired
+              ? "expired"
+              : "pending";
+
+          const timeLeft =
+            status === "pending"
+              ? Math.max(0, Math.floor((invite.expiresAt - now) / 1000))
+              : 0;
+
           return (
             <div
               key={msg.id}
@@ -134,22 +147,25 @@ export const Discussion = ({
               </p>
 
               <div className="flex flex-row justify-center items-center border-2 border-transcendence-white rounded-lg p-1 gap-2">
-                {inviteIsActive && !msg.isExpired && (
-                  <span className="text-transcendence-white font-bold">
-                    {formatTime(inviteTimeLeft)}
+                {status === "pending" && (
+                  <span className="text-transcendence-white font-bold w-8">
+                    {formatTime(timeLeft)}
                   </span>
                 )}
+
                 <button
-                  disabled={!inviteIsActive || msg.isExpired }
+                  disabled={status !== "pending"}
                   className="text-white font-bold"
                   onClick={() => {
-                    onAcceptInvite(friend.id);
+                    onAcceptInvite(msg.id);
                     navigate("/home/play/invite", {
                       state: { invitee: friend.username },
                     });
                   }}
                 >
-                  {inviteIsActive ? "Join the game" : "Invite expired"}
+                  {status === "pending" && "Join the game"}
+                  {status === "expired" && "Invite expired"}
+                  {status === "joined" && "Invite accepted"}
                 </button>
               </div>
             </div>
