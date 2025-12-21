@@ -38,7 +38,7 @@ export const Profile = () => {
 				}
 			}
 			catch {
-				console.error("Failed to fetch user info");
+				console.error(t("error.fetchUserInfo"));
 			};
 		};
 		getUserInfo();
@@ -72,7 +72,7 @@ export const Profile = () => {
 			}
 		}
 		catch {
-			console.error("Failed to store profile picture");
+			console.error(t("error.picUploadFailure"));
 			setProfilePic("/avatars/00000000-0000-0000-0000-000000000000.webp");
 		};
 	};
@@ -127,14 +127,18 @@ export const Profile = () => {
 				</div>
 
 				{isEditOpen && (
-					<BaseModal isOpen={isEditOpen} title="Edit Username" onClose={() => setIsEditOpen(false)}>
-						<p className="text-xs text-transcendence-white/80">Enter a new username.</p>
+					<BaseModal	isOpen={isEditOpen}
+								title={t("profile.editUsername")}
+								onClose={() => setIsEditOpen(false)}>
+						<p className="text-xs text-transcendence-white/80">
+							{t("profile.promptUsername")}
+						</p>
 						<input
 							type="text"
 							value={newUsername}
 							onChange={(e) => setNewUsername(e.target.value)}
 							className="border border-transcendence-beige bg-transparent rounded-lg px-3 py-2 text-sm"
-							placeholder="New username"
+							placeholder={t("profile.placeholder.newUsername")}
 						/>
 						{editError && <div className="text-red-500 text-xs">{editError}</div>}
 						<div className="flex gap-2 justify-end mt-2">

@@ -75,7 +75,10 @@
 		"joinGame": "anslut till spelet",
 		"inviteExpired": "inbjudan har gått ut",
 		"placeholder": "Chatta med {{username}}",
-		"send": "skicka"
+		"send": "skicka",
+		"status": "just nu {{status}}",
+		"online": "online",
+		"offline": "offline"
 	},
 	"utils": {
 		"close": "stäng",
@@ -87,13 +90,30 @@
 		"cancel": "Avbryt",
 		"save": "Spara",
 		"userNotEmpty": "Användarnamn får inte vara tomt",
-		"updateFailed": "Uppdatering misslyckades"
+		"updateFailed": "Uppdatering misslyckades",
+		"wins": "vunna spel",
+		"losses": "förlorade spel",
+		"rating": "RATING: {{value}}",
+		"stats": "statistik",
+		"settings": "inställningar",
+		"pending": "vänförfrågan väntar",
+		"unfriend": "ta bort vän",
+		"befriend": "lägg till vän",
+		"unblock": "avblockera",
+		"block": "blockera",
+		"editUsername": "Redigera användarnamn",
+		"promptUsername": "Ange ett nytt användarnamn.",
+		"placeholder": {
+			"newUsername": "Nytt användarnamn"
+		}
 	},
 	"error": {
 		"loginRetry": "Inloggning misslyckades. Försök igen.",
 		"registerRetry": "Registrering misslyckades. Försök igen.",
 		"tryAgain": "Något gick fel. Försök igen senare.",
-		"logoutFailure": "Utloggning misslyckades."
+		"logoutFailure": "Utloggning misslyckades.",
+		"picUploadFailure": "Misslyckades att spara profilbild",
+		"fetchUserInfo": "Misslyckades att hämta användarinfo"
 	},
 	"game": {
 		"button": {
@@ -110,5 +130,12 @@
 		"play": "spel",
 		"stats": "statistik",
 		"profile": "profil"
+	},
+	"friend": {
+		"requests": "vänförfrågningar",
+		"noPending": "Du har inga väntande vänförfrågningar",
+		"accept": "Acceptera förfrågan",
+		"reject": "Avvisa förfrågan",
+		"cancel": "Avbryt förfrågan"
 	}
 }

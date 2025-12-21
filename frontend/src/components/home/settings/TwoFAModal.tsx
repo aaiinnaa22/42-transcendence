@@ -128,7 +128,7 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
     return (
         <BaseModal
             isOpen={isOpen}
-            title={mode === "enable" ? t("twoFA.enable") : t("stwoFA.disable")}
+            title={mode === "enable" ? t("twoFA.enable") : t("twoFA.disable")}
             onClose={onClose}
         >
             <p className="text-xs text-transcendence-white/80">

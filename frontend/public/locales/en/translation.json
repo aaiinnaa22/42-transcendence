@@ -76,7 +76,10 @@
 		"joinGame": "join the game",
 		"inviteExpired": "invite expired",
 		"placeholder": "Chat with {{username}}",
-		"send": "send"
+		"send": "send",
+		"status": "currently {{status}}",
+		"online": "online",
+		"offline": "offline"
 	},
 	"utils": {
 		"close": "close",
@@ -88,13 +91,30 @@
 		"cancel": "Cancel",
 		"save": "Save",
 		"userNotEmpty": "Username cannot be empty",
-		"updateFailed": "Update failed"
+		"updateFailed": "Update failed",
+		"wins": "games won",
+		"losses": "games lost",
+		"rating": "RATING: {{value}}",
+		"stats": "stats",
+		"settings": "settings",
+		"pending": "friend request is pending",
+		"unfriend": "unfriend",
+		"befriend": "befriend",
+		"unblock": "unblock",
+		"block": "block",
+		"editUsername": "Edit Username",
+		"promptUsername": "Enter a new username.",
+		"placeholder": {
+			"newUsername": "New username"
+		}
 	},
 	"error": {
 		"loginRetry": "Login failed. Please try again.",
 		"registerRetry": "Signup failed. Please try again.",
 		"tryAgain": "Something went wrong. Please try again later.",
-		"logoutFailure": "Logout failed."
+		"logoutFailure": "Logout failed.",
+		"picUploadFailure": "Failed to store profile picture",
+		"fetchUserInfo": "Failed to fetch user info"
 	},
 	"game": {
 		"button": {
@@ -111,5 +131,12 @@
 		"play": "game",
 		"stats": "stats",
 		"profile": "profile"
+	},
+	"friend": {
+		"requests": "friend requests",
+		"noPending": "You have no pending friend requests",
+		"accept": "Accept request",
+		"reject": "Reject request",
+		"cancel": "Cancel request"
 	}
 }

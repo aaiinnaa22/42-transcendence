@@ -76,7 +76,10 @@
 		"joinGame": "liity peliin",
 		"inviteExpired": "kutsu vanhentui",
 		"placeholder": "Keskustele {{username}} kanssa",
-		"send": "lähetä"
+		"send": "lähetä",
+		"status": "tällä hetkellä {{status}}",
+		"online": "verkossa",
+		"offline": "poissa"
 	},
 	"utils": {
 		"close": "sulje",
@@ -88,13 +91,30 @@
 		"cancel": "Peruuta",
 		"save": "Tallenna",
 		"userNotEmpty": "Käyttäjänimi ei voi olla tyhjä",
-		"updateFailed": "Päivitys epäonnistui"
+		"updateFailed": "Päivitys epäonnistui",
+		"wins": "pelivoittoa",
+		"losses": "pelitappiota",
+		"rating": "VAHVUUSLUKU: {{value}}",
+		"stats": "tilastot",
+		"settings": "asetukset",
+		"pending": "kaveripyyntö odottaa",
+		"unfriend": "poista kaveri",
+		"befriend": "lisää kaveriksi",
+		"unblock": "poista esto",
+		"block": "estä",
+		"editUsername": "Muokkaa käyttäjänimeä",
+		"promptUsername": "Anna uusi käyttäjänimi.",
+		"placeholder": {
+			"newUsername": "Uusi käyttäjänimi"
+    	}
 	},
 	"error": {
 		"loginRetry": "Kirjautuminen epäonnistui. Yritä uudelleen.",
 		"registerRetry": "Rekisteröinti epäonnistui. Yritä uudelleen.",
 		"tryAgain": "Jokin meni pieleen. Yritä hetken päästä uudelleen.",
-		"logoutFailure": "Ulos kirjautuminen epäonnistui."
+		"logoutFailure": "Ulos kirjautuminen epäonnistui.",
+		"picUploadFailure": "Profiilikuvan tallennus epäonnistui",
+		"fetchUserInfo": "Käyttäjätietojen haku epäonnistui"
 	},
 	"game": {
 		"button": {
@@ -111,5 +131,12 @@
 		"play": "peli",
 		"stats": "tilasto",
 		"profile": "profiili"
+	},
+	"friend": {
+		"requests": "kaveripyynnöt",
+		"noPending": "Sinulla ei ole odottavia kaveripyyntöjä",
+		"accept": "Hyväksy pyyntö",
+		"reject": "Hylkää pyyntö",
+		"cancel": "Peruuta pyyntö"
 	}
 }
