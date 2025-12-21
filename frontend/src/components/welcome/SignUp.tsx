@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { handleFetchError } from "../../utils/handleFetchError";
 
 export const SignUp = () => {
 	const [email, setEmail] = useState("");
@@ -51,10 +52,8 @@ export const SignUp = () => {
 				throw new Error("Password must include at least one capital and lowercase letter, digit and must be at least 5 characters long.");
 			else
 				throw new Error(data.message || "Something went wrong. Please try again later.");
-		}
-		catch (err: any) {
-			console.error("Signup error:", err);
-			setError(err.message || "Something went wrong. Please try again later.");
+		} catch (err: unknown) {
+			handleFetchError(err, setError);
 		}
 	};
 

@@ -23,8 +23,14 @@ export const InternalServerError = ( message: string = "Internal Server Error" )
 export const ServiceUnavailableError = ( message: string = "Service Unavailable" ) => new HttpError( message, 503 );
 
 // Utility for sending replies with the HttpError class
-export const sendErrorReply = ( reply: FastifyReply, error: any, message: string = "An error occured" ) => {
+export const sendErrorReply = (reply: FastifyReply, error: unknown, message: string = "An error occured") => {
 	const statusCode = error instanceof HttpError ? error.statusCode : 500;
-	const replyMessage = error instanceof HttpError ? error.message : message;
-	reply.code( statusCode ).send( { error: replyMessage } );
+	const replyMessage = error instanceof HttpError
+		? error.message
+		: error instanceof Error
+		? error.message
+		: message;
+
+	reply.code(statusCode).send({ error: replyMessage });
 };
+

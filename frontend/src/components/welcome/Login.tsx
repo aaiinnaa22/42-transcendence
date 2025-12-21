@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TwoFALoginModal } from "./TwoFALoginModal";
+import { handleFetchError } from "../../utils/handleFetchError";
 
 export const Login = () => {
 	const [email, setEmail] = useState("");
@@ -74,24 +75,13 @@ export const Login = () => {
 				setIsTwoFAModalOpen(true);
 				return;
 			}
-
-			// Normal login flow
-			if (data.message === "Login successful")
-			{
-				console.log("Normal login successful, navigating to home");
-				navigate("/home");
-			}
-			else
-			{
-				throw new Error(data.message || "Something went wrong. Please try again later.");
-			}
+			navigate("/home");			
 		}
-		catch (err: any) {
-			console.error("Login error:", err);
-			setError(err.message || "Something went wrong. Please try again later.");
-		};
+		catch (err: unknown) {			
+			handleFetchError(err, setError);
+		}
+		  
 	};
-
 	return (
 		<>
 			<form onSubmit={handleLogin} className="flex flex-col pt-[5vh] items-center font-transcendence-two text-transcendence-white text-left gap-10 landscape:gap-5 lg:landscape:gap-10">

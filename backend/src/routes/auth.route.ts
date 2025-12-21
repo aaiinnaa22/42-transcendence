@@ -10,6 +10,7 @@ import { BadRequestError, InternalServerError, ServiceUnavailableError, sendErro
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
 import { LoginSchema, RegisterSchema, TwoFADisableSchema, TwoFALoginSchema, TwoFAVerifySchema } from "../schemas/auth.schema.ts";
+import { Prisma } from "@prisma/client";
 
 // Augment Fastify instance with oauth2 namespace added by the plugin
 declare module "fastify" {
@@ -480,9 +481,35 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				message: "2FA login successful",
 			});
 
-		} catch (err: any) {
-			server.log.error("2FA login error:", err);
-			return sendErrorReply(reply, err);
+		} 
+		catch (err: unknown) {
+			server.log.error(err);
+		  
+			//could make a global error handler to handle all errors and send a generic error message
+			// Prisma known errors → never expose details
+			if (err instanceof Prisma.PrismaClientKnownRequestError) {
+			  return sendErrorReply(
+				reply,
+				err,
+				"Internal server error"
+			  );
+			}
+		  
+			// Your own HTTP / app errors
+			if (err instanceof Error) {
+			  return sendErrorReply(
+				reply,
+				err,
+				err.message
+			  );
+			}
+		  
+			// Truly unknown failure
+			return sendErrorReply(
+			  reply,
+			  err,
+			  "Login failed"
+			);	
 		}
 	});
 
