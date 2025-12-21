@@ -113,14 +113,12 @@ export const Discussion = ({
               </div>
             );
           }
-                    const invite = msg.invite!;
-          const isExpired =
-            invite.status === "pending" && invite.expiresAt <= now;
+          const invite = msg.invite!;
 
-          const status =
+          const status: "pending" | "expired" | "joined" =
             invite.status === "joined"
               ? "joined"
-              : isExpired
+              : invite.expiresAt <= now
               ? "expired"
               : "pending";
 
