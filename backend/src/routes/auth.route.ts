@@ -189,10 +189,9 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			return reply.redirect( clientRedirectUrl );
 
 		}
-		catch ( err: any )
-		{
-			server.log.error( `Google OAuth failure: ${err?.stack || err}` );
-			return sendErrorReply( reply, err, "Google OAuth failed" );
+		catch (err: unknown) {
+			server.log.error(`Login failed: ${(err as Error)?.message || err}`);
+			return sendErrorReply(reply, err, "Login failed");
 		}
 	} );
 
@@ -221,9 +220,10 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			if ( !user ) throw NotFoundError( "User not found" );
 			reply.send( user );
 		}
-		catch ( err: any )
+		catch ( err: unknown )
 		{
-			server.log.error( `Get user failed: ${err?.message}` );
+			const msg = err instanceof Error ? err.message : String( err );
+			server.log.error( `Get user failed: ${msg}` );
 			return sendErrorReply( reply, err );
 		}
 	} );
@@ -288,9 +288,10 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			} );
 
 		}
-		catch ( err: any )
+		catch ( err: unknown )
 		{
-			server.log.error( `Registration failed: ${err?.message}` );
+			const msg = err instanceof Error ? err.message : String( err );
+			server.log.error( `Registration failed: ${msg}` );
 			return sendErrorReply( reply, err, "Registration failed" );
 		}
 	} );
@@ -357,10 +358,11 @@ const authRoutes = async ( server: FastifyInstance ) =>
 				//user,
 			} );
 		}
-		catch ( err: any )
+		catch ( err: unknown )
 		{
-			server.log.error( `Login failed: ${err?.message}` );
-			return sendErrorReply(reply, err, err.message ?? "Unknown error" );
+			const msg = err instanceof Error ? err.message : String( err );
+			server.log.error( `Login failed: ${msg}` );
+			return sendErrorReply( reply, err, "Login failed" );
 		}
 	} );
 
@@ -384,10 +386,11 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			reply.send( { message: "Token refreshed" } );
 		}
-		catch ( err: any )
+		catch ( err: unknown )
 		{
-			server.log.error( `Refresh failed: ${err.message}` );
-			return sendErrorReply(reply, err );
+			const msg = err instanceof Error ? err.message : String( err );
+			server.log.error( `Refresh failed: ${msg}` );
+			return sendErrorReply( reply, err );
 		}
 	} );
 
@@ -414,8 +417,9 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			qrCode,
 			message: "2FA secret generated. Please scan QR code."
 			});
-		} catch (err: any) {
-			server.log.error("2FA setup error:", err?.stack || err);
+		} catch (err: unknown) {
+			const errorMessage = err instanceof Error ? err.stack || err.message : String(err);
+			server.log.error({ err: errorMessage }, "2FA setup error");
 			return sendErrorReply(reply, err);
 		}
 	});
@@ -446,9 +450,10 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 			reply.send({ message: "2FA enabled successfully" });
 
-		} catch (err: any) {
-			server.log.error("2FA verify error:", err);
-			return sendErrorReply(reply, err);
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : String( err );
+			server.log.error( `2FA verify error: ${msg}` );
+			return sendErrorReply( reply, err );
 		}
 	});
 
@@ -483,33 +488,9 @@ const authRoutes = async ( server: FastifyInstance ) =>
 
 		} 
 		catch (err: unknown) {
-			server.log.error(err);
-		  
-			//could make a global error handler to handle all errors and send a generic error message
-			// Prisma known errors → never expose details
-			if (err instanceof Prisma.PrismaClientKnownRequestError) {
-			  return sendErrorReply(
-				reply,
-				err,
-				"Internal server error"
-			  );
-			}
-		  
-			// Your own HTTP / app errors
-			if (err instanceof Error) {
-			  return sendErrorReply(
-				reply,
-				err,
-				err.message
-			  );
-			}
-		  
-			// Truly unknown failure
-			return sendErrorReply(
-			  reply,
-			  err,
-			  "Login failed"
-			);	
+			const msg = err instanceof Error ? err.message : String(err);
+			server.log.error(`2FA login error: ${msg}`);
+			return sendErrorReply(reply, err);
 		}
 	});
 
@@ -537,8 +518,8 @@ const authRoutes = async ( server: FastifyInstance ) =>
 			});
 
 			reply.send({ message: "2FA disabled" });
-		} catch (err: any) {
-			return sendErrorReply(reply, err);
+		} catch (err: unknown) {
+			return sendErrorReply( reply, err );
 		}
 	});
 };
