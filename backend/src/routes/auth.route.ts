@@ -258,7 +258,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			if (isLoggedIn(request))
+			if (isLoggedIn(request, server))
 			{
 				throw ConflictError("Already logged in");
 			}
@@ -317,7 +317,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 	{
 		try
 		{
-			if (isLoggedIn(request))
+			if (isLoggedIn(request, server))
 			{
 				throw ConflictError("Already logged in");
 			}
