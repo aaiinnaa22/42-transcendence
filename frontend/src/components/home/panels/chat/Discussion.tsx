@@ -40,6 +40,7 @@ export const Discussion = ({
 
     return () => clearInterval(id);
   }, []);
+  
   const hasActiveInvite = messages.some(m =>
     m.type === "invite" &&
     m.invite?.status === "pending" &&
@@ -151,6 +152,7 @@ export const Discussion = ({
                   disabled={status !== "pending"}
                   className="text-white font-bold"
                   onClick={() => {
+                    if (status !== "pending") return;
                     onAcceptInvite(msg.id);
                     navigate("/home/play/invite", {
                       state: { invitee: friend.username },

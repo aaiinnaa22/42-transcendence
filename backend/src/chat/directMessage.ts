@@ -88,6 +88,7 @@ export function sendInviteExpired(a: string, b: string) {
     	for (const socket of targets) {
       	if (socket.readyState === WebSocket.OPEN) {
         	socket.send(payload);
+			console.log("invite expired mes from backend");
       	}
     	}
   	}

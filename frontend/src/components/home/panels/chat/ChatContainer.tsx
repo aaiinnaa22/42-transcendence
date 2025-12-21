@@ -71,251 +71,282 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		usersRef.current = users;
 	}, [users]);
 
+	useEffect(() => {
+		const id = setInterval(() => {
+			setMessagesByUser(prev => {
+			let changed = false;
+			const next: Record<string, Message[]> = {};
+
+			for (const userId in prev) {
+				next[userId] = prev[userId].map(m => {
+				if (
+					m.type === "invite" &&
+					m.invite?.status === "pending" &&
+					m.invite.expiresAt <= Date.now()
+				) {
+					changed = true;
+					return {
+					...m,
+					invite: { ...m.invite, status: "expired" },
+					};
+				}
+				return m;
+				});
+			}
+
+			return changed ? next : prev;
+			});
+		}, 1000);
+
+		return () => clearInterval(id);
+	}, []);
+
   	useEffect(() => {
     	const ws = new WebSocket("ws://localhost:4241/chat");
     	wsRef.current = ws;
 
+		ws.onopen = () => {
+		console.log("Chat WS connected");
+		};
 
-    ws.onopen = () => {
-      console.log("Chat WS connected");
-    };
-
-    ws.onmessage = (e) => {
-    	let data;
-    	try {
-    		data = JSON.parse(e.data);
-    	} catch {
-    	return;
-    }
+		ws.onmessage = (e) => {
+			let data;
+			try {
+				data = JSON.parse(e.data);
+			} catch {
+			return;
+		}
 		//attempt to auth socket requests
-	if (data.type === "error" && data.reason === "unauthorized") {
-		console.warn("WebSocket unauthorized, forcing logout");
-		forceLogout();
-		return;
-	}
-
-    if (data.type === "dm") {
-    	const fromId = data.from as string;
-    	const messageText = data.message as string;
-
-    	const newMessage: Message = {
-      		id: Date.now(),
-      		text: messageText,
-      		sender: "friend",
-			type: "text",
-        };
-
-    	setMessagesByUser(prev => ({
-        	...prev,
-        	[fromId]: [...(prev[fromId] ?? []), newMessage],
-        }));
-
-        setUsers(prev =>
-        	prev.map(u =>
-        	u.id === fromId ? { ...u, lastMessage: messageText } : u
-        	)
-        );
-    	}
-
-		if (data.type === "me") {
-			myUserIdRef.current = data.userId;
+		if (data.type === "error" && data.reason === "unauthorized") {
+			console.warn("WebSocket unauthorized, forcing logout");
+			forceLogout();
 			return;
 		}
 
-		if (data.type === "invite:joined") {
-			const me = myUserIdRef.current;
-			if (!me) return;
+		if (data.type === "dm") {
+			const fromId = data.from as string;
+			const messageText = data.message as string;
 
-			const { from, to } = data;
-			const otherUserId = from === me ? to : from;
-
-			setMessagesByUser(prev => {
-			const msgs = prev[otherUserId] ?? [];
-
-			const idx = [...msgs]
-			.map((m, i) => ({ m, i }))
-			.filter(x => x.m.type === "invite" && x.m.invite?.status === "pending")
-			.at(-1)?.i;
-
-			if (idx === undefined) return prev;
-
-			const updated = [...msgs];
-			updated[idx] = {
-			...updated[idx],
-			invite: {
-				...updated[idx].invite!,
-				status: "joined",
-			},
-			};
-
-			return {
-			...prev,
-			[otherUserId]: updated,
-			};
-		});
-		}
-
-		if (data.type === "invite:received") {
-			const inviteMessage: Message = {
+			const newMessage: Message = {
 				id: Date.now(),
+				text: messageText,
 				sender: "friend",
-				text: `${data.fromUsername ?? "Someone"} invited you to a game`,
-				type: "invite",
-				invite: {
-				startedAt: data.startedAt,
-				expiresAt: data.expiresAt,
-				status: "pending",
-				},
+				type: "text",
 			};
 
 			setMessagesByUser(prev => ({
 				...prev,
-				[data.from]: [...(prev[data.from] ?? []), inviteMessage],
+				[fromId]: [...(prev[fromId] ?? []), newMessage],
 			}));
 
 			setUsers(prev =>
 				prev.map(u =>
-				u.id === data.from
-					? { ...u, lastMessage: "Invited you to a game" }
-					: u
+				u.id === fromId ? { ...u, lastMessage: messageText } : u
 				)
 			);
-		}
+			}
 
-		if (data.type === "invite:sent") {
-			const inviteMessage: Message = {
-				id: Date.now(),
-				sender: "me",
-				text: `You invited ${data.toUsername ?? "this user"} to a game`,
-				type: "invite",
-				invite: {
-				startedAt: data.startedAt,
-				expiresAt: data.expiresAt,
-				status: "pending",
-				},
-			};
+			if (data.type === "me") {
+				myUserIdRef.current = data.userId;
+				return;
+			}
 
-			setMessagesByUser(prev => ({
-				...prev,
-				[data.to]: [...(prev[data.to] ?? []), inviteMessage],
-			}));
+			if (data.type === "invite:joined") {
+				const me = myUserIdRef.current;
+				if (!me) return;
 
-			setUsers(prev =>
-				prev.map(u =>
-				u.id === data.to
-					? { ...u, lastMessage: "You invited them to a game" }
-					: u
-				)
-			);
-		}
-		  
+				const { from, to } = data;
+				const otherUserId = from === me ? to : from;
 
-		if (data.type === "invite:expired") {
-   			const me = myUserIdRef.current;
-			if (!me) return;
-
-  			const [a, b] = data.users;
-  			const otherUserId = a === me ? b : a;
-			
-			//show info about expired invite
-			setUsers(prev =>
-				prev.map(u =>
-				  u.id === otherUserId
-					? { ...u, lastMessage: "Game invite expired" }
-					: u
-				)
-			);
-
-			setMessagesByUser(prev => {
+				setMessagesByUser(prev => {
 				const msgs = prev[otherUserId] ?? [];
-				const lastPendingIndex = [...msgs]
-					.map((m, i) => ({ m, i }))
-					.filter(x => x.m.type === "invite" && x.m.invite?.status === "pending")
-					.at(-1)?.i;
 
-				if (lastPendingIndex === undefined) return prev;
+				const idx = [...msgs]
+				.map((m, i) => ({ m, i }))
+				.filter(x => x.m.type === "invite" && x.m.invite?.status === "pending")
+				.at(-1)?.i;
+
+				if (idx === undefined) return prev;
 
 				const updated = [...msgs];
-				updated[lastPendingIndex] = {
-					...updated[lastPendingIndex],
+				updated[idx] = {
+				...updated[idx],
+				invite: {
+					...updated[idx].invite!,
+					status: "joined",
+				},
+				};
+
+				return {
+				...prev,
+				[otherUserId]: updated,
+				};
+			});
+			}
+
+			if (data.type === "invite:received") {
+				const inviteMessage: Message = {
+					id: Date.now(),
+					sender: "friend",
+					text: `${data.fromUsername ?? "Someone"} invited you to a game`,
+					type: "invite",
 					invite: {
-					...updated[lastPendingIndex].invite!,
-					status: "expired",
+					startedAt: data.startedAt,
+					expiresAt: data.expiresAt,
+					status: "pending",
 					},
 				};
 
-				return { ...prev, [otherUserId]: updated };
+				setMessagesByUser(prev => ({
+					...prev,
+					[data.from]: [...(prev[data.from] ?? []), inviteMessage],
+				}));
+
+				setUsers(prev =>
+					prev.map(u =>
+					u.id === data.from
+						? { ...u, lastMessage: "Invited you to a game" }
+						: u
+					)
+				);
+			}
+
+			if (data.type === "invite:sent") {
+				const inviteMessage: Message = {
+					id: Date.now(),
+					sender: "me",
+					text: `You invited ${data.toUsername ?? "this user"} to a game`,
+					type: "invite",
+					invite: {
+					startedAt: data.startedAt,
+					expiresAt: data.expiresAt,
+					status: "pending",
+					},
+				};
+
+				setMessagesByUser(prev => ({
+					...prev,
+					[data.to]: [...(prev[data.to] ?? []), inviteMessage],
+				}));
+
+				setUsers(prev =>
+					prev.map(u =>
+					u.id === data.to
+						? { ...u, lastMessage: "You invited them to a game" }
+						: u
+					)
+				);
+			}
+		  
+
+			if (data.type === "invite:expired") {
+				const me = myUserIdRef.current;
+				if (!me) return;
+
+				const [a, b] = data.users;
+				const otherUserId = a === me ? b : a;
+				
+				//show info about expired invite
+				setUsers(prev =>
+					prev.map(u =>
+					u.id === otherUserId
+						? { ...u, lastMessage: "Game invite expired" }
+						: u
+					)
+				);
+
+				setMessagesByUser(prev => {
+					const msgs = prev[otherUserId] ?? [];
+					const lastPendingIndex = [...msgs]
+						.map((m, i) => ({ m, i }))
+						.filter(x => x.m.type === "invite" && x.m.invite?.status === "pending")
+						.at(-1)?.i;
+
+					if (lastPendingIndex === undefined) return prev;
+
+					const updated = [...msgs];
+					updated[lastPendingIndex] = {
+						...updated[lastPendingIndex],
+						invite: {
+						...updated[lastPendingIndex].invite!,
+						status: "expired",
+						},
+					};
+
+					return { ...prev, [otherUserId]: updated };
+				});
+			}
+
+			if (data.type === "presence:list") {
+			setOnlineUserIds(new Set<string>(data.users));
+			}
+
+			if (data.type === "presence") {
+			setOnlineUserIds(prev => {
+				const next = new Set(prev);
+				if (data.online) next.add(data.userId);
+				else next.delete(data.userId);
+				return next;
 			});
-      	}
+			}
 
-		if (data.type === "presence:list") {
-		setOnlineUserIds(new Set<string>(data.users));
-		}
+			if (data.type === "error" && data.reason === "blocked") {
+				alert("You cannot message this user.");
+			}
 
-		if (data.type === "presence") {
-		setOnlineUserIds(prev => {
-			const next = new Set(prev);
-			if (data.online) next.add(data.userId);
-			else next.delete(data.userId);
-			return next;
-		});
-		}
+			if (data.type === "error") {
+				console.error("Error received from server:", data.reason);
+			}
+   	 	};
 
-		if (data.type === "error" && data.reason === "blocked") {
-			alert("You cannot message this user.");
-		}
+		ws.onclose = e => {
+			console.log("Chat WS disconnected");
+			if (e.code === 1008)
+				forceLogout();
+			wsRef.current = null;
+		};
 
-		if (data.type === "error") {
-			console.error("Error received from server:", data.reason);
-		}
-    };
-
-    ws.onclose = e => {
-    	console.log("Chat WS disconnected");
-		if (e.code === 1008)
-			forceLogout();
-    	wsRef.current = null;
-    };
-
-    return () => ws.close();
-  }, []);
+		return () => ws.close();
+	}, []);
 
 
-  const sendMessage = (text: string) => {
-    if (!selectedUser) return;
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+ 	const sendMessage = (text: string) => {
+		if (!selectedUser) return;
+		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
-    wsRef.current.send(
-      JSON.stringify({
-        type: "dm",
-        to: selectedUser.id,
-        message: text,
-      })
-    );
+		wsRef.current.send(
+		JSON.stringify({
+			type: "dm",
+			to: selectedUser.id,
+			message: text,
+		})
+		);
 
-    const myMessage: Message = {
-      id: Date.now(),
-      text,
-      sender: "me",
-	  type: "text",
-    };
+		const myMessage: Message = {
+		id: Date.now(),
+		text,
+		sender: "me",
+		type: "text",
+		};
 
-    setMessagesByUser(prev => ({
-      ...prev,
-      [selectedUser.id]: [...(prev[selectedUser.id] ?? []), myMessage],
-    }));
+		setMessagesByUser(prev => ({
+		...prev,
+		[selectedUser.id]: [...(prev[selectedUser.id] ?? []), myMessage],
+		}));
 
-    setUsers(prev =>
-      prev.map(u =>
-        u.id === selectedUser.id ? { ...u, lastMessage: text } : u
-      )
-    );
-  };
+		setUsers(prev =>
+		prev.map(u =>
+			u.id === selectedUser.id ? { ...u, lastMessage: text } : u
+		)
+	);
+  	};
 
 	const acceptAndJoinInvite = (userId: string, inviteId: number) => {
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+		const msg = messagesByUser[userId]?.find(m => m.id === inviteId);
+		if (msg?.invite?.status !== "pending") return;
 		
-		   setMessagesByUser(prev => ({
+		setMessagesByUser(prev => ({
 		 	...prev,
 		 	[userId]: (prev[userId] ?? []).map(m =>
 		 	m.id === inviteId
