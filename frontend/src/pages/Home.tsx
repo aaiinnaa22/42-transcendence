@@ -17,21 +17,11 @@ import {Routes, Route, useNavigate, Navigate} from "react-router-dom";
 
 export const Home = () => {
 	const navigate = useNavigate();
-	const [screenIsLarge, setScreenIsLarge] = useState(() => window.innerWidth >= 1024);
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "chat" | null>(null);
 
 	const togglePanel = (panel: "chat" | "menu") => {
 		setCurrentPanel(currentPanel === panel ? null : panel);
 	};
-
-	useEffect(() => {
-		const handleResize = () => {
-		setScreenIsLarge(window.innerWidth >= 1024);
-		};
-
-		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
-	}, []);
 
 	return (
 		<div className="bg-transcendence-black w-[100vw] h-screen flex flex-col">
@@ -50,10 +40,8 @@ export const Home = () => {
 				<Route path="profile" element={<Profile/>}/>
 				<Route path="play/invite" element={<GameInvite/> } />
 			</Routes>
-				{screenIsLarge &&
-					<SideTab isOpen={currentPanel === "chat"}><ChatContainer/></SideTab>}
-				{!screenIsLarge &&
-					<PopUp isOpen={currentPanel === "chat"}><ChatContainer/></PopUp>}
+				<SideTab isOpen={currentPanel === "chat"}><ChatContainer/></SideTab>
+				<PopUp isOpen={currentPanel === "chat"}><ChatContainer/></PopUp>
 				<PopUp isOpen={currentPanel === "menu"}>
 					<Menu onPageChoose={() => setCurrentPanel(null)}/>
 				</PopUp>
