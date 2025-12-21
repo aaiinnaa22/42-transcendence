@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { NavBar } from "../components/home/NavBar";
 import { PlayButton } from "../components/home/PlayButton";
 import { Leaderboard } from "../components/home/stats/Leaderboard";
@@ -7,7 +7,6 @@ import { Game } from "../components/home/game/Game";
 import { GameTournament } from '../components/home/game/GameTournament';
 import { GameInvite } from '../components/home/game/GameInvite';
 import { Menu } from "../components/home/panels/Menu"
-import { SideTab } from "../components/home/utils/SideTab"
 import { PopUp } from "../components/home/utils/PopUp"
 import { PersonalStats } from '../components/home/stats/PersonalStats';
 import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
@@ -40,11 +39,10 @@ export const Home = () => {
 				<Route path="profile" element={<Profile/>}/>
 				<Route path="play/invite" element={<GameInvite/> } />
 			</Routes>
-				<SideTab isOpen={currentPanel === "chat"}><ChatContainer/></SideTab>
-				<PopUp isOpen={currentPanel === "chat"}><ChatContainer/></PopUp>
-				<PopUp isOpen={currentPanel === "menu"}>
-					<Menu onPageChoose={() => setCurrentPanel(null)}/>
-				</PopUp>
+			<ChatContainer chatIsOpen={currentPanel === "chat"}/>
+			<PopUp isOpen={currentPanel === "menu"}>
+				<Menu onPageChoose={() => setCurrentPanel(null)}/>
+			</PopUp>
 		</div>
 	)
 };
