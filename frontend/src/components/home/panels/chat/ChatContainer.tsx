@@ -4,6 +4,8 @@ import { Discussion } from "./Discussion";
 import { ChatProfile } from "./ChatProfile";
 import { forceLogout } from "../../../../api/forceLogout";
 import { fetchWithAuth } from "../../../../api/fetchWithAuth";
+import { SideTab } from "../../utils/SideTab";
+import { PopUp } from "../../utils/PopUp";
 
 export type Message = {
   id: number;
@@ -32,7 +34,12 @@ export type ChatUser = {
   friendshipStatus?: "pending" | "accepted";
 };
 
-export const ChatContainer = () => {
+type ChatContainerProps =
+{
+	chatIsOpen: boolean;
+}
+
+export const ChatContainer = ({chatIsOpen}: ChatContainerProps) => {
   const [users, setUsers] = useState<ChatUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
   const [messagesByUser, setMessagesByUser] = useState<Record<string, Message[]>>(
@@ -243,38 +250,58 @@ export const ChatContainer = () => {
 
 	const [profileUser, setProfileUser] = useState<ChatUser | null>(null);
 
-	if (profileUser)
-	{
-		return (<ChatProfile user={profileUser} onExitClick={() => setProfileUser(null)}/>)
-	}
-
-  return (
-	<div className="h-full">
-
-		{/* this renders user list */}
-		{!selectedUser && (
-		<Chat
-			users={usersWithPresence}
-			selectedUserId={null}
-			onChatClick={setSelectedUser}
-			onProfileClick={setProfileUser}
-		/>
-		)}
-
-		{/* this renders chat window */}
-		{selectedUser && (
-		<Discussion
-			friend={selectedUser}
-			messages={messagesByUser[selectedUser.id] ?? []}
-			onSendMessage={sendMessage}
-			onExitClick={() => setSelectedUser(null)}
-			inviteIsActive={inviteActive}
-			inviteTimeLeft={inviteTimeLeft}
-			onSendInvite={sendGameInvite}
-			onProfileClick={setProfileUser}
-		/>
-		)}
-
+	return (
+		<div className="fixed inset-0 z-50 pointer-events-none">
+		<SideTab isOpen={chatIsOpen}>
+			<div className="pointer-events-auto h-full w-full">
+				{profileUser
+				? (<ChatProfile user={profileUser} onExitClick={() => setProfileUser(null)}/>
+				) : selectedUser ? (
+					<Discussion
+						friend={selectedUser}
+						messages={messagesByUser[selectedUser.id] ?? []}
+						onSendMessage={sendMessage}
+						onExitClick={() => setSelectedUser(null)}
+						inviteIsActive={inviteActive}
+						inviteTimeLeft={inviteTimeLeft}
+						onSendInvite={sendGameInvite}
+						onProfileClick={setProfileUser}
+					/>
+				) : (
+					<Chat
+						users={usersWithPresence}
+						selectedUserId={null}
+						onChatClick={setSelectedUser}
+						onProfileClick={setProfileUser}
+					/>
+				)}
+			</div>
+		</SideTab>
+		<PopUp isOpen={chatIsOpen}>
+			<div className="pointer-events-auto h-full w-full">
+				{profileUser
+				? (<ChatProfile user={profileUser} onExitClick={() => setProfileUser(null)}/>
+				) : selectedUser ? (
+					<Discussion
+						friend={selectedUser}
+						messages={messagesByUser[selectedUser.id] ?? []}
+						onSendMessage={sendMessage}
+						onExitClick={() => setSelectedUser(null)}
+						inviteIsActive={inviteActive}
+						inviteTimeLeft={inviteTimeLeft}
+						onSendInvite={sendGameInvite}
+						onProfileClick={setProfileUser}
+					/>
+				) : (
+					<Chat
+						users={usersWithPresence}
+						selectedUserId={null}
+						onChatClick={setSelectedUser}
+						onProfileClick={setProfileUser}
+					/>
+				)}
+			</div>
+		</PopUp>
 	</div>
 	);
 };
