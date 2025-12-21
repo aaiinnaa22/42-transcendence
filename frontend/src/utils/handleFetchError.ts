@@ -1,5 +1,5 @@
 export function handleFetchError(err: unknown, setError: (msg: string) => void) {
-    console.error(err);
+    // console.error(err);
   
     // Network / fetch errors
     if (err instanceof TypeError) {

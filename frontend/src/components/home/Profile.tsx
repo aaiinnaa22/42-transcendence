@@ -3,6 +3,7 @@ import {Settings} from "./settings/Settings"
 import { PendingFriendRequests } from './utils/PendingFriendRequests';
 import { fetchWithAuth } from "../../api/fetchWithAuth";
 import { BaseModal } from "./settings/BaseModal";
+import { handleFetchError } from '../../utils/handleFetchError';
 
 export const Profile = () => {
 	const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -188,7 +189,7 @@ export const Profile = () => {
 										setUsername(name);
 										setIsEditOpen(false);
 									} catch (err: any) {
-										setEditError((err && err.message) || "Update failed");
+										handleFetchError(err, setEditError);
 									}
 							}}
 						>
