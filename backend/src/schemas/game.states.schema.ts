@@ -1,39 +1,39 @@
 // ========= SCHEMAS ========
 
 const ballStateSchema = {
-	type: 'object',
-	required: [ 'x', 'y' ],
+	type: "object",
+	required: ["x", "y"],
 	properties: {
-		x: { type: 'number' },
-		y: { type: 'number' },
+		x: { type: "number" },
+		y: { type: "number" },
 	},
 	additionalProperties: false
 };
 
 const playerStateSchema = {
-	type: 'object',
-	required: [ 'id', 'x', 'y', 'points', 'name' ],
+	type: "object",
+	required: ["id", "x", "y", "points", "name"],
 	properties: {
-		id: { type: 'integer', minimum: 1, maximum: 2 },
-		x: { type: 'number' },
-		y: { type: 'number' },
-		points: { type: 'integer', minimum: 0 },
-		name: { type: 'string' }
+		id: { type: "integer", minimum: 1, maximum: 2 },
+		x: { type: "number" },
+		y: { type: "number" },
+		points: { type: "integer", minimum: 0 },
+		name: { type: "string" }
 	},
 	additionalProperties: false
 };
 
 const gameStateSchema = {
-	type: 'object',
+	type: "object",
 	required: [],
 	properties: {
-		type: { type: 'string', const: 'state' },
+		type: { type: "string", const: "state" },
 		players: {
-			type: 'object',
-			required: [ '1', '2' ],
+			type: "object",
+			required: ["1", "2"],
 			properties: {
-				'1': playerStateSchema,
-				'2': playerStateSchema
+				"1": playerStateSchema,
+				"2": playerStateSchema
 			},
 			additionalProperties: false
 		},
@@ -58,7 +58,7 @@ export type PlayerState = {
 };
 
 export type GameState = {
-	type: 'state';
+	type: "state";
 	players: {
 		1: PlayerState;
 		2: PlayerState;
@@ -69,24 +69,30 @@ export type GameState = {
 
 // ========= FUNCTIONS ========
 
-export const gameStateMessage = ( players: Record<string, PlayerState>, ball: BallState, countdown: number ) : GameState => {
+export const gameStateMessage = (
+	players: Record<string, PlayerState>,
+	ball: BallState,
+	countdown: number
+) : GameState =>
+{
 	return {
-		type: 'state',
+		type: "state",
 		players: players as { 1: PlayerState; 2: PlayerState },
 		ball,
 		countdown
 	};
 };
 
-export const validateGameState = ( data: unknown ) : GameState | null => {
-	if ( typeof data !== 'object' || data === null ) return null;
+export const validateGameState = ( data: unknown ) : GameState | null =>
+{
+	if ( typeof data !== "object" || data === null ) return null;
 
 	const msg = data as any;
 
-	if ( msg.type !== 'state'
-		|| ( !msg.players || typeof msg.players !== 'object' )
+	if ( msg.type !== "state"
+		|| ( !msg.players || typeof msg.players !== "object" )
 		|| ( !msg.players[1] || !msg.players[2] )
-		|| ( !msg.ball || typeof msg.ball !== 'object' )
+		|| ( !msg.ball || typeof msg.ball !== "object" )
 	 ) return null;
 
 	 return msg as GameState;

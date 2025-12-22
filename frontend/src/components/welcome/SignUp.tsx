@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiUrl } from "../../api/api";
 
 export const SignUp = () => {
 	const [email, setEmail] = useState("");
@@ -8,30 +9,13 @@ export const SignUp = () => {
 	const [error, setError] = useState("");
 	const navigate = useNavigate();
 
-	useEffect(() => {
-		const checkSession = async () => {
-			try {
-				const res = await fetch("http://localhost:4241/auth/me", {
-					method: "GET",
-					credentials: "include",
-				});
-
-				if (res.ok) {
-					navigate("/home", { replace: true });
-				}
-			} catch (err) {}
-		};
-
-		checkSession();
-	}, [navigate]);
-
 	const handleSignUp = async (e: React.FormEvent) =>
 	{
 		e.preventDefault();
 		setError("");
 
 		try {
-			const response = await fetch("http://localhost:4241/auth/register",
+			const response = await fetch( apiUrl('/auth/register'),
 			{
 				method: "POST",
 				credentials: "include",
@@ -43,6 +27,12 @@ export const SignUp = () => {
 			const data = await response.json();
 			if (!response.ok || data.error)
 			{
+				if ( response.status === 409 && data.message === "Already logged in" )
+				{
+					navigate("/home");
+					return;
+				}
+
 				throw new Error(data.error || "Signup failed. Please try again.");
 			}
 			if (data.message === "Registration successful")

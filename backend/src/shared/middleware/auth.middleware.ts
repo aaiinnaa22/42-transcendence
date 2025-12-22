@@ -2,10 +2,6 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 
 export const authenticate = async ( request: FastifyRequest, reply: FastifyReply ) =>
 {
-	// DEBUG: testing if the cookie was contained
-	// console.log( "Cookies: ", request.cookies );
-	// console.log( "Headers: ", request.headers );
-
 	const signed = ( request.cookies as any )?.accessToken;
 	if ( signed )
 	{

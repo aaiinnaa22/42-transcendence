@@ -1,9 +1,10 @@
 import { useRef, useEffect, useState } from "react";
-import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
+import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.js";
 import { } from "../panels/chat/Discussion";
 import { useLocation } from "react-router-dom";
-import { forceLogout } from "../../../api/forceLogout.ts";
-import { VisualGame } from "./VisualGame.tsx";
+import { wsUrl } from "../../../api/api.js";
+import { forceLogout } from "../../../api/forceLogout.js";
+import { VisualGame } from "./VisualGame";
 import { useNavigate } from "react-router-dom";
 
 
@@ -16,7 +17,7 @@ export const GameInvite = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number; countdown?: number; waiting?: string}>({ x: 0, y: 0 , countdown: 5, waiting: undefined});
+    const ball = useRef<{ x: number; y: number; countdown?: number; waiting?: string | undefined;}>({ x: 0, y: 0 , countdown: 5, waiting: undefined});
 	const location = useLocation();
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
@@ -153,9 +154,8 @@ export const GameInvite = () =>
 			console.error("Missing invite data", location.state);
 			return;
 		}
-   		console.log("DEBUG: invitee =", invitee);
 		ball.current.waiting = `Waiting ${invitee}`;
-        const ws = new WebSocket(`ws://localhost:4241/game/chat?friendName=${invitee}`+ `&expiresAt=${expiresAt}`);
+        const ws = new WebSocket(wsUrl(`/game/chat?friendName=${invitee}&expiresAt=${expiresAt}`));
         wsRef.current = ws;
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
@@ -224,7 +224,7 @@ export const GameInvite = () =>
 			}
 			else if (data.type === "invite:expired") {
 				console.warn("Invite expired, leaving game");
-			
+
 				ws.close();
 				navigate("/home/play", { replace: true });
 				return;
@@ -267,7 +267,7 @@ export const GameInvite = () =>
 			window.removeEventListener("resize", getScreenOrientation);
 			touchScreenMediaQuery.removeEventListener("change", checkTouch);
         };
-    },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
+    });
 
 
 	return (<VisualGame

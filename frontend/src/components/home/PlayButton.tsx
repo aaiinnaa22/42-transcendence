@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { fetchWithAuth } from "../../api/fetchWithAuth";
 import { forceLogout } from "../../api/forceLogout";
+import { apiUrl } from "../../api/api";
 
 export const PlayButton = () =>
 {
 	const navigate = useNavigate();
 	const handlePlay = async () => {
 		try {
-			const res = await fetchWithAuth("http://localhost:4241/auth/me");
+			const res = await fetchWithAuth(apiUrl("/auth/me"));
 
 			if (!res.ok) {
 				forceLogout();

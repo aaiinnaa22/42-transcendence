@@ -12,7 +12,7 @@ import { PersonalStats } from '../components/home/stats/PersonalStats';
 import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
 import { ExitTopLeft } from '../components/home/utils/ExitTopLeft';
 import { ChatContainer } from '../components/home/panels/chat/ChatContainer';
-import {Routes, Route, useNavigate, Navigate} from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 
 export const Home = () => {
 	const navigate = useNavigate();

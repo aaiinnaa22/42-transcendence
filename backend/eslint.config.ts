@@ -18,8 +18,9 @@ export default defineConfig( [
 			"max-len": ["error", { code: 120, ignoreComments: true }],
 			indent: ["error", "tab", { SwitchCase: 1 }],
 			"no-tabs": "off",
+			"no-mixed-spaces-and-tabs": ["warn", "smart-tabs"],
 			"brace-style": ["error", "allman", { allowSingleLine: true }],
-			"curly": ["error", "multiline"],
+			"curly": ["error", "multi-line"],
 			"semi": ["error", "always"],
 			"quotes": ["error", "double"],
 
@@ -40,7 +41,7 @@ export default defineConfig( [
 			// --- Conditionals ---
 			"one-var": ["error", "never"],
 			"multiline-ternary": ["error", "always-multiline"],
-			"nonblock-statement-body-position": ["error", "below"],
+			"nonblock-statement-body-position": ["error", "any"],
 
 			// --- Misc ---
 			"no-trailing-spaces": "error",

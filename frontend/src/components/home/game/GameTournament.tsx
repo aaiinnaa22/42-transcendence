@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState } from "react";
-import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
-import { VisualGame } from "./VisualGame.tsx";
-import { forceLogout } from "../../../api/forceLogout.ts";
+import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from './constants.js';
+import { wsUrl } from "../../../api/api.js";
+import { VisualGame } from "./VisualGame";
+import { forceLogout } from "../../../api/forceLogout.js";
 
 export const GameTournament = () =>
 {
@@ -12,7 +13,7 @@ export const GameTournament = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
+    const ball = useRef<{ x: number; y: number; countdown?: number | undefined;}>({ x: 0, y: 0 , countdown: undefined });
 	const [screenIsPortrait, setScreenIsPortrait] = useState<boolean>(
 		window.matchMedia("(orientation: portrait)").matches
 	);
@@ -136,7 +137,7 @@ export const GameTournament = () =>
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
-        const ws = new WebSocket('ws://localhost:4241/game/multiplayer');
+        const ws = new WebSocket( wsUrl('/game/multiplayer'));
         wsRef.current = ws;
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
@@ -238,7 +239,7 @@ export const GameTournament = () =>
 			window.removeEventListener("resize", getScreenOrientation);
 			touchScreenMediaQuery.removeEventListener("change", checkTouch);
         };
-    },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
+    });
 
 	return (<VisualGame
 		pointsRef={PointsRef}

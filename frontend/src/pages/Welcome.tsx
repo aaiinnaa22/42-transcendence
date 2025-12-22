@@ -1,19 +1,21 @@
 import GoogleSignIn from "../assets/googleSignIn.svg";
 import {useNavigate, useLocation, Outlet} from "react-router-dom";
 import { useEffect } from "react";
+import { apiUrl } from "../api/api";
+// import { fetchWithAuth } from "../api/fetchWithAuth";
 
 export const Welcome = () => {
 	const navigate = useNavigate();
 	const {pathname} = useLocation();
 
 	useEffect(() => {
-        fetch("http://localhost:4241/auth/me", {
+        fetch( apiUrl('/auth/me'), {
             method: "GET",
             credentials: "include",
         })
         .then(res => {
             if (res.ok) {
-                navigate("/home");
+                navigate("/home", { replace: true });
             }
         })
         .catch(() => {});
@@ -36,7 +38,7 @@ export const Welcome = () => {
 			</div>
 				{pathname === "/welcome" && <div className="pt-[5vh] flex flex-col gap-4 items-center text-xl font-transcendence-two text-center
 					md:gap-6 landscape:gap-3 lg:landscape:gap-6 landscape:text-sm lg:landscape:text-xl">
-					<img src={GoogleSignIn} onClick={() => window.location.href = "http://localhost:4241/auth/google"} alt="google sign in" className="w-45 hover:brightness-150 landscape:w-35 lg:landscape:w-45"/>
+					<img src={GoogleSignIn} onClick={() => window.location.href = `${apiUrl('/auth/google')}`} alt="google sign in" className="w-45 hover:brightness-150 landscape:w-35 lg:landscape:w-45"/>
 					<h2 className="text-transcendence-white text-lg landscape:text-sm lg:landscape:text-lg">or</h2>
 					<button onClick={() => navigate("login")} className="bg-transcendence-beige text-transcendence-black w-30 h-15 cursor-pointer rounded-2xl hover:pt-2 landscape:w-20 landscape:h-10 lg:landscape:w-30 lg:landscape:h-15"> Login </button>
 					<button onClick={() => navigate("signup")} className="bg-transcendence-beige text-transcendence-black w-30 h-15 cursor-pointer rounded-2xl hover:pt-2 landscape:w-20 landscape:h-10 lg:landscape:w-30 lg:landscape:h-15"> Sign up</button>
