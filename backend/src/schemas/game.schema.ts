@@ -18,7 +18,8 @@ export const GameClientMessageSchema = z.discriminatedUnion( "type", [
 ]);
 
 export const GameFriendNameSchema = z.object({
-	friendName: usernameField
+	friendName: usernameField,
+	expiresAt: z.coerce.number().int().positive(),
 }).loose();
 
 export type MoveMessage = z.infer<typeof MoveMessageSchema>;

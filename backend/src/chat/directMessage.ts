@@ -30,34 +30,66 @@ export function sendDM(
 	return true;
 }
 
-export function sendInvite(
-	from: string,
-	to: string,
-	message: string,
-	timestamp: number
-): boolean {
-	const targets = onlineUsers.get(to);
-	if (!targets)
-	{
-		console.log("we failed for online users:(");
-		return false;
-	}
-
-	const payload = JSON.stringify({
-		type: "invite",
-		from,
-		message,
-		timestamp
+export function sendInvitePayload(invite: {
+	from: string;
+	to: string;
+	startedAt: number;
+	expiresAt: number;
+  }) {
+	// payload for invitee
+	if (invite.from === invite.to) return;
+	const receivedPayload = JSON.stringify({
+	  type: "invite:received",
+	  from: invite.from,
+	  startedAt: invite.startedAt,
+	  expiresAt: invite.expiresAt,
 	});
-
-	for (const socket of targets)
-	{
-		if (socket.readyState === WebSocket.OPEN)
-		{
-			socket.send(payload);
-			console.log("invite sent");
+  
+	// payload for inviter
+	const sentPayload = JSON.stringify({
+	  type: "invite:sent",
+	  to: invite.to,
+	  startedAt: invite.startedAt,
+	  expiresAt: invite.expiresAt,
+	});
+  
+	// send to invitee
+	const inviteeSockets = onlineUsers.get(invite.to);
+	if (inviteeSockets) {
+	  for (const socket of inviteeSockets) {
+		if (socket.readyState === WebSocket.OPEN) {
+		  socket.send(receivedPayload);
 		}
+	  }
 	}
+  
+	// send to inviter
+	const inviterSockets = onlineUsers.get(invite.from);
+	if (inviterSockets) {
+	  for (const socket of inviterSockets) {
+		if (socket.readyState === WebSocket.OPEN) {
+		  socket.send(sentPayload);
+		}
+	  }
+	}
+  }
+  
 
-	return true;
+export function sendInviteExpired(a: string, b: string) {
+	const payload = JSON.stringify({
+    	type: "invite:expired",
+    	users: [a, b],
+  	});
+
+  	for (const userId of [a, b]) {
+    	const targets = onlineUsers.get(userId);
+    	if (!targets) continue;
+
+    	for (const socket of targets) {
+      	if (socket.readyState === WebSocket.OPEN) {
+        	socket.send(payload);
+			console.log("invite expired mes from backend");
+      	}
+    	}
+  	}
 }
