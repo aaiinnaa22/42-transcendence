@@ -267,7 +267,7 @@ export const GameInvite = () =>
 			window.removeEventListener("resize", getScreenOrientation);
 			touchScreenMediaQuery.removeEventListener("change", checkTouch);
         };
-    });
+    },[]);
 
 
 	return (<VisualGame
