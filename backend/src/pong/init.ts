@@ -16,7 +16,6 @@ import { GameFriendNameSchema, MoveMessageSchema } from "../schemas/game.schema.
 import type { WebSocket as WsWebSocket } from "ws";
 import { sendDM } from "../chat/directMessage.js";
 import { validateRequest } from "../shared/utility/validation.utility.js";
-import { HttpError } from "../shared/utility/error.utility.js";
 import { pseudonym } from "../shared/utility/anonymize.utility..js";
 
 type UserId = string;
@@ -45,6 +44,7 @@ type WaitingFriend = {
 	joinedAt: number;
 	friendName: UserName;
 	userName: UserName;
+	expiresAt: number;
 };
 
 const gameComponent = async ( server: FastifyInstance ) =>
@@ -56,7 +56,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	const friendQueue: WaitingFriend[] = [];
 
 	// Helper for queueing new players
-	const checkInvitation = async ( id: UserId, socket: WsWebSocket, friend: UserName ) =>
+	const checkInvitation = async ( id: UserId, socket: WsWebSocket, friend: UserName, expiresAt: number ) =>
 	{
 		try
 		{
@@ -64,6 +64,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				where: { userId: id },
 				select: { eloRating: true, user: { select: { username: true }} },
 			} );
+
 
 			const eloRating = stats?.eloRating ?? 1000;
 			const userName = stats?.user?.username ?? "Unknown";
@@ -77,7 +78,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				gameId: null,
 				eloRating,
 				joinedAt,
-				lastActivityAt: joinedAt
+				lastActivityAt: joinedAt,
 			};
 			const waitingFriend: WaitingFriend = {
 				userId: id,
@@ -85,10 +86,22 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				joinedAt,
 				friendName: friend,
 				userName: userName,
+				expiresAt,
 			};
 
 			// Store connection info and queue the player
 			activePlayers.set( id, playerConnection );
+
+			//check to see if player is already in queue
+			if ( friendQueue.some( f => f.userId === id ) )
+			{
+				socket.send( JSON.stringify( {
+			  type: "waiting",
+			  message: "Already waiting for friend"
+				} ) );
+				return;
+			}
+
 			friendQueue.push( waitingFriend );
 
 			server.log.info( { user: pseudonym( userName ), to: pseudonym( friend )}, "Player waiting for invitee" );
@@ -123,14 +136,18 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			for ( let i = 0; i < friendQueue.length; ++i )
 			{
 				for ( let j = i + 1; j < friendQueue.length; ++j )
-
 				{
 					if ( friendQueue[i]?.friendName == friendQueue[j]?.userName
 						&& friendQueue[j]?.friendName == friendQueue[i]?.userName )
 					{
+						const now = Date.now();
+
 						const player1 = friendQueue[i];
 						const player2 = friendQueue[j];
+
 						if ( !player1 || !player2 ) continue;
+						if ( player1.expiresAt <= now || player2.expiresAt <= now ) continue;
+
 						const connection1 = activePlayers.get( player1.userId );
 						const connection2 = activePlayers.get( player2.userId );
 						if ( connection1 && connection2 )
@@ -171,6 +188,41 @@ const gameComponent = async ( server: FastifyInstance ) =>
 		}
 	};
 
+	// Kicking out from the friend queue
+	const cleanExpiredFriendInvites = () =>
+	{
+		const now = Date.now();
+
+		for ( let i = friendQueue.length - 1; i >= 0; i-- )
+		{
+		  	const waiting = friendQueue[i];
+
+		  	if ( !waiting ) continue;
+		  	if ( waiting.expiresAt <= now )
+			{
+				console.log( `Game: Invite expired for ${waiting.userName}, removing from friend queue` );
+
+				friendQueue.splice( i, 1 );
+
+				const connection = activePlayers.get( waiting.userId );
+				if ( connection )
+				{
+			  		connection.socket.send( JSON.stringify( {
+						type: "invite:expired",
+						message: "Invite expired"
+			 		} ) );
+
+			  		connection.socket.close( 1000, "Invite expired" );
+			  		activePlayers.delete( waiting.userId );
+				}
+		  	}
+		}
+	};
+
+	const friendInviteCleanupInterval = setInterval(
+		cleanExpiredFriendInvites,
+		1000
+	);
 
 	// Helper for queueing new players
 	const queuePlayerForTournament = async ( id: UserId, socket: WsWebSocket ) =>
@@ -711,7 +763,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	server.get(
 		"/game/chat",
 		{ websocket: true, onRequest: authenticate },
-		async ( socket, request: FastifyRequest ) =>
+		async ( socket , request: FastifyRequest ) =>
 		{
 			if ( !request.user )
 			{
@@ -733,21 +785,44 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				return;
 			}
 
-
-			// check invitation status
 			try
 			{
-				const { friendName } = validateRequest( GameFriendNameSchema, request.query );
-				server.log.info( { user: pseudonym( friendName ) }, "Invitation" );
-				await checkInvitation( userId, socket, friendName );
+				const { friendName, expiresAt } = validateRequest( GameFriendNameSchema, request.query );
+
+				// Check expiry (merged change)
+				if ( expiresAt <= Date.now() )
+				{
+					ws.send( JSON.stringify( {
+					  type: "invite:expired",
+					  message: "Invite already expired",
+					} ) );
+					ws.close( 1000, "Invite expired" );
+					return;
+				}
+
+				try
+				{
+					await checkInvitation( userId, ws, friendName, expiresAt );
+				}
+				catch ( error )
+				{
+					server.log.error( { user: pseudonym( userId ) }, "Failed to queue invite game player" );
+					ws.send( JSON.stringify( {
+						type: "error",
+						message: "Failed to join invite game",
+					} ) );
+					ws.close();
+					return;
+				}
 			}
 			catch ( error )
 			{
-				const replyMessage = error instanceof HttpError ? error.message : "Invalid friend name";
-				socket.send( JSON.stringify( {
-					type: "error",
-					message: replyMessage
+				ws.send( JSON.stringify( {
+				  type: "error",
+				  message: "Invalid invite data",
 				} ) );
+				ws.close();
+				return;
 			}
 
 			ws.on( "message", ( message: any ) =>
@@ -1084,6 +1159,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 	{
 		clearInterval( inactivityCheckInterval );
 		clearInterval( matchmakingInterval );
+		clearInterval( friendInviteCleanupInterval );
 	} );
 };
 
