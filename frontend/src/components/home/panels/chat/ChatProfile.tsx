@@ -19,7 +19,7 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 			setCurrentUser(prev => ({
 			...prev,
 			...freshUser,
-			online: prev.online,  // keep the existing online status if not included in freshUser
+			online: prev.online,
 		}));
 	}
 
