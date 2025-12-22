@@ -4,6 +4,7 @@ import { } from "../panels/chat/Discussion";
 import { useLocation } from "react-router-dom";
 import { forceLogout } from "../../../api/forceLogout.ts";
 import { VisualGame } from "./VisualGame.tsx";
+import { useNavigate } from "react-router-dom";
 
 
 export const GameInvite = () =>
@@ -23,6 +24,8 @@ export const GameInvite = () =>
 			window.matchMedia("(orientation: portrait)").matches
 		);
 	const [isTouchScreen, setIsTouchScreen] = useState<boolean>(false);
+
+	const navigate = useNavigate();
 
 	//Touch screen button managers
 	const startHold = (key: string, o: number,dy: number) => {
@@ -144,9 +147,15 @@ export const GameInvite = () =>
     useEffect(() => {
         let animationFrameId: number; // not needed ??
 		const invitee = location.state?.invitee;
+		const expiresAt = location.state?.expiresAt;
+
+		if (!invitee || !expiresAt) {
+			console.error("Missing invite data", location.state);
+			return;
+		}
    		console.log("DEBUG: invitee =", invitee);
 		ball.current.waiting = `Waiting ${invitee}`;
-        const ws = new WebSocket(`ws://localhost:4241/game/chat?friendName=${invitee}`);
+        const ws = new WebSocket(`ws://localhost:4241/game/chat?friendName=${invitee}`+ `&expiresAt=${expiresAt}`);
         wsRef.current = ws;
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
@@ -155,6 +164,8 @@ export const GameInvite = () =>
         window.addEventListener("keydown",handleKeyDown);
         window.addEventListener("keyup", handleKeyUp);
 		window.addEventListener("blur", handleBlur);
+
+		console.log("Opening game invite with:", { invitee, expiresAt, now: Date.now() });
 
         ws.onopen = () => {
 			console.log("Connected!");
@@ -211,7 +222,13 @@ export const GameInvite = () =>
 				ball.current.waiting = `Winner is ${data.winner}`;
 				//console.log( "The winner's new elo is " + data.elo.winner );
 			}
-
+			else if (data.type === "invite:expired") {
+				console.warn("Invite expired, leaving game");
+			
+				ws.close();
+				navigate("/home/play", { replace: true });
+				return;
+			}
 			/* ADD ADDITIONAL STATES HERE */
 		};
 
