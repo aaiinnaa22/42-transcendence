@@ -1,5 +1,5 @@
 
-import { WIDTH, HEIGHT, MAX_BALL_SPEED, MIN_BALL_SPEED } from './constants.js';
+import { WIDTH, HEIGHT, MAX_BALL_SPEED, MIN_BALL_SPEED } from "./constants.js";
 
 class Ball
 {
@@ -22,8 +22,8 @@ class Ball
 		this.x = WIDTH / 2;
 		this.y = HEIGHT / 2;
 
-		const speedX = MIN_BALL_SPEED + Math.random() * (MAX_BALL_SPEED - MIN_BALL_SPEED);
-		const speedY = (MIN_BALL_SPEED / 2) + Math.random() * (MAX_BALL_SPEED - (MIN_BALL_SPEED - 2));
+		const speedX = MIN_BALL_SPEED + Math.random() * ( MAX_BALL_SPEED - MIN_BALL_SPEED );
+		const speedY = ( MIN_BALL_SPEED / 2 ) + Math.random() * ( MAX_BALL_SPEED - ( MIN_BALL_SPEED - 2 ) );
 
 		this.vx = Math.random() < 0.5 ? -speedX : speedX;
 		this.vy = Math.random() < 0.5 ? -speedY : speedY;

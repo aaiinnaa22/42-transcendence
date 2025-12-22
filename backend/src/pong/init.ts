@@ -131,7 +131,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			if ( friendQueue.length < 2 ) return;
 
 			let removeI: number | null = null;
-   			let removeJ: number | null = null;
+			let removeJ: number | null = null;
 
 			for ( let i = 0; i < friendQueue.length; ++i )
 			{
@@ -179,7 +179,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 				friendQueue.splice( second, 1 );
 				friendQueue.splice( first, 1 );
-    	}
+			}
 		}
 		catch ( error )
 		{
@@ -195,10 +195,10 @@ const gameComponent = async ( server: FastifyInstance ) =>
 
 		for ( let i = friendQueue.length - 1; i >= 0; i-- )
 		{
-		  	const waiting = friendQueue[i];
+			const waiting = friendQueue[i];
 
-		  	if ( !waiting ) continue;
-		  	if ( waiting.expiresAt <= now )
+			if ( !waiting ) continue;
+			if ( waiting.expiresAt <= now )
 			{
 				console.log( `Game: Invite expired for ${waiting.userName}, removing from friend queue` );
 
@@ -207,15 +207,15 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				const connection = activePlayers.get( waiting.userId );
 				if ( connection )
 				{
-			  		connection.socket.send( JSON.stringify( {
+					connection.socket.send( JSON.stringify( {
 						type: "invite:expired",
 						message: "Invite expired"
-			 		} ) );
+					} ) );
 
-			  		connection.socket.close( 1000, "Invite expired" );
-			  		activePlayers.delete( waiting.userId );
+					connection.socket.close( 1000, "Invite expired" );
+					activePlayers.delete( waiting.userId );
 				}
-		  	}
+			}
 		}
 	};
 
@@ -366,7 +366,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			player1.gameId = gameId;
 			player2.gameId = gameId;
 			player1.lastActivityAt = Date.now();
-        	player2.lastActivityAt = Date.now();
+			player2.lastActivityAt = Date.now();
 
 			games[gameId] = game;
 
@@ -411,29 +411,29 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				const timeWaited = now - player1!.joinedAt;
 
 				const eloRange = Math.min(
-        	        INITIAL_ELO_RANGE + Math.floor( timeWaited / RANGE_INCREASE_INTERVAL ) * ELO_RANGE_INCREASE,
-        	        MAX_ELO_RANGE
-        	    );
+					INITIAL_ELO_RANGE + Math.floor( timeWaited / RANGE_INCREASE_INTERVAL ) * ELO_RANGE_INCREASE,
+					MAX_ELO_RANGE
+				);
 
 				let bestMatch: WaitingPlayer | undefined = undefined;
 				let smallestDifference = Infinity;
 
 				// Attempt to find a player match within the Elo range of the player1
 				// Potentially check from earlier elements in the array
-        	    for ( let j = i + 1; j < playerQueue.length; ++j )
-        	    {
-        	        if ( matched.has( playerQueue[j]!.userId ) ) continue;
+				for ( let j = i + 1; j < playerQueue.length; ++j )
+				{
+					if ( matched.has( playerQueue[j]!.userId ) ) continue;
 
-        	        const player2 = playerQueue[j];
+					const player2 = playerQueue[j];
 					if ( !player2 ) continue;
-        	        const eloDiff = Math.abs( player1.eloRating - player2.eloRating );
+					const eloDiff = Math.abs( player1.eloRating - player2.eloRating );
 
-        	        if ( eloDiff <= eloRange && eloDiff < smallestDifference )
-        	        {
-        	            bestMatch = player2;
-        	            smallestDifference = eloDiff;
-        	        }
-        	    }
+					if ( eloDiff <= eloRange && eloDiff < smallestDifference )
+					{
+						bestMatch = player2;
+						smallestDifference = eloDiff;
+					}
+				}
 
 				// Create a new game instance if a match is found
 				if ( bestMatch )
@@ -490,7 +490,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 								loser: null
 							};
 							handleGameEnd( game.id, data );
-        	            }
+						}
 					}
 				}
 				// Inactive player forfeits the game
@@ -502,25 +502,25 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						const playerConnection = activePlayers.get( player.userId );
 						if ( !playerConnection ) return false;
 
-        	    	    const inactiveTime = now - playerConnection.lastActivityAt;
+						const inactiveTime = now - playerConnection.lastActivityAt;
 
 						if ( inactiveTime > INACTIVITY_TIMEOUT )
 						{
 							const timeInSeconds = Math.floor( inactiveTime / 1000 );
-        	    	        server.log.info( {
+							server.log.info( {
 								game: gameId,
 								user: pseudonym( player.userId ),
 								inactiveFor: timeInSeconds
 							}, "Player inactive in multiplayer game" );
 							return true;
-        	    	    }
+						}
 						return false;
 					} );
 
 					// End game if any player is inactive
-        	    	if ( loserPlayer )
+					if ( loserPlayer )
 					{
-        	    	    server.log.info( { game: gameId }, "Ending tournament game due to inactivity" );
+						server.log.info( { game: gameId }, "Ending tournament game due to inactivity" );
 
 						const winnerPlayer = game.players.find( player => player.userId !== loserPlayer.userId );
 
@@ -532,7 +532,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						handleGameEnd( game.id, data );
 					}
 				}
-        	}
+			}
 		}
 		catch ( error )
 		{
@@ -587,7 +587,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					if ( !game || game.hasEnded ) return;
 
 					// Update last activity time
-            	playerConnection.lastActivityAt = Date.now();
+					playerConnection.lastActivityAt = Date.now();
 
 					// Moves the player based on their userId.
 					if ( data.type === "move" )
@@ -695,7 +695,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					if ( !game || game.hasEnded ) return;
 
 					// Update last activity time
-            	playerConnection.lastActivityAt = Date.now();
+					playerConnection.lastActivityAt = Date.now();
 
 					// Moves the player based on their userId.
 					if ( data.type === "move" )
@@ -804,7 +804,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 				{
 					await checkInvitation( userId, ws, friendName, expiresAt );
 				}
-				catch ( error )
+				catch
 				{
 					server.log.error( { user: pseudonym( userId ) }, "Failed to queue invite game player" );
 					ws.send( JSON.stringify( {
@@ -815,7 +815,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					return;
 				}
 			}
-			catch ( error )
+			catch
 			{
 				ws.send( JSON.stringify( {
 				  type: "error",

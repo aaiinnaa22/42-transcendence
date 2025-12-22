@@ -16,7 +16,7 @@ class Player
 	 * @param y Vertical player position
 	 * @param userName The name of the user
 	 */
-	constructor( location: number, userId: string, x = 0, y = 0, userName: string)
+	constructor( location: number, userId: string, x = 0, y = 0, userName: string )
 	{
 		this.userId = userId ? userId : ""; // Avoid exposing this!!!
 		this.location = location;

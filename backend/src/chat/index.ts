@@ -3,7 +3,7 @@ import type { WebSocket as WsWebSocket } from "ws";
 import { addUser, removeUser } from "./presence.js";
 import { sendDM } from "./directMessage.js";
 import { onlineUsers } from "./state.js";
-import { isBlocked  /* , blockUser, unblockUser */ } from "./blocking.js";
+import { isBlocked /* , blockUser, unblockUser */ } from "./blocking.js";
 import { authenticate } from "../shared/middleware/auth.middleware.js";
 import { pseudonym } from "../shared/utility/anonymize.utility..js";
 import { createInvite } from "./invites.js";
