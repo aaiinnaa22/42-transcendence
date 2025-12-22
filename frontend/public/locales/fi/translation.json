@@ -43,7 +43,11 @@
 		"verifyToDisable": "Vahvista ja poista 2FA käytöstä",
 		"enableSuccess": "2FA otettu käyttöön onnistuneesti!",
 		"disableSuccess": "2FA poistettu käytöstä onnistuneesti!",
-		"modalClosing": "Ikkuna sulkeutuu {{countdown}} sekunnissa"
+		"modalClosing": "Ikkuna sulkeutuu {{countdown}} sekunnissa",
+		"login": "Kaksivaiheinen kirjautuminen",
+		"placeholder": "Syötä 6-numeroinen koodi",
+		"loginSuccess": "Kirjautuminen onnistui!",
+		"verifyAndLogin": "Vahvista & kirjaudu"
 	},
 	"leaderboard": {
 		"myStats": "Tilastoni",
@@ -80,7 +84,8 @@
 		"send": "lähetä",
 		"status": "tällä hetkellä {{status}}",
 		"online": "verkossa",
-		"offline": "poissa"
+		"offline": "poissa",
+		"header": "keskustele pelaajien kanssa"
 	},
 	"utils": {
 		"close": "sulje",
@@ -115,7 +120,11 @@
 		"tryAgain": "Jokin meni pieleen. Yritä hetken päästä uudelleen.",
 		"logoutFailure": "Ulos kirjautuminen epäonnistui.",
 		"picUploadFailure": "Profiilikuvan tallennus epäonnistui",
-		"fetchUserInfo": "Käyttäjätietojen haku epäonnistui"
+		"fetchUserInfo": "Käyttäjätietojen haku epäonnistui",
+		"twoFALoginInfo": "Syötä 6-numeroinen koodi todennussovelluksestasi.",
+		"QRLoadFailure": "QR-koodin lataus epäonnistui",
+		"invalidCodeFailure": "Virheellinen 2FA-koodi",
+		"accountDeletionFailure": "Tilin poisto epäonnistui"
 	},
 	"game": {
 		"button": {
@@ -126,7 +135,8 @@
 			"singleplayer": "pelaa yhdessä ystäväsi kanssa samalla näytöllä",
 			"multiplayer": "pelaa muiden kanssa ympäri maailmaa"
 		},
-		"choice": "Valitse pelimuoto"
+		"choice": "Valitse pelimuoto",
+		"horizontal": "käännä laite vaakatasoon pelataksesi peliä!"
 	},
 	"navbar": {
 		"play": "peli",
@@ -139,5 +149,16 @@
 		"accept": "Hyväksy pyyntö",
 		"reject": "Hylkää pyyntö",
 		"cancel": "Peruuta pyyntö"
+	},
+	"account": {
+		"button": {
+			"cancel": "Peruuta",
+			"deleting": "Poistetaan…",
+			"deleteAccount": "Poista tili"
+		},
+		"deletion": {
+			"title": "Tilin poisto",
+			"warning": "Tämä toimenpide on pysyvä. Tilisi ja tietosi poistetaan."
+		}
 	}
 }

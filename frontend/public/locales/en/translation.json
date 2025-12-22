@@ -43,7 +43,11 @@
 		"verifyToDisable": "Verify & Disable 2FA",
 		"enableSuccess": "2FA enabled successfully!",
 		"disableSuccess": "2FA disabled successfully!",
-		"modalClosing": "Closing modal in {{countdown}} seconds"
+		"modalClosing": "Closing modal in {{countdown}} seconds",
+		"login": "Two-Factor Login",
+		"placeholder": "Enter 6-digit code",
+		"loginSuccess": "Login successful!",
+		"verifyAndLogin": "Verify & Login"
 	},
 	"leaderboard": {
 		"myStats": "My stats",
@@ -80,7 +84,8 @@
 		"send": "send",
 		"status": "currently {{status}}",
 		"online": "online",
-		"offline": "offline"
+		"offline": "offline",
+		"header": "chat with players"
 	},
 	"utils": {
 		"close": "close",
@@ -115,7 +120,11 @@
 		"tryAgain": "Something went wrong. Please try again later.",
 		"logoutFailure": "Logout failed.",
 		"picUploadFailure": "Failed to store profile picture",
-		"fetchUserInfo": "Failed to fetch user info"
+		"fetchUserInfo": "Failed to fetch user info",
+		"twoFALoginInfo": "Please enter the 6-digit code from your authenticator app.",
+		"QRLoadFailure": "Failed to load QR code",
+		"invalidCodeFailure": "Invalid 2FA code",
+		"accountDeletionFailure": "Account deletion failed"
 	},
 	"game": {
 		"button": {
@@ -126,7 +135,8 @@
 			"singleplayer": "play together with your friend on the same screen",
 			"multiplayer": "play with others around the world"
 		},
-		"choice": "Choose mode"
+		"choice": "Choose mode",
+		"horizontal": "switch your device to horizontal mode to play the game!"
 	},
 	"navbar": {
 		"play": "game",
@@ -139,5 +149,16 @@
 		"accept": "Accept request",
 		"reject": "Reject request",
 		"cancel": "Cancel request"
+	},
+	"account": {
+		"button": {
+			"cancel": "Cancel",
+			"deleting": "Deleting…",
+			"deleteAccount": "Delete account"
+		},
+		"deletion": {
+			"title": "Delete Account",
+			"warning": "This action is permanent. Your account and data will be deleted."
+		}
 	}
 }

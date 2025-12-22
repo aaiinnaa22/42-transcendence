@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { WIDTH, HEIGHT} from "./constants.js";
 
 type VisualGameProps =
@@ -19,12 +20,15 @@ const BUTTON_KEYS = {
 } as const;
 
 export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait, startHold, stopHold, isTouchScreen}: VisualGameProps) => {
+	const {t} = useTranslation();
 	return (
 		<div className="w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
 		{screenIsPortrait && (
 			<div className="h-full w-full flex items-center justify-center">
 				<div className="bg-transcendence-red text-center p-8 rounded-xl">
-					<h2 className="text-transcendence-white font-bold font-transcendence-two">switch your device to horizontal mode to play the game!</h2>
+					<h2 className="text-transcendence-white font-bold font-transcendence-two">
+						{t("game.horizontal")}
+					</h2>
 				</div>
 			</div>)}
 		{!screenIsPortrait && (<div className="w-full h-full relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]

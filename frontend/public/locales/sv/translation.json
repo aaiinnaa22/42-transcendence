@@ -43,9 +43,14 @@
 		"verifyToDisable": "Verifiera & Avaktivera 2FA",
 		"enableSuccess": "2FA aktiverat!",
 		"disableSuccess": "2FA avaktiverat!",
-		"modalClosing": "Stänger modalen om {{countdown}} sekunder"
+		"modalClosing": "Stänger modalen om {{countdown}} sekunder",
+		"login": "Tvåfaktorsinloggning",
+		"placeholder": "Ange 6-siffrig kod",
+		"loginSuccess": "Inloggning lyckades!",
+		"verifyAndLogin": "Verifiera & logga in"
 	},
 	"leaderboard": {
+		"myStats": "Mina statistik",
 		"loading": "Laddar topplistan...",
 		"retry": "Försök igen",
 		"yourRank": "Din placering",
@@ -79,7 +84,8 @@
 		"send": "skicka",
 		"status": "just nu {{status}}",
 		"online": "online",
-		"offline": "offline"
+		"offline": "offline",
+		"header": "chatta med spelare"
 	},
 	"utils": {
 		"close": "stäng",
@@ -114,7 +120,11 @@
 		"tryAgain": "Något gick fel. Försök igen senare.",
 		"logoutFailure": "Utloggning misslyckades.",
 		"picUploadFailure": "Misslyckades att spara profilbild",
-		"fetchUserInfo": "Misslyckades att hämta användarinfo"
+		"fetchUserInfo": "Misslyckades att hämta användarinfo",
+		"twoFALoginInfo": "Ange den 6-siffriga koden från din autentiseringsapp.",
+		"QRLoadFailure": "Kunde inte ladda QR-kod",
+		"invalidCodeFailure": "Ogiltig 2FA-kod",
+		"accountDeletionFailure": "Konto borttagning misslyckades"
 	},
 	"game": {
 		"button": {
@@ -125,7 +135,8 @@
 			"singleplayer": "spela tillsammans med din vän på samma skärm",
 			"multiplayer": "spela med andra"
 		},
-		"choice": "Välj spelläge"
+		"choice": "Välj spelläge",
+		"horizontal": "vänd din enhet till horisontellt läge för att spela spelet!"
 	},
 	"navbar": {
 		"play": "spel",
@@ -138,5 +149,16 @@
 		"accept": "Acceptera förfrågan",
 		"reject": "Avvisa förfrågan",
 		"cancel": "Avbryt förfrågan"
+	},
+	"account": {
+		"button": {
+			"cancel": "Avbryt",
+			"deleting": "Tar bort…",
+			"deleteAccount": "Radera konto"
+		},
+		"deletion": {
+			"title": "Radera konto",
+			"warning": "Denna åtgärd är permanent. Ditt konto och data kommer att raderas."
+		}
 	}
 }
