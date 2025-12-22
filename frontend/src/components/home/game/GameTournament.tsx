@@ -142,6 +142,7 @@ export const GameTournament = () =>
         let animationFrameId: number; // not needed ??
         const ws = new WebSocket('ws://localhost:4241/game/multiplayer');
         wsRef.current = ws;
+		setWaitingData({ opponent: "opponent"});
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
         const handleKeyUp = (e: KeyboardEvent) => { keysPressed.current[e.key] = false; };

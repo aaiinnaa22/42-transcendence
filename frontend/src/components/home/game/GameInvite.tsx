@@ -154,6 +154,7 @@ export const GameInvite = () =>
 			console.error("Missing invite data", location.state);
 			return;
 		}
+		setWaitingData({ opponent: invitee});
         const ws = new WebSocket(`ws://localhost:4241/game/chat?friendName=${invitee}`+ `&expiresAt=${expiresAt}`);
         wsRef.current = ws;
 

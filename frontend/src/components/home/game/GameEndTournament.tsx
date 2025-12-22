@@ -16,7 +16,7 @@ export const GameEnd = ({ winner, loser, eloWinner, eloLoser, eloWinnerOld, eloL
         : null;
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] flex items-center justify-center">
   <div className="w-full max-w-3xl max-h-[80vh] rounded-xl bg-transcendence-beige p-2 overflow-y-auto flex flex-col gap-2">
     
     {/* Optional message */}
