@@ -243,7 +243,7 @@ export const Game = () =>
 			window.removeEventListener("resize", getScreenOrientation);
 			touchScreenMediaQuery.removeEventListener("change", checkTouch);
         };
-    });
+    },[]);
 
 	return (<VisualGame
 		pointsRef={PointsRef}
