@@ -57,7 +57,7 @@ export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait, 
 			<span ref={pointsRef2}
 				className="text-transcendence-white font-transcendence-three text-4xl
 					col-start-3 row-start-1 text-left self-start
-					portrait:self-end portrait:text-left w-10">0</span>
+					portrait:self-end portrait:text-left w-full">0</span>
 			{isTouchScreen && (
 				<span
 				className="col-start-3 row-start-1 flex flex-col gap-10 text-left self-center portrait:self-start">
