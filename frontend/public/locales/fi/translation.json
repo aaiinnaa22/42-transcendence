@@ -75,6 +75,7 @@
 		"pendingInvite": "Sinulla on odottava pelikutsu",
 		"joinGame": "liity peliin",
 		"inviteExpired": "kutsu vanhentui",
+		"inviteAccepted": "kutsu hyväksytty",
 		"placeholder": "Keskustele {{username}} kanssa",
 		"send": "lähetä",
 		"status": "tällä hetkellä {{status}}",

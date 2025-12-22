@@ -2,33 +2,33 @@ import { z } from "zod";
 import {
 	emailField, usernameField, passwordField,
 	twoFACodeField
-} from '../shared/utility/validation.utility.js';
+} from "../shared/utility/validation.utility.js";
 
 // Export auth route schemas
 
-export const RegisterSchema = z.strictObject({
+export const RegisterSchema = z.strictObject( {
 	email: emailField,
 	password: passwordField,
 	username: usernameField
-});
+} );
 
-export const LoginSchema = z.strictObject({
+export const LoginSchema = z.strictObject( {
 	email: emailField,
 	password: passwordField
-});
+} );
 
-export const TwoFAVerifySchema = z.strictObject({
+export const TwoFAVerifySchema = z.strictObject( {
 	code: twoFACodeField
-});
+} );
 
-export const TwoFALoginSchema = z.strictObject({
+export const TwoFALoginSchema = z.strictObject( {
 	code: twoFACodeField,
-	tempToken: z.string().min(1, {message: "Token required"})
-});
+	tempToken: z.string().min( 1, {message: "Token required"} )
+} );
 
-export const TwoFADisableSchema = z.strictObject({
+export const TwoFADisableSchema = z.strictObject( {
 	code: twoFACodeField
-});
+} );
 
 // Export types
 

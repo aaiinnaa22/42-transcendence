@@ -5,12 +5,14 @@ import { TwoFAModal } from "./TwoFAModal";
 import { apiUrl } from "../../../api/api";
 import { fetchWithAuth } from "../../../api/fetchWithAuth";
 import { useTranslation } from "react-i18next";
+import { DeleteAccountModal } from "./DeleteAccountModal";
 
 export const Settings = () =>
 {
 	const [error, setError] = useState<string | null>(null);
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const [isTwoFAEnabled, setIsTwoFAEnabled] = useState<boolean | null>(null);
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const navigate = useNavigate();
 
 	const { t } = useTranslation();
@@ -89,7 +91,9 @@ export const Settings = () =>
 						onClick={handleLogOut}>
 						{t("settings.logout")}
 					</button>
-					<button className="landscape:text-left lg:landscape:text-center text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full">
+					<button
+						className="landscape:text-left lg:landscape:text-center text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full"
+						onClick={() => setIsDeleteModalOpen(true)}>
 						{t("settings.deleteAccount")}
 					</button>
 				</div>
@@ -100,6 +104,10 @@ export const Settings = () =>
                 onClose={() => setIsTwoFAModalOpen(false)}
                 onStatusChange={handleTwoFAStatusChange}
             />
+				<DeleteAccountModal
+					isOpen={isDeleteModalOpen}
+					onClose={() => setIsDeleteModalOpen(false)}
+				/>
 		</>
 	);
 }

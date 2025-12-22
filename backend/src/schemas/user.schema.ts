@@ -4,19 +4,19 @@ import {
 	usernameField,
 	passwordField,
 	avatarUrlField
-} from '../shared/utility/validation.utility.js';
+} from "../shared/utility/validation.utility.js";
 
 // Export user route schemas
 
-export const UpdateUserSchema = z.object({
+export const UpdateUserSchema = z.object( {
 	username: usernameField.optional(),
 	email: emailField.optional(),
 	password: passwordField.optional(),
 	avatar: avatarUrlField.optional()
-})
-.refine(
-	(data) => Object.values(data).some( value => value !== undefined ),
-	{ message: "At least one field must be provided" }
-);
+} )
+	.refine(
+		( data ) => Object.values( data ).some( value => value !== undefined ),
+		{ message: "At least one field must be provided" }
+	);
 
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;

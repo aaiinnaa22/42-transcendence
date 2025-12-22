@@ -74,6 +74,7 @@
 		"pendingInvite": "Du har en väntande spelinbjudan",
 		"joinGame": "anslut till spelet",
 		"inviteExpired": "inbjudan har gått ut",
+		"inviteAccepted": "inbjudan accepterad",
 		"placeholder": "Chatta med {{username}}",
 		"send": "skicka",
 		"status": "just nu {{status}}",

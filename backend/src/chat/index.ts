@@ -1,13 +1,13 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { WebSocket as WsWebSocket } from "ws";
 import { addUser, removeUser } from "./presence.js";
-import { sendDM, sendInvite } from "./directMessage.js";
+import { sendDM } from "./directMessage.js";
 import { onlineUsers } from "./state.js";
-import { isBlocked } from "./blocking.js";
+import { isBlocked /* , blockUser, unblockUser */ } from "./blocking.js";
 import { authenticate } from "../shared/middleware/auth.middleware.js";
 import { pseudonym } from "../shared/utility/anonymize.utility..js";
+import { createInvite } from "./invites.js";
 
-// TODO: add prehandler authenticate (?)
 export default async function chatComponent( server: FastifyInstance )
 {
 	server.get(
@@ -20,6 +20,10 @@ export default async function chatComponent( server: FastifyInstance )
 			server.log.info( { user: pseudonym( userId ) }, "New chat connection" );
 			addUser( userId, socket );
 
+			socket.send( JSON.stringify( {
+				type: "me",
+				userId,
+			} ) );
 			// initial presence list
 			socket.send( JSON.stringify( {
 				type: "presence:list",
@@ -50,7 +54,7 @@ export default async function chatComponent( server: FastifyInstance )
 					if ( data.type === "invite" )
 					{
 						server.log.info( { user: pseudonym( userId ), to: pseudonym( data.to ) }, "Game invite sent" );
-						sendInvite( userId, data.to, data.message, data.timestamp );
+						createInvite( userId, data.to );
 					}
 				}
 				catch

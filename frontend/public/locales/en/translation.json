@@ -75,6 +75,7 @@
 		"pendingInvite": "You have a pending game invite",
 		"joinGame": "join the game",
 		"inviteExpired": "invite expired",
+		"inviteAccepted": "invite accepted",
 		"placeholder": "Chat with {{username}}",
 		"send": "send",
 		"status": "currently {{status}}",

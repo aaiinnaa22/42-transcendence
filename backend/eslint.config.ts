@@ -18,6 +18,7 @@ export default defineConfig( [
 			"max-len": ["error", { code: 120, ignoreComments: true }],
 			indent: ["error", "tab", { SwitchCase: 1 }],
 			"no-tabs": "off",
+			"no-mixed-spaces-and-tabs": ["warn", "smart-tabs"],
 			"brace-style": ["error", "allman", { allowSingleLine: true }],
 			"curly": ["error", "multi-line"],
 			"semi": ["error", "always"],

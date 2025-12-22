@@ -110,7 +110,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 		}
 
 		const url = await server.googleOAuth2.generateAuthorizationUri( request, reply );
-  		return reply.redirect( url );
+		return reply.redirect( url );
 	} );
 
 	// Callback route
