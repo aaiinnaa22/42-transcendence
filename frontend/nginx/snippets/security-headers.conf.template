@@ -1,0 +1,15 @@
+
+# Prevent clickjacking attacks e.g. our site is embedded in another with iframe
+add_header X-Frame-Options "SAMEORIGIN" always;
+
+# Prevent MIME type sniffing attacks e.g. a javascript file disguised as an uploaded image
+add_header X-Content-Type-Options "nosniff" always;
+
+# Prevent Cross-Site-Scripting
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss://${DOMAIN_NAME}/ws https://${DOMAIN_NAME}/api;" always;
+
+# Prevent credential/cookie hijacking
+add_header Strict-Transport-Security "max-age=31536000; includeSubdomains; preload";
+
+# Do not send referer headers to other sites
+add_header Referrer-Policy "no-referrer" always;

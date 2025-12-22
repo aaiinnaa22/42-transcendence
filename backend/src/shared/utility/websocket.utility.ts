@@ -12,35 +12,39 @@ export const validateWebSocketMessage = <Schema extends z.ZodTypeAny>(
 	schema: Schema,
 	socket: WebSocket,
 	message: any
-): z.infer<Schema> | null => {
-	try {
-		const raw = JSON.parse(message.toString());
+): z.infer<Schema> | null =>
+{
+	try
+	{
+		const raw = JSON.parse( message.toString() );
 
 		// Zod validation
-		const result = schema.safeParse(raw);
+		const result = schema.safeParse( raw );
 
-		if (!result.success)
+		if ( !result.success )
 		{
 			const errors = result.error.issues
-				.map(error => `${error.path.join(".")}: ${error.message}`)
-				.join("; ");
+				.map( error => `${error.path.join( "." )}: ${error.message}` )
+				.join( "; " );
 
-			socket.send(JSON.stringify({
+			socket.send( JSON.stringify( {
 				type: "error",
 				message: "Invallid message format",
 				error: errors
-			}));
+			} ) );
 			return null;
 		}
 
 		return result.data;
-	} catch (error) {
-		console.warn("WebSocket: JSON parse error:", error);
+	}
+	catch ( error )
+	{
+		console.warn( "WebSocket: JSON parse error:", error );
 
-		socket.send(JSON.stringify({
+		socket.send( JSON.stringify( {
 			type: "error",
 			message: "Malformed message"
-		}));
+		} ) );
 	}
 	return null;
 };

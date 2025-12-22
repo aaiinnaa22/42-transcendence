@@ -1,0 +1,25 @@
+#############################
+#	DEVELOPMENT STAGE		#
+#############################
+FROM node:20-alpine AS development
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+ # Copy settings
+COPY tsconfig.json tsconfig.app.json tsconfig.node.json ./
+COPY vite.config.ts postcss.config.ts ./
+
+# Copy sources
+COPY public ./public
+COPY index.html ./
+
+RUN mkdir -p /app/public && \
+	ln -s /app/data/upload/avatars /app/public
+
+EXPOSE 8080
+
+CMD ["npm", "run", "dev"]

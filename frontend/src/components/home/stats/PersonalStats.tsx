@@ -1,6 +1,7 @@
 import {CircleDiagram} from "../utils/CircleDiagram";
 import {useEffect, useState} from 'react';
 import { useNavigate } from "react-router-dom";
+import { apiUrl } from "../../../api/api";
 import { fetchWithAuth } from "../../../api/fetchWithAuth";
 
 export const PersonalStats = () =>
@@ -18,7 +19,7 @@ export const PersonalStats = () =>
 		const getStats = async () => {
 			try
 			{
-				const response = await fetchWithAuth("http://localhost:4241/stats/me", {
+				const response = await fetchWithAuth( apiUrl('/stats/me'), {
 					method: "GET",
 					credentials: "include",
 				});

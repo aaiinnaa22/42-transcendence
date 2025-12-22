@@ -35,6 +35,8 @@ backend/prisma/.seeded
 
 # Environmental variable file
 .env
+.env.production
+.env.development
 
 # Database seed check
 .seeded
@@ -61,4 +63,14 @@ backend/prisma/*.d.ts.map
 # Lint caches
 .eslintcache
 
-backend/upload/avatars
+# Secrets
+secrets/
+*.pem
+*.key
+*.crt
+
+# Development uploads
+backend/upload/*
+!backend/upload/avatars/
+backend/upload/avatars/*
+!backend/upload/avatars/00000000-0000-0000-0000-000000000000.webp

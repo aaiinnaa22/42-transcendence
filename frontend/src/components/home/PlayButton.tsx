@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { fetchWithAuth } from "../../api/fetchWithAuth";
 import { forceLogout } from "../../api/forceLogout";
+import { apiUrl } from "../../api/api";
 
 export const PlayButton = () =>
 {
 	const navigate = useNavigate();
 	const handlePlay = async () => {
 		try {
-			const res = await fetchWithAuth("http://localhost:4241/auth/me");
+			const res = await fetchWithAuth(apiUrl("/auth/me"));
 
 			if (!res.ok) {
 				forceLogout();
@@ -21,7 +22,7 @@ export const PlayButton = () =>
 	};
 
 	return (
-		<div className="flex flex-grow items-center justify-center">
+		<div className="flex items-center justify-center w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]">
 			<button
 				className="group relative bg-transcendence-beige rounded-[3rem] w-70 h-40 text-transcendence-black font-transcendence-three tracking-[0.1em] text-5xl cursor-pointer overflow-hidden"
 				onClick={handlePlay}
