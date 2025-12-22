@@ -197,7 +197,7 @@ export const Discussion = ({
             className="material-symbols-outlined self-end"
             disabled={!friend.online}
           >
-            {t("chat.send")}
+            send
           </button>
         </form>
       </div>

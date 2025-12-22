@@ -194,7 +194,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				const inviteMessage: Message = {
 					id: Date.now(),
 					sender: "friend",
-					text: `${data.fromUsername ?? "Someone"} invited you to a game`,
+					text: `${data.fromUsername ?? "Someone"} invited you to a game`, // TODO: translate to FI & SV
 					type: "invite",
 					invite: {
 					startedAt: data.startedAt,
@@ -221,7 +221,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				const inviteMessage: Message = {
 					id: Date.now(),
 					sender: "me",
-					text: `You invited ${data.toUsername ?? "this user"} to a game`,
+					text: `You invited ${data.toUsername ?? "this user"} to a game`, // TODO: translate to FI & SV
 					type: "invite",
 					invite: {
 					startedAt: data.startedAt,
@@ -238,7 +238,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				setUsers(prev =>
 					prev.map(u =>
 					u.id === data.to
-						? { ...u, lastMessage: "You invited them to a game" }
+						? { ...u, lastMessage: "You invited them to a game" } // TODO: translate to FI & SV
 						: u
 					)
 				);
@@ -256,7 +256,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				setUsers(prev =>
 					prev.map(u =>
 					u.id === otherUserId
-						? { ...u, lastMessage: "Game invite expired" }
+						? { ...u, lastMessage: "Game invite expired" } // TODO: translate to FI & SV
 						: u
 					)
 				);
