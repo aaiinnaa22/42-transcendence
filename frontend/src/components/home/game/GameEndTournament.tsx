@@ -4,17 +4,15 @@ interface GameEndProps {
     eloWinner?: number;     // new elo of the winner
     eloLoser?: number;      // new elo of loser
     eloWinnerOld?: number;  // old elo
-    eloLoserOld?: number;   // old elo
     message?: string;       // tells the reason why the game ended could be "timeout", "disconnected", etc.
 }
 
-export const GameEnd = ({ winner, loser, eloWinner, eloLoser, eloWinnerOld, eloLoserOld, message }: GameEndProps) =>
+export const GameEnd = ({ winner, loser, eloWinner, eloLoser, eloWinnerOld, message }: GameEndProps) =>
 {
     const difWinner =
     eloWinner !== undefined && eloWinnerOld !== undefined
         ? eloWinner - eloWinnerOld
         : null;
-
     return (
         <div className="w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] flex items-center justify-center">
   <div className="w-full max-w-3xl max-h-[80vh] rounded-xl bg-transcendence-beige p-2 overflow-y-auto flex flex-col gap-2">
@@ -29,10 +27,6 @@ export const GameEnd = ({ winner, loser, eloWinner, eloLoser, eloWinnerOld, eloL
     {/* Winner row */}
     <div className="ending-grid px-2 py-1 items-center justify-center bg-transcendence-black">
       <span className="text-left truncate font-bold text-transcendence-white w-15 lg:w-43">{winner}</span>
-      <span className="text-right font-bold text-transcendence-white">{eloWinnerOld}</span>
-        <span className="text-right inline-block animate-bounce">
-          <span className="material-symbols-outlined text-green-500">arrow_shape_up_stack_2</span>
-        </span>
       <span className="text-right font-bold text-transcendence-white">{eloWinner}</span>
       <span className="inline-block animate-bounce">
         <span className="text-right font-bold text-green-500">+{difWinner}</span>
@@ -42,10 +36,6 @@ export const GameEnd = ({ winner, loser, eloWinner, eloLoser, eloWinnerOld, eloL
     {/* Loser row */}
     <div className="ending-grid px-2 py-1 items-center justify-center bg-transcendence-black">
       <span className="text-left truncate font-bold text-transcendence-white w-15 lg:w-43">{loser}</span>
-      <span className="text-right font-bold text-transcendence-white">{eloLoserOld}</span>
-        <span className="text-right inline-block animate-bounce">
-          <span className="material-symbols-outlined text-red-500 rotate-180">arrow_shape_up_stack_2</span>
-        </span>
       <span className="text-right font-bold text-transcendence-white">{eloLoser}</span>
       <span className="inline-block animate-bounce">
         <span className="text-right font-bold text-red-500">-{difWinner}</span>

@@ -21,7 +21,7 @@ export const GameTournament = () =>
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
 	const [waitingData, setWaitingData] = useState<{ opponent: string } | null>(null);
-	const [gameEndData, setGameEndData] = useState<{ winner: string; loser: string; eloWinner?: number; eloLoser?: number; eloWinnerOld?: number; eloLoserOld?: number; message?: string } | null>(null);
+	const [gameEndData, setGameEndData] = useState<{ winner: string; loser: string; eloWinner?: number; eloLoser?: number; eloWinnerOld?: number; message?: string } | null>(null);
 	const [isTouchScreen, setIsTouchScreen] = useState<boolean>(false);
 
 	//Touch screen button managers
@@ -210,7 +210,6 @@ export const GameTournament = () =>
 					eloWinner: data.elo.winner, 
 					eloLoser: data.elo.loser, 
 					eloWinnerOld: data.oldElo.winner, 
-					eloLoserOld: data.oldElo.loser,
 					message: data.message });
 				//The game is still running in the background use cancelAnimationFrame(animationFrameId); probably needs to be stored in useRef
 			}
@@ -258,7 +257,7 @@ export const GameTournament = () =>
 	return (
 		<>
 		{gameEndData && <GameEnd winner={gameEndData.winner} loser={gameEndData.loser} eloWinner={gameEndData.eloWinner} eloLoser={gameEndData.eloLoser} 
-		eloWinnerOld={gameEndData.eloWinnerOld} eloLoserOld={gameEndData.eloLoserOld} message={gameEndData.message} />}
+		eloWinnerOld={gameEndData.eloWinnerOld} message={gameEndData.message} />}
 		{waitingData && <Waiting opponent={waitingData.opponent} />}
 		{!gameEndData && !waitingData && (
 			<VisualGame
