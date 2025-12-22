@@ -14,11 +14,11 @@ const Languages: Language[] =
 ];
 
 export const LanguageSelector = () => {
-	const [selected, setSelected] = useState<Language>(Languages[0]);
+	const [selected, setSelected] = useState<Language>(Languages[0] ?? { code: "en", name: "English"});
 	const [tabOpen, setTabOpen] = useState(false);
 
 	return (
-		<div className="w-40">
+		<div className="w-40 relative">
 			<button
 				className="border-3 px-3 border-transcendence-white w-40 rounded-lg flex flex-row justify-between items-center relative z-20"
 				onClick={() => setTabOpen(!tabOpen)}>

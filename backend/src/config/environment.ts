@@ -5,61 +5,64 @@ import { cleanEnv, str, port, num, host } from "envalid";
 
 // Environmental variables to validate
 const backendValidators = {
-	NODE_ENV: str({ choices: ["development", "production", "test"] }),
+	NODE_ENV: str( { choices: ["development", "production", "test"] } ),
 
 	// Prisma
-	DATABASE_URL: str({
+	DATABASE_URL: str( {
 		desc: "URL to the database file used by Prisma",
 		example: "file:./database.db",
 		devDefault: "file:./dev.db"
-	}),
+	} ),
 
 	// Server config
-	PUBLIC_DOMAIN: str({
+	PUBLIC_DOMAIN: str( {
 		desc: "Public domain or IP where NGINX serves the application",
 		example: "domain.com",
-		devDefault: "localhost"
-	}),
-	HOSTNAME: host({
+		devDefault: "localhost:8443"
+	} ),
+	HOSTNAME: host( {
 		desc: "Internal hostname for container communication",
 		devDefault: process.env.HOST || "0.0.0.0"
-	}),
-	PORT: port({
+	} ),
+	PORT: port( {
 		desc: "Port of the backend server",
 		devDefault: 4241,
 		default: 4241
-	}),
-	TZ: str({
+	} ),
+	TZ: str( {
 		desc: "Timezone for server logs",
 		devDefault: "Europe/Helsinki",
 		default: "UTC"
-	}),
+	} ),
 
 	// Frontend config information
-	FRONTEND_HOST: host({
+	FRONTEND_HOST: host( {
 		desc: "Frontend container hostname or service name",
 		devDefault: "frontend"
-	}),
-	FRONTEND_PORT: port({
+	} ),
+	FRONTEND_PORT: port( {
 		desc: "Port of the frontend container",
 		devDefault: 8080
-	}),
+	} ),
 
 	// Auth layer
-	JWT_SECRET: str({ desc: "Secret for JWT" }),
-	COOKIE_SECRET: str({ desc: "Secret for cookies" }),
-	GOOGLE_CLIENT_SECRET: str({ desc: "Client secret required by the Google provider" }),
+	JWT_SECRET: str( { desc: "Secret for JWT" } ),
+	COOKIE_SECRET: str( { desc: "Secret for cookies" } ),
+	GOOGLE_CLIENT_SECRET: str( { desc: "Client secret required by the Google provider" } ),
 
-	GOOGLE_CLIENT_ID: str({ desc: "URL of the Client ID provided by Google" }),
+	GOOGLE_CLIENT_ID: str( { desc: "URL of the Client ID provided by Google" } ),
 
-	SALT_ROUNDS: num({
+	SALT_ROUNDS: num( {
 		devDefault: 10,
 		default: 10
-	})
+	} ),
+
+	// Anonymization (GDPR compliance)
+	LOG_SECRET: str( { desc: "Secret used for anonymizing user data" } )
 };
 
 // Environment validation
-const _env = cleanEnv(process.env, backendValidators);
+const _env = cleanEnv( process.env, backendValidators );
 
 // Which protocols to apply
 const isProduction = _env.NODE_ENV === "production";
@@ -69,15 +72,9 @@ const WS_PROTO = isProduction ? "wss://" : "ws://";
 // Constructed URLs
 const PUBLIC_URL = isProduction
 	? `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}`
-	: `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}:${_env.PORT}`;
+	: `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}`;
 
-const FRONTEND_URL = isProduction
-	? `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}`
-	: `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}:${_env.FRONTEND_PORT}`;
-
-const GOOGLE_CALLBACK_URL = `${PUBLIC_URL}/auth/google/callback`;
-const CLIENT_REDIRECT_URL = `${FRONTEND_URL}/home`;
-const CLIENT_LOGIN_REDIRECT_URL = `${PUBLIC_URL}/login`;
+const GOOGLE_CALLBACK_URL = `${PUBLIC_URL}/api/auth/google/callback`;
 
 // Export the validated environment
 export const env = {
@@ -85,7 +82,5 @@ export const env = {
 	HTTP_PROTO,
 	WS_PROTO,
 	PUBLIC_URL,
-	GOOGLE_CALLBACK_URL,
-	CLIENT_REDIRECT_URL,
-	CLIENT_LOGIN_REDIRECT_URL
+	GOOGLE_CALLBACK_URL
 } as const;

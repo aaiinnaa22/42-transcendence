@@ -94,10 +94,3 @@ The default rating of all new players is set to 1200.
 The database will consist of multiple tables with relations to each other. A main table for an user which ties to authentication provider table(s) and/or local authentication details table. A default table is attached to the user which includes details on the games played by the given user.
 
 The UUID is used within the JWT responses to authorize data access.
-
-
-### TODOs
-- Implement an API which is able to communicate with the database.
-- Make the game server-authoritative by moving game logic to the backend.
-- Switch to secure connections (https).
-- Implement schemas for game data streaming.

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiUrl } from "../../api/api";
 
 type TwoFALoginModalProps = {
     isOpen: boolean;
@@ -30,7 +31,7 @@ export const TwoFALoginModal = ({ isOpen, tempToken, onSuccess, onClose }: TwoFA
             setVerifying(true);
             setError(null);
 
-            const response = await fetch("http://localhost:4241/auth/2fa/login", {
+            const response = await fetch( apiUrl('/auth/2fa/login'), {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
