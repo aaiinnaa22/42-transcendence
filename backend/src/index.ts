@@ -1,13 +1,13 @@
-import { env } from "./config/environment.ts" // IMPORTANT: validation happens first
+import { env } from "./config/environment.js"; // IMPORTANT: validation happens first
 
 import Fastify, { type FastifyInstance } from "fastify";
-import prismaPlugin from "./plugins/prisma.ts";
-import jwtPlugin from "./plugins/jwt.ts";
+import prismaPlugin from "./plugins/prisma.js";
+import jwtPlugin from "./plugins/jwt.js";
 import fastifyCookie from "@fastify/cookie";
-import gameComponent from "./pong/init.ts";
-import leaderboardComponent from "./leaderboard/leaderboard.route.ts";
-import chatComponent from "./chat/index.ts";
-import chatUsersComponent from "./chat/usersRoute.ts";
+import gameComponent from "./pong/init.js";
+import leaderboardComponent from "./leaderboard/leaderboard.route.js";
+import chatComponent from "./chat/index.js";
+import chatUsersComponent from "./chat/usersRoute.js";
 
 const server : FastifyInstance = Fastify( {
 	logger: env.NODE_ENV === "production"
@@ -15,10 +15,10 @@ const server : FastifyInstance = Fastify( {
 			level: "warn",
 			redact: {
 				paths: [
-					'req.headers.authorization',
-					'req.headers.cookie',
-					'req.body.password',
-					'req.headers["set-cookie"]',
+					"req.headers.authorization",
+					"req.headers.cookie",
+					"req.body.password",
+					"req.headers[\"set-cookie\"]",
 				],
 				censor: "[REDACTED]"
 			}
@@ -37,8 +37,9 @@ const server : FastifyInstance = Fastify( {
 				}
 			},
 			serializers: {
-				responseTime(value) {
-					return typeof value === "number" ? `(${value.toFixed(2)}ms)` : value;
+				responseTime( value )
+				{
+					return typeof value === "number" ? `(${value.toFixed( 2 )}ms)` : value;
 				}
 			}
 		}
@@ -80,41 +81,39 @@ const start = async () =>
 		await server.register( prismaPlugin );
 		await server.register( jwtPlugin );
 
-		// Register routes
-		await server.register( import( "./routes/healthcheck.route.ts" ) );
-
-		// Auth route
-		await server.register( import( "./routes/auth.route.ts" ) );
-
-		// User route
-		await server.register( import( "./routes/user.route.ts" ) );
-
-		await server.register( import( "./routes/avatar.route.ts" ) );
-
-		await server.register( import( "./routes/stats.route.ts" ) );
-
-		// Game module initialization
-
 		await server.register( import( "@fastify/websocket" ), {
-	  		options: { maxPayload: 1048576 }
+			options: { maxPayload: 1048576 }
 		} );
 
-		await server.register( gameComponent );
+		// Register healthcheck as a non-api route
+		await server.register( import( "./routes/healthcheck.route.js" ) );
 
-		await server.register( chatUsersComponent );
+		// Register HTTP routes with a '/api' prefix
+		await server.register( async ( apiServer: FastifyInstance ) =>
+		{
+			await apiServer.register( import( "./routes/auth.route.js" ) );
+			await apiServer.register( import( "./routes/user.route.js" ) );
+			await apiServer.register( import( "./routes/avatar.route.js" ) );
+			await apiServer.register( import( "./routes/stats.route.js" ) );
+			await apiServer.register( import ( "./routes/friends.route.js" ) );
 
-		await server.register( leaderboardComponent );
-		
-		await server.register( chatComponent );
+			await apiServer.register( chatUsersComponent );
+			await apiServer.register( leaderboardComponent );
+		}, { prefix: "/api" } );
 
-		await server.register( import ( "./routes/friends.route.ts" ) );
+		// Register WebSocket routes with '/ws' prefix
+		await server.register( async ( wsServer: FastifyInstance ) =>
+		{
+			await wsServer.register( gameComponent );
+			await wsServer.register( chatComponent );
+		}, { prefix: "/ws" } );
 
 		// Grab the configuration from env
 		const host = env.HOSTNAME;
 		const port = env.PORT;
 
 		await server.listen( { port, host } );
-		console.log(server.printRoutes());
+		console.log( server.printRoutes() );
 	}
 	catch ( error )
 	{

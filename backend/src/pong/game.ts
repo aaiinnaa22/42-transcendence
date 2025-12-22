@@ -1,7 +1,18 @@
-import Player from "./player.ts";
-import Ball from "./ball.ts";
-import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH, RATE_LIMIT_MS, MOVE_SPEED, MIN_BALL_SPEED, MAX_BALL_SPEED, TOURNAMENT_WIN_CONDITION } from "./constants.ts";
-import { gameStateMessage, type BallState, type GameState, type PlayerState } from "../schemas/game.states.schema.ts";
+import Player from "./player.js";
+import Ball from "./ball.js";
+import {
+	WIDTH,
+	HEIGHT,
+	BALL_SIZE,
+	PADDLE_LEN,
+	PADDLE_WIDTH,
+	RATE_LIMIT_MS,
+	MOVE_SPEED,
+	MIN_BALL_SPEED,
+	MAX_BALL_SPEED,
+	TOURNAMENT_WIN_CONDITION
+} from "./constants.js";
+import { gameStateMessage, type BallState, type GameState, type PlayerState } from "../schemas/game.states.schema.js";
 import type { WebSocket as WsWebSocket } from "ws";
 
 export enum Location {
@@ -43,7 +54,8 @@ class Game
 		id: string,
 		sockets: WsWebSocket[],
 		mode: GameMode = GameMode.Singleplayer,
-		onGameEnd: GameEndCallback | undefined )
+		onGameEnd: GameEndCallback | undefined
+	)
 	{
 		this.id = id;
 		this.players = [];
@@ -53,7 +65,7 @@ class Game
 		this.mode = mode;
 		this.onGameEndCallback = onGameEnd;
 		this.hasEnded = false;
-		this.loop = setInterval(() => this.update(), 1000 / 60);
+		this.loop = setInterval( () => this.update(), 1000 / 60 );
 		this.starttimer = Date.now();
 		this.countdown = 3;
 	}
@@ -78,9 +90,11 @@ class Game
 		{
 			player = this.players.find( p => p.location === identifier );
 		}
-		else if ( (this.mode === GameMode.Tournament || this.mode === GameMode.Invite) && typeof identifier === "string" )
+		else if ( ( this.mode === GameMode.Tournament
+					|| this.mode === GameMode.Invite )
+					&& typeof identifier === "string" )
 		{
-			player = this.players.find( p => p.userId === identifier )
+			player = this.players.find( p => p.userId === identifier );
 		}
 
 		/* Add conditionals for other modes here */
@@ -114,14 +128,14 @@ class Game
 		// Calculate paddle direction
 		let direction: number = 0;
 		if ( dy < 0 )
-			direction = -1;
+		{direction = -1;}
 		else if ( dy > 0 )
-			direction = 1;
+		{direction = 1;}
 		direction *= MOVE_SPEED;
 
-		if ((direction < 0 && player.y > 0)
-		||  (direction > 0 && player.y < (HEIGHT-PADDLE_LEN) - MOVE_SPEED))
-			player.move( direction );
+		if ( ( direction < 0 && player.y > 0 )
+		|| ( direction > 0 && player.y < ( HEIGHT - PADDLE_LEN ) - MOVE_SPEED ) )
+		{player.move( direction );}
 	}
 
 	// Handler for stopping games and calling the callback function for multiplayer games
@@ -130,9 +144,9 @@ class Game
 		if ( this.hasEnded ) return;
 
 		this.hasEnded = true;
-		clearInterval(this.loop);
+		clearInterval( this.loop );
 
-		const [ leftPlayer, rightPlayer ] = this.players;
+		const [leftPlayer, rightPlayer] = this.players;
 		if ( !leftPlayer || !rightPlayer ) return;
 
 		let winnerPlayer: Player | null = null;
@@ -157,7 +171,7 @@ class Game
 			loser: loserPlayer
 		};
 
-		if ( this.onGameEndCallback ) this.onGameEndCallback(endData);
+		if ( this.onGameEndCallback ) this.onGameEndCallback( endData );
 	}
 
 	public update() : void
@@ -165,7 +179,7 @@ class Game
 		// Check if win condition was met
 		if ( this.hasEnded ) return;
 
-		const [ leftPlayer, rightPlayer ] = this.players;
+		const [leftPlayer, rightPlayer] = this.players;
 		if ( leftPlayer && rightPlayer )
 		{
 			// Alternatively check gamemmode for custom limits
@@ -180,13 +194,13 @@ class Game
 
 		// Send updates
 		const now = Date.now();
-		if ( (now - this.starttimer) > 3100)
-			this.moveBall();
+		if ( ( now - this.starttimer ) > 3100 )
+		{this.moveBall();}
 		else
-			this.countdown = 3 - Math.floor((now - this.starttimer) / 1000);
-		for (const socket of this.sockets)
+		{this.countdown = 3 - Math.floor( ( now - this.starttimer ) / 1000 );}
+		for ( const socket of this.sockets )
 		{
-			socket.send(JSON.stringify(this.getState()));
+			socket.send( JSON.stringify( this.getState() ) );
 		}
 	}
 
@@ -203,7 +217,7 @@ class Game
 		const absoluteY			= Math.abs( velocityY );
 		const clampedVelocityY	= Math.max( MIN_BALL_SPEED, Math.min( absoluteY, MAX_BALL_SPEED ) );
 
-		this.ball.vy = clampedVelocityY * (velocityY >= 0 ? 1 : -1);
+		this.ball.vy = clampedVelocityY * ( velocityY >= 0 ? 1 : -1 );
 		this.ball.vx *= -1;
 
 	}
@@ -278,11 +292,12 @@ class Game
 
 	public destroy() : void
 	{
-		this.sockets.forEach(socket => {
+		this.sockets.forEach( socket =>
+		{
 			socket.close();
-		});
-		if ( this.loop ) clearInterval(this.loop);
-    }
+		} );
+		if ( this.loop ) clearInterval( this.loop );
+	}
 }
 
 export default Game;

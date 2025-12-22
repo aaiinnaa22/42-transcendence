@@ -1,4 +1,4 @@
-import { WIDTH, HEIGHT} from "./constants.ts";
+import { WIDTH, HEIGHT} from "./constants.js";
 
 type VisualGameProps =
 {

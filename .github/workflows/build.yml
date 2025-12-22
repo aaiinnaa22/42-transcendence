@@ -1,0 +1,91 @@
+name: Build check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-build:
+    name: Backend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      NODE_ENV: production
+      DATABASE_URL: file:./prod.db
+      COOKIE_SECRET: build--check-cookie-secret
+      GOOGLE_CLIENT_ID: build-check-google-client-id
+      GOOGLE_CLIENT_SECRET: build-check-google-client-secret
+      JWT_SECRET: build-check-jwt-secret
+      PUBLIC_DOMAIN: example.com
+      FRONTEND_HOST: frontend
+      FRONTEND_PORT: 8080
+      HOSTNAME: 0.0.0.0
+      PORT: 4241
+      SALT_ROUNDS: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --include=dev
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Transpile backend TypeScript
+        run: npm run build
+
+      - name: Check for build output
+        run: |
+          if [ ! -f "dist/index.js" ]; then
+            echo "Backend build failed"
+            exit 1
+          fi
+          echo "Backend build successful"
+
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend with Vite
+        run: npm run build
+
+      - name: Check for build output
+        run: |
+          if [ ! -f "dist/index.html" ]; then
+            echo "Frontend build failed"
+            exit 1
+          fi
+          echo "Frontend build successful"

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Chat } from "./Chat";
 import { Discussion } from "./Discussion";
+import { apiUrl, wsUrl } from "../../../../api/api";
 import { ChatProfile } from "./ChatProfile";
 import { forceLogout } from "../../../../api/forceLogout";
 import { fetchWithAuth } from "../../../../api/fetchWithAuth";
@@ -8,17 +9,15 @@ import { SideTab } from "../../utils/SideTab";
 import { PopUp } from "../../utils/PopUp";
 
 export type Message = {
-    id: number;
+	id: number;
  	text: string;
 	sender: "me" | "friend";
-
 	type: "text" | "invite";
-
-  // invite-specific
+	// invite-specific
 	invite?: {
-    	startedAt: number;
-    	expiresAt: number;
-    	status: "pending" | "expired" | "joined";
+		startedAt: number;
+		expiresAt: number;
+		status: "pending" | "expired" | "joined";
   	};
 };
 
@@ -30,16 +29,16 @@ type userStats = {
 }
 
 export type ChatUser = {
-  id: string;
-  username: string;
-  profile: string;
-  online?: boolean;
-  lastMessage?: string;
-  stats: userStats;
-  isFriend: boolean;
-  isBlockedByMe: boolean;
-  hasBlockedMe: boolean;
-  friendshipStatus?: "pending" | "accepted";
+	id: string;
+	username: string;
+	profile: string;
+	online?: boolean;
+	lastMessage?: string;
+	stats: userStats;
+	isFriend: boolean;
+	isBlockedByMe: boolean;
+	hasBlockedMe: boolean;
+	friendshipStatus?: "pending" | "accepted";
 };
 
 type ChatContainerProps = {
@@ -57,14 +56,11 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
   	const wsRef = useRef<WebSocket | null>(null);
 	const usersRef = useRef<ChatUser[]>([]);
 
-
-  	useEffect(() => {
-    fetchWithAuth("http://localhost:4241/chat/users", {
-      credentials: "include",
-    })
-      .then(res => res.json())
-      .then(setUsers)
-      .catch(err => console.error("Failed to load users", err));
+	useEffect(() => {
+		fetchWithAuth( apiUrl('/chat/users') )
+			.then(res => res.json())
+			.then(setUsers)
+			.catch(err => console.error("Failed to load users", err));
   	}, []);
 
 	useEffect(() => {
@@ -73,28 +69,30 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 
 	useEffect(() => {
 		const id = setInterval(() => {
-			setMessagesByUser(prev => {
-			let changed = false;
-			const next: Record<string, Message[]> = {};
+			setMessagesByUser( prev =>
+			{
+				let changed = false;
+				const next: Record<string, Message[]> = {};
 
-			for (const userId in prev) {
-				next[userId] = prev[userId].map(m => {
-				if (
-					m.type === "invite" &&
-					m.invite?.status === "pending" &&
-					m.invite.expiresAt <= Date.now()
-				) {
-					changed = true;
-					return {
-					...m,
-					invite: { ...m.invite, status: "expired" },
-					};
+				for ( const userId in prev )
+				{
+					const messages = prev[userId] ?? [];
+					next[userId] = messages.map( m =>
+					{
+						if ( m.type === "invite"
+							&& m.invite?.status === "pending"
+							&& m.invite.expiresAt <= Date.now() )
+						{
+							changed = true;
+								return {
+								...m,
+								invite: { ...m.invite, status: "expired" },
+							};
+						}
+						return m;
+					});
 				}
-				return m;
-				});
-			}
-
-			return changed ? next : prev;
+				return changed ? next : prev;
 			});
 		}, 1000);
 
@@ -102,48 +100,53 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 	}, []);
 
   	useEffect(() => {
-    	const ws = new WebSocket("ws://localhost:4241/chat");
-    	wsRef.current = ws;
+		const ws = new WebSocket( wsUrl("/chat") );
+		wsRef.current = ws;
 
 		ws.onopen = () => {
-		console.log("Chat WS connected");
+			console.log("Chat WS connected");
 		};
 
 		ws.onmessage = (e) => {
 			let data;
-			try {
+			try
+			{
 				data = JSON.parse(e.data);
-			} catch {
-			return;
-		}
-		//attempt to auth socket requests
-		if (data.type === "error" && data.reason === "unauthorized") {
-			console.warn("WebSocket unauthorized, forcing logout");
-			forceLogout();
-			return;
-		}
+			}
+			catch
+			{
+				return;
+			}
 
-		if (data.type === "dm") {
-			const fromId = data.from as string;
-			const messageText = data.message as string;
+			// attempt to auth socket requests
+			if (data.type === "error" && data.reason === "unauthorized")
+			{
+				console.warn("WebSocket unauthorized, forcing logout");
+				forceLogout();
+				return;
+			}
 
-			const newMessage: Message = {
-				id: Date.now(),
-				text: messageText,
-				sender: "friend",
-				type: "text",
-			};
+			if (data.type === "dm") {
+				const fromId = data.from as string;
+				const messageText = data.message as string;
 
-			setMessagesByUser(prev => ({
-				...prev,
-				[fromId]: [...(prev[fromId] ?? []), newMessage],
-			}));
+				const newMessage: Message = {
+					id: Date.now(),
+					text: messageText,
+					sender: "friend",
+					type: "text",
+				};
 
-			setUsers(prev =>
-				prev.map(u =>
-				u.id === fromId ? { ...u, lastMessage: messageText } : u
-				)
-			);
+				setMessagesByUser(prev => ({
+					...prev,
+					[fromId]: [...(prev[fromId] ?? []), newMessage],
+				}));
+
+				setUsers(prev =>
+					prev.map(u =>
+					u.id === fromId ? { ...u, lastMessage: messageText } : u
+					)
+				);
 			}
 
 			if (data.type === "me") {
@@ -162,24 +165,27 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				const msgs = prev[otherUserId] ?? [];
 
 				const idx = [...msgs]
-				.map((m, i) => ({ m, i }))
-				.filter(x => x.m.type === "invite" && x.m.invite?.status === "pending")
-				.at(-1)?.i;
+					.map((m, i) => ({ m, i }))
+					.filter(x => x.m.type === "invite" && x.m.invite?.status === "pending")
+					.at(-1)?.i;
 
-				if (idx === undefined) return prev;
+				if ( idx === undefined ) return prev;
 
 				const updated = [...msgs];
+				const existing = updated[idx];
+				if ( !existing ) return prev;
+
 				updated[idx] = {
-				...updated[idx],
-				invite: {
-					...updated[idx].invite!,
-					status: "joined",
-				},
-				};
+					...existing,
+					invite: {
+						...existing.invite!,
+						status: "joined",
+					},
+				} as Message;
 
 				return {
-				...prev,
-				[otherUserId]: updated,
+					...prev,
+					[otherUserId]: updated,
 				};
 			});
 			}
@@ -237,7 +243,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 					)
 				);
 			}
-		  
+
 
 			if (data.type === "invite:expired") {
 				const me = myUserIdRef.current;
@@ -245,7 +251,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 
 				const [a, b] = data.users;
 				const otherUserId = a === me ? b : a;
-				
+
 				//show info about expired invite
 				setUsers(prev =>
 					prev.map(u =>
@@ -262,32 +268,35 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 						.filter(x => x.m.type === "invite" && x.m.invite?.status === "pending")
 						.at(-1)?.i;
 
-					if (lastPendingIndex === undefined) return prev;
+					if ( lastPendingIndex === undefined ) return prev;
 
 					const updated = [...msgs];
+					const existing = updated[lastPendingIndex];
+					if ( !existing ) return prev;
+
 					updated[lastPendingIndex] = {
-						...updated[lastPendingIndex],
+						...existing,
 						invite: {
-						...updated[lastPendingIndex].invite!,
-						status: "expired",
+							...existing.invite!,
+							status: "expired",
 						},
-					};
+					} as Message;
 
 					return { ...prev, [otherUserId]: updated };
 				});
 			}
 
 			if (data.type === "presence:list") {
-			setOnlineUserIds(new Set<string>(data.users));
+				setOnlineUserIds(new Set<string>(data.users));
 			}
 
 			if (data.type === "presence") {
-			setOnlineUserIds(prev => {
-				const next = new Set(prev);
-				if (data.online) next.add(data.userId);
-				else next.delete(data.userId);
-				return next;
-			});
+				setOnlineUserIds(prev => {
+					const next = new Set(prev);
+					if (data.online) next.add(data.userId);
+					else next.delete(data.userId);
+					return next;
+				});
 			}
 
 			if (data.type === "error" && data.reason === "blocked") {
@@ -323,29 +332,27 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		);
 
 		const myMessage: Message = {
-		id: Date.now(),
-		text,
-		sender: "me",
-		type: "text",
+			id: Date.now(),
+			text,
+			sender: "me",
+			type: "text",
 		};
 
 		setMessagesByUser(prev => ({
-		...prev,
-		[selectedUser.id]: [...(prev[selectedUser.id] ?? []), myMessage],
+			...prev,
+			[selectedUser.id]: [...(prev[selectedUser.id] ?? []), myMessage],
 		}));
 
-		setUsers(prev =>
-		prev.map(u =>
-			u.id === selectedUser.id ? { ...u, lastMessage: text } : u
-		)
-	);
+		setUsers( prev =>
+			prev.map( u => u.id === selectedUser.id ? { ...u, lastMessage: text } : u )
+		);
   	};
 
 	const acceptAndJoinInvite = (userId: string, inviteId: number) => {
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 		const msg = messagesByUser[userId]?.find(m => m.id === inviteId);
 		if (msg?.invite?.status !== "pending") return;
-		
+
 		setMessagesByUser(prev => ({
 		 	...prev,
 		 	[userId]: (prev[userId] ?? []).map(m =>
@@ -359,8 +366,8 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		}));
 		if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
 			wsRef.current.send(JSON.stringify({
-			  type: "invite:joined",
-			  to: userId,
+				type: "invite:joined",
+				to: userId,
 			}));
 		}
 	};
@@ -368,16 +375,16 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 	const sendGameInvite = () => {
 		if (!selectedUser) return;
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-	  
+
 		wsRef.current.send(JSON.stringify({
-		  type: "invite",
-		  to: selectedUser.id,
+			type: "invite",
+			to: selectedUser.id,
 		}));
 	};
 
   	const usersWithPresence = users.map(u => ({
-    	...u,
-    	online: onlineUserIds.has(u.id),
+		...u,
+		online: onlineUserIds.has(u.id),
   	}));
 
 	return (
@@ -412,7 +419,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		</div>
 		</SideTab>
 
-    <PopUp isOpen={chatIsOpen}>
+	<PopUp isOpen={chatIsOpen}>
 		<div className="pointer-events-auto h-full w-full">
 			{profileUser ? (
 			<ChatProfile

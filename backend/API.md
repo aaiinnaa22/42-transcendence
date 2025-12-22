@@ -14,7 +14,7 @@ http://localhost:4241
   - Frontend must send requests with credentials: 'include'
 - Key endpoints:
   - GET /auth/google → OAuth start (redirect)
-  - GET /auth/google/callback → sets cookies and redirects to CLIENT_REDIRECT_URL
+  - GET /auth/google/callback → sets cookies and redirects to /home
   - POST /auth/register, POST /auth/login → return user JSON and set cookies
   - GET /auth/me → current user (cookies required)
   - POST /auth/logout → clears cookies (cookies required)
@@ -58,7 +58,7 @@ curl http://localhost:4241/auth/google
 GET /auth/google/callback
 ```
 
-**Description**: Handles Google OAuth callback. Sets auth cookies (accessToken, refreshToken) and redirects to CLIENT_REDIRECT_URL.
+**Description**: Handles Google OAuth callback. Sets auth cookies (accessToken, refreshToken) and redirects to /home
 
 ---
 

@@ -1,41 +1,43 @@
+import { apiUrl } from "./api/api";
+import { fetchWithAuth } from "./api/fetchWithAuth";
+
 export function useBlockUser() {
 
-	async function blockUser(targetUserId: string) {
-		try {
-			const response = await fetch (`http://localhost:4241/users/${targetUserId}/block`, {
+	async function blockUser(targetUserId: string): Promise<boolean>
+	{
+		try
+		{
+			const response = await fetchWithAuth( apiUrl( `/friends/block/${targetUserId}` ), {
 				method: "POST",
 				credentials: "include"
 			});
 
 			const data = await response.json();
-			if (!response.ok || data.error)
-					throw new Error(data.error || "Failed to block user");
+			if ( !response.ok || data.error ) return false; // Logged elsewhere
 			return true;
 		}
-		catch (err: any)
+		catch
 		{
-			console.log("error:", err.message);
-			return (false);
+			return false;
 		}
 	}
 
-	async function unblockUser(targetUserId: string)
+	async function unblockUser(targetUserId: string): Promise<boolean>
 	{
-		try {
-			const response = await fetch (`http://localhost:4241/users/${targetUserId}/block`, {
+		try
+		{
+			const response = await fetchWithAuth( apiUrl(`/friends/block/${targetUserId}`), {
 				method: "DELETE",
 				credentials: "include"
 			});
 
 			const data = await response.json();
-			if (!response.ok || data.error)
-					throw new Error(data.error || "Failed to unblock user");
+			if (!response.ok || data.error) return false;
 			return true;
 		}
-		catch (err: any)
+		catch
 		{
-			console.log("error: ", err.message);
-			return (false);
+			return false;
 		}
 	}
 
@@ -46,9 +48,11 @@ export function useBlockUser() {
 }
 
 export function useBefriendUser() {
-	async function befriendUser(toUserId: string) {
-		try {
-			const response = await fetch (`http://localhost:4241/friends/request`, {
+	async function befriendUser(toUserId: string): Promise<boolean>
+	{
+		try
+		{
+			const response = await fetchWithAuth ( apiUrl("/friends/requests"), {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -58,34 +62,31 @@ export function useBefriendUser() {
 			});
 
 			const data = await response.json();
-			if (!response.ok || data.error)
-					throw new Error(data.error || "Failed send friend request");
+			if (!response.ok || data.error) return false;
 			return true;
 		}
-		catch (err: any)
+		catch
 		{
-			console.log("error: ", err.message);
-			return (false);
+			return false;
 		}
 	}
 
-	async function unfriendUser(friendId: string)
+	async function unfriendUser(friendId: string): Promise<boolean>
 	{
-		try {
-			const response = await fetch (`http://localhost:4241/friends/${friendId}`, {
+		try
+		{
+			const response = await fetchWithAuth ( apiUrl(`/friends/${friendId}`), {
 				method: "DELETE",
 				credentials: "include"
 			});
 
 			const data = await response.json();
-			if (!response.ok || data.error)
-					throw new Error(data.error || "Failed to remove friend");
+			if (!response.ok || data.error) return false;
 			return true;
 		}
-		catch (err: any)
+		catch
 		{
-			console.log("error: ", err.message);
-			return (false);
+			return false;
 		}
 	}
 
@@ -97,82 +98,76 @@ export function useBefriendUser() {
 
 export async function fetchUserFromBackend(username: string)
 {
-	try {
-		const response = await fetch (`http://localhost:4241/chat/users/${username}`, {
+	try
+	{
+		const response = await fetchWithAuth( apiUrl(`/chat/users/${username}`), {
 			method: "GET",
 			credentials: "include",
-
 		});
 		const data = await response.json();
-		if (!response.ok || data.error)
-			throw new Error(data?.error || response.statusText || "Failed to fetch user");
+		if (!response.ok || data.error) return null;
 		return data;
 	}
-	catch (err: any)
+	catch
 	{
-		console.log("error: ", err.message);
 		return null;
 	}
 }
 
 export async function fetchPendingFriendRequests()
 {
-	try {
-		const response = await fetch (`http://localhost:4241/friends/request-list`, {
+	try
+	{
+		const response = await fetchWithAuth( apiUrl("/friends/requests"), {
 			method: "GET",
 			credentials: "include",
-
 		});
 		const data = await response.json();
-		if (!response.ok || data.error)
-			throw new Error(data?.error || response.statusText || "Failed to fetch user");
+		if (!response.ok || data.error) return null;
 		return data;
 	}
-	catch (err: any)
+	catch
 	{
-		console.log("error: ", err.message);
 		return null;
 	}
 }
 
 export function useAcceptFriendRequest() {
-	async function acceptFriendRequest(fromUserId: string)
+	async function acceptFriendRequest(fromUserId: string): Promise<boolean>
 	{
 		try {
-			const response = await fetch (`http://localhost:4241/friends/accept`, {
+			// Had inconsistent passing of data
+			const response = await fetchWithAuth( apiUrl("/friends/requests/accept"), {
 				method: "POST",
+				credentials: "include",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				credentials: "include",
 				body: JSON.stringify({fromUserId}),
 			});
 			const data = await response.json();
-			if (!response.ok || data.error)
-				throw new Error(data?.error || response.statusText || "Failed to accept friend request");
+			if (!response.ok || data.error) return false;
 			return true;
 		}
-		catch (err: any)
+		catch
 		{
-			console.log("error: ", err.message);
 			return false;
 		}
 	}
-	async function rejectFriendRequest(fromUserId: string)
+
+	async function rejectFriendRequest(fromUserId: string): Promise<boolean>
 	{
 		try {
-			const response = await fetch (`http://localhost:4241/friends/request/${fromUserId}`, {
+			const response = await fetchWithAuth( apiUrl(`/friends/requests/${fromUserId}`), {
 				method: "DELETE",
 				credentials: "include",
 			});
 			const data = await response.json();
-			if (!response.ok || data.error)
-				throw new Error(data?.error || response.statusText || "Failed to reject friend request");
+			if (!response.ok || data.error) return false;
 			return true;
 		}
-		catch (err: any)
+		catch
 		{
-			console.log("error: ", err.message);
 			return false;
 		}
 	}

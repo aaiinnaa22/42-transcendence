@@ -1,10 +1,21 @@
+import { apiUrl } from "./api";
 
-export function forceLogout() {
-	fetch("http://localhost:4241/auth/logout", {
-		method: "POST",
-		credentials: "include",
-	}).catch(() => {
-	});
-
-	window.location.replace("/welcome");
+export async function forceLogout()
+{
+	try
+	{
+		await fetch(apiUrl("/auth/logout"), {
+			method: "POST",
+			credentials: "include",
+		});
+	}
+	catch
+	{
+		// Do nothing
+	}
+	finally
+	{
+		if (!window.location.pathname.startsWith("/welcome"))
+			window.location.replace("/welcome");
+	}
 }

@@ -1,5 +1,6 @@
-import {useState, useEffect, useRef} from 'react'
-import {Settings} from "./settings/Settings"
+import { useState, useEffect, useRef } from 'react'
+import { Settings } from "./settings/Settings"
+import { apiUrl } from '../../api/api';
 import { PendingFriendRequests } from './utils/PendingFriendRequests';
 import { fetchWithAuth } from "../../api/fetchWithAuth";
 import { BaseModal } from "./settings/BaseModal";
@@ -15,7 +16,7 @@ export const Profile = () => {
 	useEffect(() => {
 		const getUserInfo = async() => {
 			try {
-				const response = await fetchWithAuth("http://localhost:4241/auth/me",
+				const response = await fetchWithAuth( apiUrl("/auth/me"),
 				{
 					method: "GET",
 					credentials: "include",
@@ -24,24 +25,13 @@ export const Profile = () => {
 
 				setUsername(data.username || "User");
 
-				if (data.avatarType === "provider")
+				if (data.avatar)
 				{
-					setProfilePic(profilePic || null);
+					setProfilePic(data.avatar);
 				}
-				else if (data.avatarType === "local")
+				else
 				{
-					const avatarResponse = await fetchWithAuth("http://localhost:4241/users/avatar",
-					{
-						method: "GET",
-						credentials: "include",
-					});
-
-					if (avatarResponse.ok)
-					{
-						const avatarBlob = await avatarResponse.blob();
-						const avatarUrl = URL.createObjectURL(avatarBlob);
-						setProfilePic(avatarUrl);
-					}
+					setProfilePic("/avatars/00000000-0000-0000-0000-000000000000.webp");
 				}
 			}
 			catch {
@@ -50,12 +40,6 @@ export const Profile = () => {
 		};
 		getUserInfo();
 
-		return () => {
-			if (profilePic && profilePic.startsWith("blob:"))
-			{
-				URL.revokeObjectURL(profilePic);
-			}
-		}
 	}, []);
 
 	const handleProfilePicChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +55,7 @@ export const Profile = () => {
 			const formData = new FormData();
 			formData.append("file", profilePicFile);
 
-			const response = await fetchWithAuth("http://localhost:4241/users/avatar",
+			const response = await fetchWithAuth( apiUrl('/users/avatar'),
 			{
 				method: "POST",
 				credentials: "include",
@@ -81,22 +65,13 @@ export const Profile = () => {
 			if (response.ok)
 			{
 				// Set image from backend
-				const avatarBlob = await response.blob();
-				const avatarUrl = URL.createObjectURL(avatarBlob);
-
-				// Prevent memory leak
-				if (profileUrl)
-				{
-					URL.revokeObjectURL(profileUrl);
-				}
-				setProfilePic(avatarUrl);
+				const data = await response.json();
+				setProfilePic(data.avatarUrl);
 			}
-
-
 		}
 		catch {
 			console.error("Failed to store profile picture");
-			setProfilePic(null);
+			setProfilePic("/avatars/00000000-0000-0000-0000-000000000000.webp");
 		};
 	};
 
@@ -175,7 +150,7 @@ export const Profile = () => {
 									const name = newUsername.trim();
 									if (!name) { setEditError("Username cannot be empty"); return; }
 									try {
-										const resp = await fetch("http://localhost:4241/users/me", {
+										const resp = await fetchWithAuth( apiUrl("/users/me"), {
 											method: "PUT",
 											credentials: "include",
 											headers: { "Content-Type": "application/json" },

@@ -1,9 +1,10 @@
 import { useRef, useEffect, useState } from "react";
-import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.ts";
-import { VisualGame } from "./VisualGame.tsx";
-import { forceLogout } from "../../../api/forceLogout.ts";
-import { Waiting } from "./Waiting.tsx";
-import { GameEnd } from "./GameEndTournament.tsx";
+import { Waiting } from "./Waiting";
+import { GameEnd } from "./GameEndTournament";
+import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from './constants.js';
+import { wsUrl } from "../../../api/api.js";
+import { VisualGame } from "./VisualGame";
+import { forceLogout } from "../../../api/forceLogout.js";
 
 export const GameTournament = () =>
 {
@@ -14,14 +15,14 @@ export const GameTournament = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number; countdown?: number;}>({ x: 0, y: 0 , countdown: undefined });
+    const ball = useRef<{ x: number; y: number; countdown?: number | undefined;}>({ x: 0, y: 0 , countdown: undefined });
 	const [screenIsPortrait, setScreenIsPortrait] = useState<boolean>(
 		window.matchMedia("(orientation: portrait)").matches
 	);
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
 	const [waitingData, setWaitingData] = useState<{ opponent: string } | null>(null);
-	const [gameEndData, setGameEndData] = useState<{ winner: string; loser: string; eloWinner?: number; eloLoser?: number; eloWinnerOld?: number; message?: string } | null>(null);
+	const [gameEndData, setGameEndData] = useState<{ winner: string; loser: string; eloWinner?: number; eloLoser?: number; eloWinnerOld?: number; message: string } | null>(null);
 	const [isTouchScreen, setIsTouchScreen] = useState<boolean>(false);
 
 	//Touch screen button managers
@@ -140,7 +141,7 @@ export const GameTournament = () =>
 
     useEffect(() => {
         let animationFrameId: number; // not needed ??
-        const ws = new WebSocket('ws://localhost:4241/game/multiplayer');
+        const ws = new WebSocket( wsUrl('/game/multiplayer'));
         wsRef.current = ws;
 		setWaitingData({ opponent: "opponent"});
 
@@ -252,7 +253,7 @@ export const GameTournament = () =>
 			window.removeEventListener("resize", getScreenOrientation);
 			touchScreenMediaQuery.removeEventListener("change", checkTouch);
         };
-    },[]); // Not sure if I should have different parameters here. [] calls the useEffect only once when the component is loaded ??/
+    },[]);
 
 	return (
 		<>

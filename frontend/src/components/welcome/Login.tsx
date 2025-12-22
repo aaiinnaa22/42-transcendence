@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TwoFALoginModal } from "./TwoFALoginModal";
+import { apiUrl } from "../../api/api";
 
 export const Login = () => {
 	const [email, setEmail] = useState("");
@@ -10,23 +11,6 @@ export const Login = () => {
 	const [isTwoFAModalOpen, setIsTwoFAModalOpen] = useState(false);
 	const navigate = useNavigate();
 
-	useEffect(() => {
-		const checkSession = async () => {
-			try {
-				const res = await fetch("http://localhost:4241/auth/me", {
-					method: "GET",
-					credentials: "include",
-				});
-
-				if (res.ok) {
-					navigate("/home", { replace: true });
-				}
-			} catch (err) {}
-		};
-
-		checkSession();
-	}, [navigate]);
-	
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
 
@@ -49,7 +33,7 @@ export const Login = () => {
 		setError("");
 
 		try {
-			const response = await fetch("http://localhost:4241/auth/login",
+			const response = await fetch( apiUrl('/auth/login'),
 			{
 				method: "POST",
 				credentials: "include",
@@ -63,6 +47,12 @@ export const Login = () => {
 			// Check for actual errors first (4xx, 5xx with error field)
 			if (!response.ok && data.error)
 			{
+				if ( response.status === 409 && data.message === "Already logged in" )
+				{
+					navigate("/home");
+					return;
+				}
+
 				throw new Error(data.error || "Login failed. Please try again.");
 			}
 

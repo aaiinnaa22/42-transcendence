@@ -1,9 +1,9 @@
 import { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
-import { authenticate } from "../shared/middleware/auth.middleware.ts";
+import { authenticate } from "../shared/middleware/auth.middleware.js";
 import {} from "@prisma/client";
-import { NotFoundError, sendErrorReply } from "../shared/utility/error.utility.ts";
-import { validateRequest } from "../shared/utility/validation.utility.ts";
-import { GetStatsUsernameSchema } from "../schemas/stats.schema.ts";
+import { NotFoundError, sendErrorReply } from "../shared/utility/error.utility.js";
+import { validateRequest } from "../shared/utility/validation.utility.js";
+import { GetStatsUsernameSchema } from "../schemas/stats.schema.js";
 
 const statsRoutes = async ( server: FastifyInstance ) =>
 {
@@ -24,37 +24,40 @@ const statsRoutes = async ( server: FastifyInstance ) =>
 		}
 		catch ( err: any )
 		{
-			server.log.error( `Get statistics failed: ${err?.message}` );
+			server.log.error( { error: err?.message || err }, "Failed to retrieve statistics" );
 			return sendErrorReply( reply, err, "Failed to get player stats" );
 		}
 	} );
 
 	// Get statistics of another player
-	server.get( "/stats/user/:username", { preHandler: authenticate },
+	server.get(
+		"/stats/user/:username",
+		{ preHandler: authenticate },
 		async ( request: FastifyRequest, reply: FastifyReply ) =>
-	{
-		try
 		{
-			const { username } = validateRequest(GetStatsUsernameSchema, request.params);
+			try
+			{
+				const { username } = validateRequest( GetStatsUsernameSchema, request.params );
 
-			const playerStats = await server.prisma.user.findUnique( {
-				where: { username },
-				select: {
-					username: true,
-					playerStats: { omit: { userId: true } }
+				const playerStats = await server.prisma.user.findUnique( {
+					where: { username },
+					select: {
+						username: true,
+						playerStats: { omit: { userId: true } }
 				 }
-			} );
+				} );
 
-			if ( !playerStats ) throw NotFoundError( "Player not found" );
+				if ( !playerStats ) throw NotFoundError( "Player not found" );
 
-			reply.send( playerStats );
+				reply.send( playerStats );
+			}
+			catch ( err: any )
+			{
+				server.log.error( { error: err?.message || err }, "Failed to retrieve statistics" );
+				return sendErrorReply( reply, err, "Failed to get player stats" );
+			}
 		}
-		catch ( err: any )
-		{
-			server.log.error( `Get statistics failed: ${err?.message}` );
-			return sendErrorReply( reply, err, "Failed to get player stats" );
-		}
-	} );
+	);
 };
 
 export default statsRoutes;

@@ -1,10 +1,10 @@
 interface GameEndProps {
     winner: string;         // username of the winner
     loser: string;          // username of the loser
-    eloWinner?: number;     // new elo of the winner
-    eloLoser?: number;      // new elo of loser
-    eloWinnerOld?: number;  // old elo
-    message?: string;       // tells the reason why the game ended could be "timeout", "disconnected", etc.
+    eloWinner?: number | undefined;     // new elo of the winner
+    eloLoser?: number | undefined;      // new elo of loser
+    eloWinnerOld?: number | undefined;  // old elo
+    message?: string | undefined;       // tells the reason why the game ended could be "timeout", "disconnected", etc.
 }
 
 export const GameEnd = ({ winner, loser, eloWinner, eloLoser, eloWinnerOld, message }: GameEndProps) =>
