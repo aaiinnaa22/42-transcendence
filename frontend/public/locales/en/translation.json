@@ -85,7 +85,12 @@
 		"status": "currently {{status}}",
 		"online": "online",
 		"offline": "offline",
-		"header": "chat with players"
+		"header": "chat with players",
+		"invite": {
+			"received": "You were invited to a game",
+			"sent": "You invited them to a game",
+			"expired": "Game invite expired"
+		}
 	},
 	"utils": {
 		"close": "close",
@@ -136,7 +141,13 @@
 			"multiplayer": "play with others around the world"
 		},
 		"choice": "Choose mode",
-		"horizontal": "switch your device to horizontal mode to play the game!"
+		"horizontal": "switch your device to horizontal mode to play the game!",
+		"aria": {
+			"playerOneUp": "Player 1 Up",
+			"playerOneDown": "Player 1 Down",
+			"playerTwoUp": "Player 2 Up",
+			"playerTwoDown": "Player 2 Down"
+		}
 	},
 	"navbar": {
 		"play": "game",

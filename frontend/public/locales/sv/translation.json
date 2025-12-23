@@ -85,7 +85,12 @@
 		"status": "just nu {{status}}",
 		"online": "online",
 		"offline": "offline",
-		"header": "chatta med spelare"
+		"header": "chatta med spelare",
+		"invite": {
+			"received": "Du blev inbjuden till ett spel",
+			"sent": "Du bjöd in dem till ett spel",
+			"expired": "Spelinbjudan har upphört att gälla"
+		}
 	},
 	"utils": {
 		"close": "stäng",
@@ -136,7 +141,13 @@
 			"multiplayer": "spela med andra"
 		},
 		"choice": "Välj spelläge",
-		"horizontal": "vänd din enhet till horisontellt läge för att spela spelet!"
+		"horizontal": "vänd din enhet till horisontellt läge för att spela spelet!",
+		"aria": {
+			"playerOneUp": "Spelare 1 Upp",
+			"playerOneDown": "Spelare 1 Ner",
+			"playerTwoUp": "Spelare 2 Upp",
+			"playerTwoDown": "Spelare 2 Ner"
+		}
 	},
 	"navbar": {
 		"play": "spel",

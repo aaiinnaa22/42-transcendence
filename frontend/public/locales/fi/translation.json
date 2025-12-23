@@ -85,7 +85,12 @@
 		"status": "tällä hetkellä {{status}}",
 		"online": "verkossa",
 		"offline": "poissa",
-		"header": "keskustele pelaajien kanssa"
+		"header": "keskustele pelaajien kanssa",
+		"invite": {
+			"received": "Sinut kutsuttiin peliin",
+			"sent": "Kutsuit hänet peliin",
+			"expired": "Pelikutsu vanhentui"
+		}
 	},
 	"utils": {
 		"close": "sulje",
@@ -136,7 +141,13 @@
 			"multiplayer": "pelaa muiden kanssa ympäri maailmaa"
 		},
 		"choice": "Valitse pelimuoto",
-		"horizontal": "käännä laite vaakatasoon pelataksesi peliä!"
+		"horizontal": "käännä laite vaakatasoon pelataksesi peliä!",
+		"aria": {
+			"playerOneUp": "Pelaaja 1 ylös",
+			"playerOneDown": "Pelaaja 1 alas",
+			"playerTwoUp": "Pelaaja 2 ylös",
+			"playerTwoDown": "Pelaaja 2 alas"
+		}
 	},
 	"navbar": {
 		"play": "peli",

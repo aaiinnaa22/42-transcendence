@@ -7,5 +7,3 @@ export const CircleDiagram = ({percentage1, percentage2}: {percentage1: number, 
 		style={{background: `conic-gradient(#000000 0% ${percentage2}%, #e2ddb4 ${percentage2}% ${percentage1 + percentage2}%)`,}}>
 	</div>
 );
-
-//TODO: is style: allowed? thats pure css and not tailwind (also check if ? "" : "" is allowed)
