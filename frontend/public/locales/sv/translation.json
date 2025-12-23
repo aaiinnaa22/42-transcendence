@@ -171,5 +171,10 @@
 			"title": "Radera konto",
 			"warning": "Denna åtgärd är permanent. Ditt konto och data kommer att raderas."
 		}
+	},
+	"404": {
+		"notFound": "Sidan hittades inte",
+		"description": "Sidan du söker finns inte eller har flyttats.",
+		"toHome": "Tillbaka till startsidan"
 	}
 }

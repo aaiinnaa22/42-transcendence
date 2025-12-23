@@ -171,5 +171,10 @@
 			"title": "Delete Account",
 			"warning": "This action is permanent. Your account and data will be deleted."
 		}
+	},
+	"404": {
+		"notFound": "Page Not Found",
+		"description": "The page you are looking for does not exist or has moved.",
+		"toHome": "Back to Home"
 	}
 }

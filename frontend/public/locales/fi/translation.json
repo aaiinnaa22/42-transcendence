@@ -171,5 +171,10 @@
 			"title": "Tilin poisto",
 			"warning": "Tämä toimenpide on pysyvä. Tilisi ja tietosi poistetaan."
 		}
+	},
+	"404": {
+		"notFound": "Sivua ei löytynyt",
+		"description": "Etsimääsi sivua ei ole olemassa tai se on siirretty.",
+		"toHome": "Takaisin etusivulle"
 	}
 }
