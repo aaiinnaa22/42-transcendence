@@ -57,8 +57,8 @@
 		"yourUnranked": "Et ole sijoittunut. Pelaa lisää saadaksesi sijoituksen.",
 		"rank": "Sija",
 		"name": "Nimi",
-		"rating": "Vahvuusluku",
-		"ratio": "Voittosuhde",
+		"rating": "Arvo",
+		"ratio": "Suhde",
 		"wins": "Voitot",
 		"losses": "Tappiot",
 		"you": "Sinä",
@@ -80,7 +80,6 @@
 		"joinGame": "liity peliin",
 		"inviteExpired": "kutsu vanhentui",
 		"inviteAccepted": "kutsu hyväksytty",
-		"placeholder": "Keskustele {{username}} kanssa",
 		"send": "lähetä",
 		"status": "tällä hetkellä {{status}}",
 		"online": "verkossa",
@@ -90,6 +89,10 @@
 			"received": "Sinut kutsuttiin peliin",
 			"sent": "Kutsuit hänet peliin",
 			"expired": "Pelikutsu vanhentui"
+		},
+		"placeholder": {
+			"alert": "Et voi lähettää viestiä tälle käyttäjälle.",
+			"textarea": "Keskustele {{username}} kanssa"
 		}
 	},
 	"utils": {

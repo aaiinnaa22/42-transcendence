@@ -197,8 +197,9 @@ export const Leaderboard = () => {
 	}
 
 	return (
-		<div className="relative w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] grid grid-cols-[20%_60%_20%] grid-rows-[15%_auto] px-[10vw] py-[10vh]
-			portrait:grid-cols-[auto] gap-3">
+		<div className="relative w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
+			grid grid-cols-1 md:grid-cols-[1fr_7fr_1fr] grid-rows-[15%_auto]
+			px-[8vw] py-[8vh] gap-3 transition-all duration-150 ease-in-out">
 			<button className="absolute text-transcendence-white font-transcendence-two tracking-[0.02em] flex items-center justify-center
 			top-5 left-5 xl:top-10 xl:left-10
 			text-xs xl:text-sm cursor-pointer"
@@ -210,8 +211,8 @@ export const Leaderboard = () => {
 			</button>
 
 			{/* Player rank */}
-			<div className="w-full h-full flex flex-col items-center col-span-3 tracking-[0.2em]">
-				<h1 className="text-transcendence-white font-transcendence-three text-xl lg:text-3xl md:portrait:text-3xl">
+			<div className="w-full h-full flex flex-col items-center col-span-1 md:col-span-3 tracking-[0.2em]">
+				<h1 className="text-transcendence-white font-transcendence-three text-2xl lg:text-3xl md:portrait:text-3xl">
 					{
 						myRank ? (
 							<>
@@ -225,7 +226,7 @@ export const Leaderboard = () => {
 			</div>
 
 			{/* Leaderboard with lazy loading */}
-			<div className="w-full h-full md:col-start-2 rounded-xl bg-transcendence-beige p-[0.7vh] col-span-3 md:col-span-1 overflow-y-auto">
+			<div className="w-full h-full md:col-start-2 rounded-xl bg-transcendence-beige p-[0.7vh] col-span-1 md:col-span-1 overflow-y-auto">
 
 				{/* Legend */}
 				<div className='sticky top-0 bg-transcendence-beige z-10 pb-2'>
@@ -233,7 +234,7 @@ export const Leaderboard = () => {
 					bg-transcendence-black text-transcendence-beige
 					text-xs font-bold uppercase tracking-wider'>
 						<span className='text-center'>{t("leaderboard.rank")}</span>
-						<span className='text-left ml-2'>{t("leaderboard.name")}</span>
+						<span className='text-left ml-2 truncate min-w-0'>{t("leaderboard.name")}</span>
 						<span className='text-center'>{t("leaderboard.rating")}</span>
 						<span className='text-center hidden sm:block'>{t("leaderboard.ratio")}</span>
 						<span className='text-center hidden md:block'>{t("leaderboard.wins")}</span>
@@ -258,9 +259,9 @@ export const Leaderboard = () => {
 									<span className='font-bold'># {user.rank}</span>
 
 									{/* Display username, top three get a star, current user indicator */}
-									<div className='flex items-center gap-1'>
+									<div className='flex items-center gap-1 min-w-0'>
 										{getRankIcon(user.rank)}
-										<span className=' font-bold text-left gap-1 truncate'>
+										<span className=' font-bold text-left gap-1 truncate min-w-0'>
 											{user.name}
 										</span>
 										{isCurrentUser && (

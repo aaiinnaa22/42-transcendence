@@ -156,7 +156,7 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
                     type="text"
                     inputMode="numeric"
                     maxLength={6}
-                    placeholder="Enter 6-digit code"
+                    placeholder={t("twoFA.placeholder")}
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     className="border border-transcendence-beige bg-transparent rounded-lg px-3 py-2 text-sm tracking-widest text-center placeholder:text-xs"

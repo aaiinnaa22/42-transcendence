@@ -55,12 +55,12 @@
 		"retry": "Försök igen",
 		"yourRank": "Din placering",
 		"yourUnranked": "Du är oplacerad. Spela mer för att få en placering.",
-		"rank": "Placering",
+		"rank": "Rang",
 		"name": "Namn",
 		"rating": "Rating",
 		"ratio": "Kvot",
-		"wins": "Vinster",
-		"losses": "Förluster",
+		"wins": "Vinna",
+		"losses": "Förlust",
 		"you": "Du",
 		"loadingMore": "Laddar fler spelare...",
 		"scrollMore": "Skrolla för mer",
@@ -80,7 +80,6 @@
 		"joinGame": "anslut till spelet",
 		"inviteExpired": "inbjudan har gått ut",
 		"inviteAccepted": "inbjudan accepterad",
-		"placeholder": "Chatta med {{username}}",
 		"send": "skicka",
 		"status": "just nu {{status}}",
 		"online": "online",
@@ -90,6 +89,10 @@
 			"received": "Du blev inbjuden till ett spel",
 			"sent": "Du bjöd in dem till ett spel",
 			"expired": "Spelinbjudan har upphört att gälla"
+		},
+		"placeholder": {
+			"alert": "Du kan inte skicka meddelanden till den här användaren.",
+			"textarea": "Chatta med {{username}}"
 		}
 	},
 	"utils": {

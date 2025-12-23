@@ -303,7 +303,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 			}
 
 			if (data.type === "error" && data.reason === "blocked") {
-				alert("You cannot message this user.");
+				alert(t("chat.placeholder.alert"));
 			}
 
 			if (data.type === "error") {

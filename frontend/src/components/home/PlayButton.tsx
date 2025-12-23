@@ -31,7 +31,7 @@ export const PlayButton = () =>
 				onClick={handlePlay}
 			>
 				{t("home.button.play")}
-				<span className="absolute bottom-[35%] right-[26%] w-4 h-4 border-2 border-transcendence-black bg-white rounded-full transform -translate-y-1/2 group-hover:animate-[pingpongAnimation_1s_ease-in-out]" />
+				<span className="absolute bottom-[35%] right-[26%] w-4 h-4 border-2 border-transcendence-black bg-white rounded-full transform -translate-y-1/2 translate-x-2 group-hover:animate-[pingpongAnimation_1s_ease-in-out]" />
 			</button>
 		</div>
 	);

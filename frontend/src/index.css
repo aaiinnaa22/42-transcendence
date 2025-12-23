@@ -20,6 +20,7 @@
 		@apply grid gap-2 items-center;
 		grid-template-columns: 3rem minmax(0, 1fr) 4rem;
 		border-radius: 0.125rem;
+		transition: all 100ms ease-in-out;
 	}
 
 	@media (width >= 40rem /* Small screen */) {

@@ -80,7 +80,6 @@
 		"joinGame": "join the game",
 		"inviteExpired": "invite expired",
 		"inviteAccepted": "invite accepted",
-		"placeholder": "Chat with {{username}}",
 		"send": "send",
 		"status": "currently {{status}}",
 		"online": "online",
@@ -90,6 +89,10 @@
 			"received": "You were invited to a game",
 			"sent": "You invited them to a game",
 			"expired": "Game invite expired"
+		},
+		"placeholder": {
+			"alert": "You cannot message this user.",
+			"textarea": "Chat with {{username}}"
 		}
 	},
 	"utils": {
