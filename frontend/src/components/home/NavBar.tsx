@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
-const navItems = ["play", "stats", "profile"] as const;
+const navItems = ["play", "stats", "leaderboard", "profile"] as const;
 
 type NavBarProps =
 {
@@ -18,8 +18,10 @@ export const NavBar = ({onTogglePanel, currentPanel} :NavBarProps) =>
 
 	return (
 		<div className="z-10 border-b-4 border-transcendence-black flex flex-row items-center justify-between h-18 lg:h-32 bg-transcendence-beige px-5 lg:px-10">
-			<button className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]"
-				onClick={() => navigate("/home/play")}>{t("welcome.title")}</button>
+			<button	className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]"
+					onClick={() => navigate("/home/play")}>
+					{t("welcome.title")}
+			</button>
 			<div className="hidden h-full lg:flex flex-row sm:gap-5 md:gap-10 lg:gap-20 2xl:gap-30 font-transcendence-two text-2xl">
 				{navItems.map((item) => {
 					return (

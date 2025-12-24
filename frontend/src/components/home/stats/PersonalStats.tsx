@@ -51,7 +51,7 @@ export const PersonalStats = () =>
 			<button className="absolute text-transcendence-white font-transcendence-two tracking-[0.02em] flex items-center justify-center
 			top-5 left-5 xl:top-10 xl:left-10
 			text-xs xl:text-sm cursor-pointer"
-			onClick={() => navigate("/home/stats/leaderboard")}>
+			onClick={() => navigate("/home/leaderboard")}>
 				<span className="material-symbols-outlined">arrow_forward</span>
 				<h3 className="h-full">{t("stats.leaderboard")}</h3>
 			</button>

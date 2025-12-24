@@ -156,6 +156,7 @@
 	"navbar": {
 		"play": "peli",
 		"stats": "tilasto",
+		"leaderboard": "tulostaulu",
 		"profile": "profiili"
 	},
 	"friend": {

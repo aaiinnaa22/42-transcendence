@@ -156,6 +156,7 @@
 	"navbar": {
 		"play": "game",
 		"stats": "stats",
+		"leaderboard": "leaderboard",
 		"profile": "profile"
 	},
 	"friend": {

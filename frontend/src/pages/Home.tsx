@@ -36,7 +36,7 @@ export const Home = () => {
 				<Route path="play/tournament" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}>
 						<GameTournament/></ExitTopLeft>}/>
 				<Route path="stats" element={<PersonalStats/>}/>
-				<Route path="stats/leaderboard" element={<Leaderboard/>}/>
+				<Route path="leaderboard" element={<Leaderboard/>}/>
 				<Route path="profile" element={<Profile/>}/>
 				<Route path="play/invite" element={<GameInvite/> } />
 				<Route path="*" element={<NotFound />} />

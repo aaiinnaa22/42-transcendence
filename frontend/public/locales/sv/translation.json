@@ -156,6 +156,7 @@
 	"navbar": {
 		"play": "spel",
 		"stats": "statistik",
+		"leaderboard": "topplista",
 		"profile": "profil"
 	},
 	"friend": {
