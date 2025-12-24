@@ -1,0 +1,185 @@
+{
+	"languages": {
+		"en": "English",
+		"fi": "Suomi",
+		"sv": "Svenska"
+	},
+	"welcome": {
+		"title": "PONG",
+		"button": {
+			"login": "LOGIN",
+			"register": "SIGN UP"
+		},
+		"placeholder": {
+			"email": "email",
+			"username": "username",
+			"password": "password"
+		},
+		"login": "Login",
+		"register": "Sign up",
+		"or": "or",
+		"submit": "SUBMIT"
+	},
+	"home": {
+		"button": {
+			"play": "PLAY"
+		},
+		"menu": "Menu"
+	},
+	"settings": {
+		"language": "Language",
+		"avatar": "Profile picture",
+		"logout": "Log out",
+		"deleteAccount": "Delete account"
+	},
+	"twoFA": {
+		"enable": "Enable two-factor authentication",
+		"disable": "Disable two-factor authentication",
+		"scanToEnable": "Scan the QR code with your authenticator app, then enter the code.",
+		"codeToDisable": "Enter a code from your authenticator app to disable 2FA.",
+		"enterCode": "Please enter the 6-digit code from your authenticator app.",
+		"verifyMessage": "Verifying…",
+		"verifyToEnable": "Verify & Enable 2FA",
+		"verifyToDisable": "Verify & Disable 2FA",
+		"enableSuccess": "2FA enabled successfully!",
+		"disableSuccess": "2FA disabled successfully!",
+		"modalClosing": "Closing modal in {{countdown}} seconds",
+		"login": "Two-Factor Login",
+		"placeholder": "Enter 6-digit code",
+		"loginSuccess": "Login successful!",
+		"verifyAndLogin": "Verify & Login"
+	},
+	"leaderboard": {
+		"myStats": "My stats",
+		"loading": "Loading leaderboard...",
+		"retry": "Retry",
+		"yourRank": "You are rank",
+		"yourUnranked": "You are unranked. Play more to get a rank.",
+		"rank": "Rank",
+		"name": "Name",
+		"rating": "Rating",
+		"ratio": "Ratio",
+		"wins": "Wins",
+		"losses": "Losses",
+		"you": "You",
+		"loadingMore": "Loading more players...",
+		"scrollMore": "Scroll for more",
+		"noPlayers": "No ranked players yet",
+		"end": "End of leaderboard"
+	},
+	"stats": {
+		"leaderboard": "Leaderboard",
+		"wins": "wins",
+		"losses": "losses",
+		"total": "In total you have played {{amount}} games",
+		"rating": "RATING"
+	},
+	"chat": {
+		"inviteToGame": "Invite {{username}} to a game",
+		"pendingInvite": "You have a pending game invite",
+		"joinGame": "join the game",
+		"inviteExpired": "invite expired",
+		"inviteAccepted": "invite accepted",
+		"send": "send",
+		"status": "currently {{status}}",
+		"online": "online",
+		"offline": "offline",
+		"header": "chat with players",
+		"invite": {
+			"received": "You were invited to a game",
+			"sent": "You invited them to a game",
+			"expired": "Game invite expired"
+		},
+		"placeholder": {
+			"alert": "You cannot message this user.",
+			"textarea": "Chat with {{username}}"
+		}
+	},
+	"utils": {
+		"close": "close",
+		"loading": "Loading..."
+	},
+	"profile": {
+		"greeting": "Hi {{username}}!",
+		"defaultUsername": "User",
+		"cancel": "Cancel",
+		"save": "Save",
+		"userNotEmpty": "Username cannot be empty",
+		"updateFailed": "Update failed",
+		"wins": "games won",
+		"losses": "games lost",
+		"rating": "RATING: {{value}}",
+		"stats": "stats",
+		"settings": "settings",
+		"pending": "friend request is pending",
+		"unfriend": "unfriend",
+		"befriend": "befriend",
+		"unblock": "unblock",
+		"block": "block",
+		"editUsername": "Edit Username",
+		"promptUsername": "Enter a new username.",
+		"totalGames": "games played in total",
+		"placeholder": {
+			"newUsername": "New username"
+		}
+	},
+	"error": {
+		"loginRetry": "Login failed. Please try again.",
+		"registerRetry": "Signup failed. Please try again.",
+		"tryAgain": "Something went wrong. Please try again later.",
+		"logoutFailure": "Logout failed.",
+		"picUploadFailure": "Failed to store profile picture",
+		"fetchUserInfo": "Failed to fetch user info",
+		"twoFALoginInfo": "Please enter the 6-digit code from your authenticator app.",
+		"QRLoadFailure": "Failed to load QR code",
+		"invalidCodeFailure": "Invalid 2FA code",
+		"accountDeletionFailure": "Account deletion failed"
+	},
+	"game": {
+		"button": {
+			"singleplayer": "play together",
+			"multiplayer": "tournament"
+		},
+		"description": {
+			"singleplayer": "play together with your friend on the same screen",
+			"multiplayer": "play with others around the world"
+		},
+		"choice": "Choose mode",
+		"horizontal": "switch your device to horizontal mode to play the game!",
+		"aria": {
+			"playerOneUp": "Player 1 Up",
+			"playerOneDown": "Player 1 Down",
+			"playerTwoUp": "Player 2 Up",
+			"playerTwoDown": "Player 2 Down"
+		}
+	},
+	"navbar": {
+		"play": "game",
+		"stats": "stats",
+		"leaderboard": "leaderboard",
+		"profile": "profile"
+	},
+	"friend": {
+		"requests": "friend requests",
+		"noPending": "You have no pending friend requests",
+		"accept": "Accept request",
+		"reject": "Reject request",
+		"cancel": "Cancel request"
+	},
+	"account": {
+		"button": {
+			"cancel": "Cancel",
+			"deleting": "Deleting…",
+			"deleteAccount": "Delete account"
+		},
+		"deletion": {
+			"title": "Delete Account",
+			"warning": "This action is permanent. Your account and data will be deleted."
+		}
+	},
+	"404": {
+		"notFound": "Page Not Found",
+		"description": "The page you are looking for does not exist or has moved.",
+		"toHome": "Back to Home"
+	}
+}

@@ -7,6 +7,7 @@ import { forceLogout } from "../../../../api/forceLogout";
 import { fetchWithAuth } from "../../../../api/fetchWithAuth";
 import { SideTab } from "../../utils/SideTab";
 import { PopUp } from "../../utils/PopUp";
+import { useTranslation } from "react-i18next";
 
 export type Message = {
 	id: number;
@@ -42,7 +43,7 @@ export type ChatUser = {
 };
 
 type ChatContainerProps = {
-  chatIsOpen: boolean;
+	chatIsOpen: boolean;
 };
 
 export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
@@ -55,6 +56,8 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 
   	const wsRef = useRef<WebSocket | null>(null);
 	const usersRef = useRef<ChatUser[]>([]);
+
+	const {t} = useTranslation();
 
 	useEffect(() => {
 		fetchWithAuth( apiUrl('/chat/users') )
@@ -194,7 +197,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				const inviteMessage: Message = {
 					id: Date.now(),
 					sender: "friend",
-					text: `${data.fromUsername ?? "Someone"} invited you to a game`,
+					text: t("chat.invite.received"),
 					type: "invite",
 					invite: {
 					startedAt: data.startedAt,
@@ -211,7 +214,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				setUsers(prev =>
 					prev.map(u =>
 					u.id === data.from
-						? { ...u, lastMessage: "Invited you to a game" }
+						? { ...u, lastMessage: t("chat.invite.received") }
 						: u
 					)
 				);
@@ -221,7 +224,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				const inviteMessage: Message = {
 					id: Date.now(),
 					sender: "me",
-					text: `You invited ${data.toUsername ?? "this user"} to a game`,
+					text: t("chat.invite.sent"),
 					type: "invite",
 					invite: {
 					startedAt: data.startedAt,
@@ -238,7 +241,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				setUsers(prev =>
 					prev.map(u =>
 					u.id === data.to
-						? { ...u, lastMessage: "You invited them to a game" }
+						? { ...u, lastMessage: t("chat.invite.sent") }
 						: u
 					)
 				);
@@ -256,7 +259,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				setUsers(prev =>
 					prev.map(u =>
 					u.id === otherUserId
-						? { ...u, lastMessage: "Game invite expired" }
+						? { ...u, lastMessage: t("chat.invite.expired") }
 						: u
 					)
 				);
@@ -300,7 +303,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 			}
 
 			if (data.type === "error" && data.reason === "blocked") {
-				alert("You cannot message this user.");
+				alert(t("chat.placeholder.alert"));
 			}
 
 			if (data.type === "error") {

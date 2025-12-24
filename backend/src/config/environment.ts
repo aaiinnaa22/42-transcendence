@@ -18,7 +18,7 @@ const backendValidators = {
 	PUBLIC_DOMAIN: str( {
 		desc: "Public domain or IP where NGINX serves the application",
 		example: "domain.com",
-		devDefault: "localhost:8443"
+		devDefault: "localhost"
 	} ),
 	HOSTNAME: host( {
 		desc: "Internal hostname for container communication",
@@ -72,7 +72,7 @@ const WS_PROTO = isProduction ? "wss://" : "ws://";
 // Constructed URLs
 const PUBLIC_URL = isProduction
 	? `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}`
-	: `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}`;
+	: `${HTTP_PROTO}${_env.PUBLIC_DOMAIN}:${_env.PORT}`;
 
 const GOOGLE_CALLBACK_URL = `${PUBLIC_URL}/api/auth/google/callback`;
 
