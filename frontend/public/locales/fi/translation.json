@@ -151,6 +151,18 @@
 			"playerOneDown": "Pelaaja 1 alas",
 			"playerTwoUp": "Pelaaja 2 ylös",
 			"playerTwoDown": "Pelaaja 2 alas"
+		},
+		"condition": {
+			"inactivity": "Peli päättyi toimettomuuden vuoksi",
+			"disconnect": "Peli päättyi yhteyden katkeamiseen",
+			"unexpected": "Peli päättyi odottamatta",
+			"genericEnd": "Peli päättyi",
+			"win": "{{player}} voitti!",
+			"loss": "Sinä hävisit!",
+			"waiting": "Odotetaan pelaajaa {{player}}...",
+			"forfeit": "Pelaaja {{player}} luovutti pelin",
+			"leftPlayer": "vasen",
+			"rightPlayer": "oikea"
 		}
 	},
 	"navbar": {

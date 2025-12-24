@@ -2,6 +2,8 @@ import { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from "./constants.js";
 import { } from "../panels/chat/Discussion";
 import { useLocation } from "react-router-dom";
+import { Waiting } from "./Waiting";
+import { GameEnd } from "./GameEndInvite";
 import { wsUrl } from "../../../api/api.js";
 import { forceLogout } from "../../../api/forceLogout.js";
 import { VisualGame } from "./VisualGame";
@@ -17,10 +19,12 @@ export const GameInvite = () =>
     const wsRef = useRef<WebSocket | null>(null);
     const keysPressed = useRef<Record<string, boolean>>({});
     const players = useRef<Record<string, any>>({});
-    const ball = useRef<{ x: number; y: number; countdown?: number; waiting?: string | undefined;}>({ x: 0, y: 0 , countdown: 5, waiting: undefined});
+    const ball = useRef<{ x: number; y: number; countdown?: number | undefined}>({ x: 0, y: 0, countdown: undefined });
 	const location = useLocation();
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
+	const [waitingData, setWaitingData] = useState<{ opponent: string } | null>(null);
+	const [gameEndData, setGameEndData] = useState<{ message: string } | null>(null);
 	const [screenIsPortrait, setScreenIsPortrait] = useState<boolean>(
 			window.matchMedia("(orientation: portrait)").matches
 		);
@@ -124,10 +128,7 @@ export const GameInvite = () =>
 			const scaleCenterX = (WIDTH / 2) * scaleX;
 			const scaleCenterY = (HEIGHT / 2) * scaleY;
 
-			if (ball.current.countdown == 5)
-				ctx.fillText(`${ball.current.waiting}`, scaleCenterX, scaleCenterY);
-			else
-				ctx.fillText(`${ball.current.countdown}`, scaleCenterX, scaleCenterY);
+			ctx.fillText(`${ball.current.countdown}`, scaleCenterX, scaleCenterY);
 
 			// Reset alignment
 			ctx.textAlign = "left";
@@ -154,7 +155,7 @@ export const GameInvite = () =>
 			console.error("Missing invite data", location.state);
 			return;
 		}
-		ball.current.waiting = `Waiting ${invitee}`;
+		setWaitingData({ opponent: invitee});
         const ws = new WebSocket(wsUrl(`/game/chat?friendName=${invitee}&expiresAt=${expiresAt}`));
         wsRef.current = ws;
 
@@ -195,10 +196,12 @@ export const GameInvite = () =>
                 players.current = data.players;
                 ball.current = data.ball;
 				ball.current.countdown = data.countdown;
+				setWaitingData(null);
 			}
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue. Position: ", data.position);
+				setWaitingData({ opponent: invitee});
 			}
 			else if (data.type === "error")
 			{
@@ -218,9 +221,7 @@ export const GameInvite = () =>
 			else if (data.type === "end")
 			{
 				console.log( data.message );
-				ball.current.countdown = 5;
-				ball.current.waiting = `Winner is ${data.winner}`;
-				//console.log( "The winner's new elo is " + data.elo.winner );
+				setGameEndData({ message: data.message });
 			}
 			else if (data.type === "invite:expired") {
 				console.warn("Invite expired, leaving game");
@@ -270,12 +271,21 @@ export const GameInvite = () =>
     },[]);
 
 
-	return (<VisualGame
-		pointsRef={PointsRef}
-		pointsRef2={PointsRef2}
-		canvasRef={canvasRef}
-		screenIsPortrait={screenIsPortrait}
-		startHold={startHold}
-		stopHold={stopHold}
-		isTouchScreen={isTouchScreen}/>)
+	return (
+		<>
+		{gameEndData && <GameEnd message={gameEndData.message} />}
+		{waitingData && <Waiting opponent={waitingData.opponent} />}
+		{!gameEndData && !waitingData && (
+			<VisualGame
+				pointsRef={PointsRef}
+				pointsRef2={PointsRef2}
+				canvasRef={canvasRef}
+				screenIsPortrait={screenIsPortrait}
+				startHold={startHold}
+				stopHold={stopHold}
+				isTouchScreen={isTouchScreen}
+			/>
+		)}
+		</>
+	);
 };

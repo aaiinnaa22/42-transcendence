@@ -151,6 +151,18 @@
 			"playerOneDown": "Player 1 Down",
 			"playerTwoUp": "Player 2 Up",
 			"playerTwoDown": "Player 2 Down"
+		},
+		"condition": {
+			"inactivity": "Game ended due to inactivity",
+			"disconnect": "Game ended due to disconnect",
+			"unexpected": "Game ended unexpectedly",
+			"genericEnd": "Game ended",
+			"win": "{{player}} won!",
+			"loss": "You lost!",
+			"waiting": "Waiting for {{player}}...",
+			"forfeit": "Player {{player}} forfeited the game",
+			"leftPlayer": "left",
+			"rightPlayer": "right"
 		}
 	},
 	"navbar": {

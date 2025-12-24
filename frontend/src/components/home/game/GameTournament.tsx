@@ -1,4 +1,6 @@
 import { useRef, useEffect, useState } from "react";
+import { Waiting } from "./Waiting";
+import { GameEnd } from "./GameEndTournament";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from './constants.js';
 import { wsUrl } from "../../../api/api.js";
 import { VisualGame } from "./VisualGame";
@@ -19,6 +21,8 @@ export const GameTournament = () =>
 	);
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
+	const [waitingData, setWaitingData] = useState<{ opponent: string } | null>(null);
+	const [gameEndData, setGameEndData] = useState<{ winner: string; loser: string; eloWinner?: number; eloLoser?: number; eloWinnerOld?: number; message: string } | null>(null);
 	const [isTouchScreen, setIsTouchScreen] = useState<boolean>(false);
 
 	//Touch screen button managers
@@ -139,6 +143,7 @@ export const GameTournament = () =>
         let animationFrameId: number; // not needed ??
         const ws = new WebSocket( wsUrl('/game/multiplayer'));
         wsRef.current = ws;
+		setWaitingData({ opponent: "opponent"});
 
         const handleKeyDown = (e: KeyboardEvent) => { keysPressed.current[e.key] = true; };
         const handleKeyUp = (e: KeyboardEvent) => { keysPressed.current[e.key] = false; };
@@ -175,10 +180,12 @@ export const GameTournament = () =>
                 players.current = data.players;
                 ball.current = data.ball;
 				ball.current.countdown = data.countdown;
-}
+				setWaitingData(null); // Clear waiting state when game starts
+			}
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue. Position: ", data.position);
+				setWaitingData({ opponent: "opponent"});
 			}
 			else if (data.type === "error")
 			{
@@ -199,6 +206,13 @@ export const GameTournament = () =>
 			{
 				console.log( data.message );
 				console.log( "The winner's new elo is " + data.elo.winner );
+				setGameEndData({ winner: data.winner,
+					loser: data.loser,
+					eloWinner: data.elo.winner, 
+					eloLoser: data.elo.loser, 
+					eloWinnerOld: data.oldElo.winner, 
+					message: data.message });
+				//The game is still running in the background use cancelAnimationFrame(animationFrameId); probably needs to be stored in useRef
 			}
 
 			/* ADD ADDITIONAL STATES HERE */
@@ -241,12 +255,22 @@ export const GameTournament = () =>
         };
     },[]);
 
-	return (<VisualGame
-		pointsRef={PointsRef}
-		pointsRef2={PointsRef2}
-		canvasRef={canvasRef}
-		screenIsPortrait={screenIsPortrait}
-		startHold={startHold}
-		stopHold={stopHold}
-		isTouchScreen={isTouchScreen}/>)
+	return (
+		<>
+		{gameEndData && <GameEnd winner={gameEndData.winner} loser={gameEndData.loser} eloWinner={gameEndData.eloWinner} eloLoser={gameEndData.eloLoser} 
+		eloWinnerOld={gameEndData.eloWinnerOld} message={gameEndData.message} />}
+		{waitingData && <Waiting opponent={waitingData.opponent} />}
+		{!gameEndData && !waitingData && (
+			<VisualGame
+				pointsRef={PointsRef}
+				pointsRef2={PointsRef2}
+				canvasRef={canvasRef}
+				screenIsPortrait={screenIsPortrait}
+				startHold={startHold}
+				stopHold={stopHold}
+				isTouchScreen={isTouchScreen}
+			/>
+		)}
+		</>
+	);
 };
