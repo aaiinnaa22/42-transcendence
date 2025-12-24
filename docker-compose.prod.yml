@@ -15,7 +15,8 @@ services:
       TZ: "Europe/Helsinki"
       FRONTEND_HOST: frontend
       FRONTEND_PORT: 443
-      PUBLIC_DOMAIN: localhost
+      PUBLIC_DOMAIN: localhost:8443
+      # <yourcomputer>.<domain>.fi:8443
     volumes:
       - db-data:/app/data
       - upload-data:/app/data/upload
@@ -31,7 +32,7 @@ services:
       args:
         VITE_API_URL: /api
         VITE_WS_URL: wss://localhost:8443/ws
-        # VITE_WS_URL: wss://${DOMAIN_NAME:-localhost}/ws
+        # wss://<yourcomputer>.<domain>.fi:8443/ws
     container_name: tr_frontend
     secrets:
       - ssl-cert

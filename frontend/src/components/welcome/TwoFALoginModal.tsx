@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { apiUrl } from "../../api/api";
+import { useTranslation } from "react-i18next";
 
 type TwoFALoginModalProps = {
     isOpen: boolean;
@@ -15,6 +16,8 @@ export const TwoFALoginModal = ({ isOpen, tempToken, onSuccess, onClose }: TwoFA
     const [verifying, setVerifying] = useState(false);
     const [success, setSuccess] = useState(false);
 
+	const {t} = useTranslation();
+
     if (!isOpen || !tempToken)
         return null;
 
@@ -23,7 +26,7 @@ export const TwoFALoginModal = ({ isOpen, tempToken, onSuccess, onClose }: TwoFA
         e.preventDefault();
 
         if (!code.trim()) {
-            setError("Please enter the 6-digit code from your authenticator app.");
+            setError(t("error.twoFALoginInfo"));
             return;
         }
 
@@ -41,13 +44,13 @@ export const TwoFALoginModal = ({ isOpen, tempToken, onSuccess, onClose }: TwoFA
             const data = await response.json();
 
             if (!response.ok || data.error)
-                throw new Error(data.error || "Invalid 2FA code");
+                throw new Error(t("twoFA.invalidCodeFailure"));
 
             setSuccess(true);
             onSuccess();
 
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : "Failed to load QR code";
+            const message = err instanceof Error ? err.message : t("error.QRLoadFailure");
             setError(message);
         } finally {
             setVerifying(false);
@@ -59,12 +62,14 @@ export const TwoFALoginModal = ({ isOpen, tempToken, onSuccess, onClose }: TwoFA
             <div className="bg-transcendence-black text-transcendence-white rounded-2xl p-6 w-80 max-w-full font-transcendence-two flex flex-col gap-4">
 
                 <div className="flex justify-between items-center">
-                    <h2 className="text-lg font-semibold tracking-wide">Two-Factor Login</h2>
+                    <h2 className="text-lg font-semibold tracking-wide">
+						{t("twoFA.login")}
+					</h2>
                     <button onClick={onClose} className="text-transcendence-white/70 hover:text-transcendence-white text-xl leading-none px-1">×</button>
                 </div>
 
                 <p className="text-xs text-transcendence-white/80">
-                    Enter the 6-digit code from your authenticator app.
+					{t("error.twoFALoginInfo")}
                 </p>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3 mt-2">
@@ -72,7 +77,7 @@ export const TwoFALoginModal = ({ isOpen, tempToken, onSuccess, onClose }: TwoFA
                         type="text"
                         inputMode="numeric"
                         maxLength={6}
-                        placeholder="Enter 6-digit code"
+                        placeholder={t("twoFA.placeholder")}
                         value={code}
                         onChange={(e) => setCode(e.target.value)}
                         className="border border-transcendence-beige bg-transparent rounded-lg px-3 py-2 text-sm tracking-widest text-center placeholder:text-xs"
@@ -85,12 +90,12 @@ export const TwoFALoginModal = ({ isOpen, tempToken, onSuccess, onClose }: TwoFA
                         disabled={verifying}
                         className="mt-1 bg-transcendence-beige text-transcendence-black rounded-xl py-2 text-sm font-semibold tracking-wide hover:bg-opacity-90 disabled:bg-opacity-60 disabled:cursor-not-allowed"
                     >
-                        {verifying ? "Verifying…" : "Verify & Login"}
+                        {verifying ? t("twoFA.verifyMessage") : t("twoFA.verifyAndLogin")}
                     </button>
 
                     {success && (
                         <div className="text-green-400 text-xs text-center mt-1">
-                            Login successful!
+                            {t("twoFA.loginSuccess")}
                         </div>
                     )}
                 </form>

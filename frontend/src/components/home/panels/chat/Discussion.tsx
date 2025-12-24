@@ -2,6 +2,7 @@ import { ChatProfilePic } from "./ChatProfilePic";
 import { useState, useRef, useEffect } from "react";
 import type { ChatUser, Message } from "./ChatContainer";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 type DiscussionProps = {
   friend: ChatUser;
@@ -9,7 +10,7 @@ type DiscussionProps = {
   onSendMessage: (text: string) => void;
   onExitClick: () => void;
   onSendInvite: () => void;
-  onAcceptInvite: (inviteId: number) => void; 
+  onAcceptInvite: (inviteId: number) => void;
   onProfileClick: (user: ChatUser) => void;
 };
 
@@ -27,11 +28,13 @@ export const Discussion = ({
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const navigate = useNavigate();
 
+  const {t} = useTranslation();
+
   useEffect(() => {
     discussionEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
- 
+
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => {
@@ -40,7 +43,7 @@ export const Discussion = ({
 
     return () => clearInterval(id);
   }, []);
-  
+
   const hasActiveInvite = messages.some(m =>
     m.type === "invite" &&
     m.invite?.status === "pending" &&
@@ -80,22 +83,25 @@ export const Discussion = ({
 
   return (
     <div className="flex flex-col h-full">
-			{/* Header */}
-			<div className="flex flex-row justify-between items-center bg-white w-full lg:rounded-tl-2xl p-2 border-b-2">
-				<button onClick={onExitClick} className="material-symbols-outlined !text-md">arrow_back_ios_new</button>
-				<h2 className="font-semibold">{friend.username}</h2>
-				<ChatProfilePic friend={friend} onProfileClick={onProfileClick}/>
-			</div>
+		{/* Header */}
+		<div className="flex flex-row justify-between items-center bg-white w-full lg:rounded-tl-2xl p-2 border-b-2">
+			<button onClick={onExitClick} className="material-symbols-outlined !text-md">arrow_back_ios_new</button>
+			<h2 className="font-semibold">{friend.username}</h2>
+			<ChatProfilePic friend={friend} onProfileClick={onProfileClick}/>
+		</div>
 
-      {/* Invite button */}
-			<div className="self-end p-2">
-				<button className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
-					disabled={hasActiveInvite} onClick={onSendInvite}>
-				<p className="text-xs text-left">{!hasActiveInvite ? `Invite ${friend.username} to a game` : "You have a pending game invite"}</p>
-				<div className="!text-xl lg:!text-3xl material-symbols-outlined">
-				sports_esports</div>
-				</button>
-			</div>
+    	{/* Invite button */}
+		<div className="self-end p-2">
+			<button className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
+				disabled={hasActiveInvite} onClick={onSendInvite}>
+			<p className="text-xs text-left">{!hasActiveInvite
+				? t("chat.inviteToGame", { username: friend.username })
+				: t("chat.pendingInvite")}
+			</p>
+			<div className="!text-xl lg:!text-3xl material-symbols-outlined">
+			sports_esports</div>
+			</button>
+		</div>
 
       {/* Messages */}
       <div className="flex flex-col gap-3 p-3 overflow-y-auto flex-grow min-h-0">
@@ -157,9 +163,9 @@ export const Discussion = ({
                     });
                   }}
                 >
-                  {status === "pending" && "Join the game"}
-                  {status === "expired" && "Invite expired"}
-                  {status === "joined" && "Invite accepted"}
+                  {status === "pending" && t("chat.joinGame")}
+                  {status === "expired" && t("chat.inviteExpired")}
+                  {status === "joined" && t("chat.inviteAccepted")}
                 </button>
               </div>
             </div>
@@ -180,7 +186,7 @@ export const Discussion = ({
               value={message}
               onChange={handleMessageInput}
               onKeyDown={handleKeyDown}
-              placeholder={`Chat with ${friend.username}`}
+              placeholder={t("chat.placeholder", { username: friend.username })}
               rows={1}
               className="focus:outline-none w-full resize-none p-2"
               disabled={!friend.online}

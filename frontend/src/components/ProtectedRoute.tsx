@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { fetchWithAuth } from "../api/fetchWithAuth";
 import { apiUrl } from "../api/api";
+import { useTranslation } from "react-i18next";
 
 interface ProtectedRouteProps {
 	children: React.ReactNode;
@@ -15,6 +16,8 @@ interface ProtectedRouteProps {
 */
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 	const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+	const {t} = useTranslation();
 
 	useEffect(() => {
 		const checkAuth = async () => {
@@ -34,7 +37,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 	}, []);
 
 	if (isAuthenticated === null) {
-    	return <div>Loading...</div>;
+    	return <div>{t("utils.loading")}</div>;
   	}
 
 	if (!isAuthenticated) {

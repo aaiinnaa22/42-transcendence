@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback, type JSX } from 'react'
 import { apiUrl } from '../../../api/api';
 import { fetchWithAuth } from '../../../api/fetchWithAuth';
+import { useTranslation } from 'react-i18next';
 
 
 type LeaderboardEntry =
@@ -27,6 +28,8 @@ export const Leaderboard = () => {
 	const [error, setError] = useState<string | null>(null);
 
 	const observerTarget = useRef<HTMLDivElement>(null);
+
+	const {t} = useTranslation();
 
 	// Fetch the current user's rank
 	useEffect(() => {
@@ -168,7 +171,7 @@ export const Leaderboard = () => {
 		return (
 			<div className="flex items-center justify-center h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]">
 				<div className="text-transcendence-white font-transcendence-three text-2xl animate-pulse">
-					Loading leaderboard...
+					{t("leaderboard.loading")}
 				</div>
 			</div>
 		);
@@ -186,7 +189,7 @@ export const Leaderboard = () => {
 					<button
 						onClick={() => window.location.reload()}
 						className="bg-transcendence-beige text-black px-6 py-2 rounded-lg font-bold hover:bg-gray-200">
-						Retry
+						{t("leaderboard.retry")}
 					</button>
 				</div>
 			</div>
@@ -194,45 +197,48 @@ export const Leaderboard = () => {
 	}
 
 	return (
-		<div className="relative w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] grid grid-cols-[20%_60%_20%] grid-rows-[15%_auto] px-[10vw] py-[10vh]
-			portrait:grid-cols-[auto] gap-3">
+		<div className="relative w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)]
+			grid grid-cols-1 md:grid-cols-[1fr_7fr_1fr] grid-rows-[15%_auto]
+			px-[8vw] py-[8vh] gap-3 transition-all duration-150 ease-in-out">
 			<button className="absolute text-transcendence-white font-transcendence-two tracking-[0.02em] flex items-center justify-center
 			top-5 left-5 xl:top-10 xl:left-10
 			text-xs xl:text-sm cursor-pointer"
 			onClick={() => navigate("/home/stats")}>
 				<span className="material-symbols-outlined">arrow_forward</span>
-				<h3 className="h-full">My stats</h3>
+				<h3 className="h-full">
+					{t("leaderboard.myStats")}
+				</h3>
 			</button>
 
 			{/* Player rank */}
-			<div className="w-full h-full flex flex-col items-center col-span-3 tracking-[0.2em]">
-				<h1 className="text-transcendence-white font-transcendence-three text-xl lg:text-3xl md:portrait:text-3xl">
+			<div className="w-full h-full flex flex-col items-center col-span-1 md:col-span-3 tracking-[0.2em]">
+				<h1 className="text-transcendence-white font-transcendence-three text-2xl lg:text-3xl md:portrait:text-3xl">
 					{
 						myRank ? (
 							<>
-								You are rank <span className='text-transcendence-beige'>#{myRank.rank}</span>
+								{t("leaderboard.yourRank")} <span className='text-transcendence-beige'>#{myRank.rank}</span>
 							</>
 						) : (
-							<span>You are unranked. Play more to get a rank.</span>
+							<span>{t("leaderboard.yourUnranked")}</span>
 						)
 					}
 				</h1>
 			</div>
 
 			{/* Leaderboard with lazy loading */}
-			<div className="w-full h-full md:col-start-2 rounded-xl bg-transcendence-beige p-[0.7vh] col-span-3 md:col-span-1 overflow-y-auto">
+			<div className="w-full h-full md:col-start-2 rounded-xl bg-transcendence-beige p-[0.7vh] col-span-1 md:col-span-1 overflow-y-auto">
 
 				{/* Legend */}
 				<div className='sticky top-0 bg-transcendence-beige z-10 pb-2'>
 					<div className='leaderboard-grid px-4 py-2
 					bg-transcendence-black text-transcendence-beige
 					text-xs font-bold uppercase tracking-wider'>
-						<span className='text-center'>Rank</span>
-						<span className='text-left ml-2'>Name</span>
-						<span className='text-center'>Rating</span>
-						<span className='text-center hidden sm:block'>Ratio</span>
-						<span className='text-center hidden md:block'>Wins</span>
-						<span className='text-center hidden lg:block'>Losses</span>
+						<span className='text-center'>{t("leaderboard.rank")}</span>
+						<span className='text-left ml-2 truncate min-w-0'>{t("leaderboard.name")}</span>
+						<span className='text-center'>{t("leaderboard.rating")}</span>
+						<span className='text-center hidden sm:block'>{t("leaderboard.ratio")}</span>
+						<span className='text-center hidden md:block'>{t("leaderboard.wins")}</span>
+						<span className='text-center hidden lg:block'>{t("leaderboard.losses")}</span>
 					</div>
 				</div>
 
@@ -253,9 +259,9 @@ export const Leaderboard = () => {
 									<span className='font-bold'># {user.rank}</span>
 
 									{/* Display username, top three get a star, current user indicator */}
-									<div className='flex items-center gap-1'>
+									<div className='flex items-center gap-1 min-w-0'>
 										{getRankIcon(user.rank)}
-										<span className=' font-bold text-left gap-1 truncate'>
+										<span className=' font-bold text-left gap-1 truncate min-w-0'>
 											{user.name}
 										</span>
 										{isCurrentUser && (
@@ -263,7 +269,7 @@ export const Leaderboard = () => {
 												<span className="material-symbols-outlined text-base">
 													arrow_left
 												</span>
-												You
+												{t("leaderboard.you")}
 											</span>
 										)}
 									</div>
@@ -297,10 +303,10 @@ export const Leaderboard = () => {
 						<div ref={observerTarget} className='text-transcendence-black/40 py-4 text-center text-sm'>
 							{loadingMore ? (
 								<span className='animate-pulse'>
-									Loading more players...
+									{t("leaderboard.loadingMore")}
 								</span>
 							) : (
-								<span>Scroll for more</span>
+								<span>{t("leaderboard.scrollMore")}</span>
 							)}
 						</div>
 					)}
@@ -309,14 +315,13 @@ export const Leaderboard = () => {
 					{!hasMore && (
 						<div className='text-transcendence-black/40 py-4 text-center text-sm'>
 							{users.length === 0 ? (
-								<p>No ranked players yet</p>
+								<p>{t("leaderboard.noPlayers")}</p>
 							) : (
-								<p>End of leaderboard</p>
+								<p>{t("leaderboard.end")}</p>
 							)}
 						</div>
 					)}
 				</ul>
-
 			</div>
 		</div>
 	);

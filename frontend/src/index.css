@@ -3,6 +3,7 @@
 @theme
 {
 	--color-transcendence-red: #70193D;
+	--color-transcendence-red-light: #E43636;
 	--color-transcendence-black: #000000;
 	--color-transcendence-beige: #E2DDB4;
 	--color-transcendence-white: #ffffff;
@@ -20,6 +21,7 @@
 		@apply grid gap-2 items-center;
 		grid-template-columns: 3rem minmax(0, 1fr) 4rem;
 		border-radius: 0.125rem;
+		transition: all 100ms ease-in-out;
 	}
 
 	@media (width >= 40rem /* Small screen */) {

@@ -66,7 +66,7 @@ export default async function chatComponent( server: FastifyInstance )
 			// 3. ON DISCONNECT
 			socket.on( "close", () =>
 			{
-				console.log( `User ${userId} disconnected.` );
+				server.log.info( { user: pseudonym( userId ) }, "User disconnected" );
 				removeUser( userId, socket );
 			} );
 		}
