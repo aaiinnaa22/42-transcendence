@@ -956,6 +956,8 @@ const gameComponent = async ( server: FastifyInstance ) =>
 							endStateMessage = {
 								type: "end",
 								mode: "singleplayer",
+								winner: "none",
+								loser: "none",
 								score: {
 									left: leftPlayer.points,
 									right: rightPlayer.points
@@ -986,6 +988,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 							const endStateMessage = {
 								type: "end",
 								mode: "tournament",
+								reason: "unknown",
 								message: "Game ended unexpectedly"
 							};
 							playerConnection.socket.send( JSON.stringify( endStateMessage ) );
@@ -1067,7 +1070,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					server.log.error( { game: gameId, error }, "Elo update failed" );
 				}
 			}
-
 			else if ( game.mode === GameMode.Invite )
 			{
 				if ( !data.winner || !data.loser )
@@ -1082,6 +1084,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 							const endStateMessage = {
 								type: "end",
 								mode: "invite",
+								reason: "unknown",
 								message: "Game ended unexpectedly"
 							};
 							playerConnection.socket.send( JSON.stringify( endStateMessage ) );

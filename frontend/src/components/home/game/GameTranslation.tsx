@@ -26,7 +26,7 @@ export function getGameEndMessage(data: GameEndData, t: TFunction): string
 			return t("game.state.end.singleplayer.win", { winner: side });
 		} else if (reason === "inactivity") {
 			return t("game.state.end.singleplayer.inactivity");
-		} else {
+		} else if (reason === "disconnect"){
 			return t("game.state.end.singleplayer.disconnect");
 		}
 	}
@@ -37,7 +37,7 @@ export function getGameEndMessage(data: GameEndData, t: TFunction): string
 			return t("game.state.end.tournament.win", { winner });
 		} else if (reason === "inactivity") {
 			return t("game.state.end.tournament.inactivity", { loser });
-		} else {
+		} else if (reason === "disconnect") {
 			return t("game.state.end.tournament.disconnect", { loser });
 		}
 	}
@@ -48,7 +48,7 @@ export function getGameEndMessage(data: GameEndData, t: TFunction): string
 			return t("game.state.end.invite.win", { winner });
 		} else if (reason === "inactivity") {
 			return t("game.state.end.invite.inactivity", { loser });
-		} else {
+		} else if (reason === "disconnect"){
 			return t("game.state.end.invite.disconnect", { loser });
 		}
 	}
