@@ -118,6 +118,7 @@
 		"block": "blockera",
 		"editUsername": "Redigera användarnamn",
 		"promptUsername": "Ange ett nytt användarnamn.",
+		"totalGames": "spelade matcher",
 		"placeholder": {
 			"newUsername": "Nytt användarnamn"
 		}

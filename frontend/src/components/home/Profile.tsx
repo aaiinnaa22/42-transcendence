@@ -43,7 +43,7 @@ export const Profile = () => {
 		};
 		getUserInfo();
 
-	}, []);
+	}, [t]);
 
 	const handleProfilePicChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		const profilePicFile = event.target.files?.[0];
@@ -85,6 +85,8 @@ export const Profile = () => {
 				portrait:grid-cols-[auto_auto_auto] portrait:grid-rows-[auto_auto_auto_auto]
 				landscape:gap-5 lg:landscape:gap-25
 				portrait:gap-15">
+
+				{/* Initial greeting and name change */}
 				<div className="col-start-1 col-span-3 justify-center  lg:landscape:justify-center flex portrait:justify-center items-center gap-2">
 					<h2 className="text-transcendence-white font-transcendence-three tracking-[0.2em] font-semibold text-3xl">
 						{t("profile.greeting", { username } )}
@@ -96,11 +98,13 @@ export const Profile = () => {
 						<span className="material-symbols-outlined">edit</span>
 					</button>
 				</div>
+
+				{/* Profile picture section */}
 				<div className="flex flex-col
 					landscape:col-start-1 landscape:row-start-2 lg:landscape:col-start-2 lg:landscape:row-start-2
 					portrait:col-start-2 portrait:row-start-2
 					justify-center items-center gap-4">
-						<div className="relative">
+					<div className="relative">
 						{profilePic
 						? <img className="h-40 w-40 xl:h-60 xl:w-60 rounded-full object-cover" src={profilePic}></img>
 						: <span className="material-symbols-outlined text-transcendence-white !text-9xl">account_circle</span>}
@@ -116,14 +120,18 @@ export const Profile = () => {
 								onChange={handleProfilePicChange}>
 							</input>
 						</button>
-						</div>
+					</div>
 				</div>
+
+				{/* Pending friend requests section */}
 				<div className='portrait:col-start-2 portrait:row-start-3
 					landscape:col-start-3 landscape:row-start-2
 					lg:landscape:col-start-2 lg:landscape:row-start-3
 					flex flex-col items-center justify-center h-35'>
 					<PendingFriendRequests/>
 				</div>
+
+				{/* Miscellanious settings section */}
 				<div className="landscape:col-start-2 landscape:row-start-2 lg:landscape:col-start-2 lg:landscape:row-start-4 lg:landscape:items-center
 					portrait:col-start-2 portrait:row-start-4 portrait:items-center
 					flex flex-col justify-center">
@@ -174,8 +182,8 @@ export const Profile = () => {
 									} catch (err: any) {
 										setEditError((err && err.message) || t("profile.updateFailed") );
 									}
-							}}
-						>
+								}}
+							>
 							{t("profile.save")}
 							</button>
 						</div>

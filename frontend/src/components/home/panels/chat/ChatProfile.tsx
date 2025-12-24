@@ -96,7 +96,10 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 					</div>
 					<div className="col-span-2 flex justify-center items-center border-2 rounded-lg p-2
 						portrait:p-4 lg:portrait:p-2">
-						<h4 className="text-xs md:text-sm"><span className="font-bold !text-md">{currentUser.stats.playedGames} </span> games played in total</h4>
+						<h4 className="text-xs md:text-sm">
+							<span className="font-bold !text-md">{currentUser.stats.playedGames} </span>
+							{t("profile.totalGames")}
+						</h4>
 					</div>
 					<div className="bg-transcendence-beige flex flex-col justify-center items-center rounded-lg p-1
 						portrait:p-4 lg:portrait:p-2">

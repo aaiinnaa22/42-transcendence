@@ -118,6 +118,7 @@
 		"block": "block",
 		"editUsername": "Edit Username",
 		"promptUsername": "Enter a new username.",
+		"totalGames": "games played in total",
 		"placeholder": {
 			"newUsername": "New username"
 		}

@@ -58,16 +58,11 @@ export const Settings = () =>
 			});
 
 			// Did we get a response code of 2xx (success)
-			if (!response.ok)
-			{
-				const data = await response.json();
-				throw new Error(data.error || t("error.logoutFailure") );
-			}
+			if (!response.ok) throw new Error(t("error.logoutFailure") );
 
 			navigate("/");
 		}
 		catch (err: any) {
-			console.error("Login error:", err);
 			setError(err.message || t("error.tryAgain") );
 		};
 	}
@@ -79,22 +74,26 @@ export const Settings = () =>
 				<LanguageSelector/>
 				<div className="flex flex-col gap-2">
 					<button
-						className="landscape:text-left lg:landscape:text-center text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
-						onClick={() => setIsTwoFAModalOpen(true)}
-					>
+						className="landscape:text-left lg:landscape:text-center text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer relative after:content-[attr(data-text)] after:font-bold after:h-0 after:invisible after:overflow-hidden after:select-none after:block"
+						data-text={isTwoFAEnabled ? t("twoFA.disable") : t("twoFA.enable")}
+						onClick={() => setIsTwoFAModalOpen(true)}>
 						{isTwoFAEnabled
-							?  t("twoFA.disable")
-							: t("twoFA.enable")}
+							? <span className="hover:font-bold">{t("twoFA.disable")}</span>
+							: <span className="hover:font-bold">{t("twoFA.enable")}</span>}
 					</button>
 					<button
-						className="landscape:text-left lg:landscape:text-center text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold"
+						className="landscape:text-left lg:landscape:text-center text-transcendence-white font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer relative after:content-[attr(data-text)] after:font-bold after:h-0 after:invisible after:overflow-hidden after:select-none after:block"
+						data-text={t("settings.logout")}
 						onClick={handleLogOut}>
-						{t("settings.logout")}
+						<span className="hover:font-bold">
+							{t("settings.logout")}
+						</span>
 					</button>
 					<button
-						className="landscape:text-left lg:landscape:text-center text-transcendence-red font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer hover:font-bold w-full"
+						className="landscape:text-left lg:landscape:text-center text-transcendence-red-light font-transcendence-two text-sm landscape:text-xs lg:landscape:text-sm font-semibold cursor-pointer w-full relative after:content-[attr(data-text)] after:font-bold after:h-0 after:invisible after:overflow-hidden after:select-none after:block"
+						data-text={t("settings.deleteAccount")}
 						onClick={() => setIsDeleteModalOpen(true)}>
-						{t("settings.deleteAccount")}
+						<span className="hover:font-bold">{t("settings.deleteAccount")}</span>
 					</button>
 				</div>
 			</div>
@@ -104,10 +103,10 @@ export const Settings = () =>
                 onClose={() => setIsTwoFAModalOpen(false)}
                 onStatusChange={handleTwoFAStatusChange}
             />
-				<DeleteAccountModal
-					isOpen={isDeleteModalOpen}
-					onClose={() => setIsDeleteModalOpen(false)}
-				/>
+			<DeleteAccountModal
+				isOpen={isDeleteModalOpen}
+				onClose={() => setIsDeleteModalOpen(false)}
+			/>
 		</>
 	);
 }

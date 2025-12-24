@@ -72,7 +72,7 @@
 		"wins": "voitot",
 		"losses": "tappiot",
 		"total": "Yhteensä olet pelannut {{amount}} peliä",
-		"rating": "VAHVUUSLUKU"
+		"rating": "ARVO"
 	},
 	"chat": {
 		"inviteToGame": "Kutsu {{username}} peliin",
@@ -108,7 +108,7 @@
 		"updateFailed": "Päivitys epäonnistui",
 		"wins": "pelivoittoa",
 		"losses": "pelitappiota",
-		"rating": "VAHVUUSLUKU: {{value}}",
+		"rating": "ARVO: {{value}}",
 		"stats": "tilastot",
 		"settings": "asetukset",
 		"pending": "kaveripyyntö odottaa",
@@ -118,6 +118,7 @@
 		"block": "estä",
 		"editUsername": "Muokkaa käyttäjänimeä",
 		"promptUsername": "Anna uusi käyttäjänimi.",
+		"totalGames": "peliä pelattu",
 		"placeholder": {
 			"newUsername": "Uusi käyttäjänimi"
     	}
