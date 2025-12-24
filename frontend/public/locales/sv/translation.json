@@ -151,6 +151,18 @@
 			"playerOneDown": "Spelare 1 Ner",
 			"playerTwoUp": "Spelare 2 Upp",
 			"playerTwoDown": "Spelare 2 Ner"
+		},
+		"condition": {
+			"inactivity": "Spelet avslutades på grund av inaktivitet",
+			"disconnect": "Spelet avslutades på grund av frånkoppling",
+			"unexpected": "Spelet avslutades oväntat",
+			"genericEnd": "Spelet avslutades",
+			"win": "{{player}} vann!",
+			"loss": "Du förlorade!",
+			"waiting": "Väntar på {{player}}...",
+			"forfeit": "Spelare {{player}} gav upp spelet",
+			"leftPlayer": "vänster",
+			"rightPlayer": "höger"
 		}
 	},
 	"navbar": {
