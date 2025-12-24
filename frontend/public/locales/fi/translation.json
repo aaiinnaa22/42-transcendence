@@ -121,7 +121,7 @@
 		"totalGames": "peliä pelattu",
 		"placeholder": {
 			"newUsername": "Uusi käyttäjänimi"
-    	}
+		}
 	},
 	"error": {
 		"loginRetry": "Kirjautuminen epäonnistui. Yritä uudelleen.",
@@ -152,17 +152,34 @@
 			"playerTwoUp": "Pelaaja 2 ylös",
 			"playerTwoDown": "Pelaaja 2 alas"
 		},
-		"condition": {
-			"inactivity": "Peli päättyi toimettomuuden vuoksi",
-			"disconnect": "Peli päättyi yhteyden katkeamiseen",
-			"unexpected": "Peli päättyi odottamatta",
-			"genericEnd": "Peli päättyi",
-			"win": "{{player}} voitti!",
-			"loss": "Sinä hävisit!",
-			"waiting": "Odotetaan pelaajaa {{player}}...",
-			"forfeit": "Pelaaja {{player}} luovutti pelin",
-			"leftPlayer": "vasen",
-			"rightPlayer": "oikea"
+		"state": {
+			"waiting": {
+				"tournament": "Odotetaan vastustajaa...",
+				"invite": "Odotetaan pelaajaa {{opponent}}..."
+			},
+			"end": {
+				"singleplayer": {
+					"win": "{{winner}} voitti!",
+					"inactivity": "Peli päättyi passiivisuuden vuoksi",
+					"disconnect": "Peli päättyi yhteyden katkaisun vuoksi"
+				},
+				"tournament": {
+					"win": "{{winner}} voitti!",
+					"inactivity": "{{loser}} hylkäsi pelin passiivisuuden vuoksi",
+					"disconnect": "{{loser}} katkaisi yhteyden"
+				},
+				"invite": {
+					"win": "{{winner}} voitti!",
+					"inactivity": "{{loser}} hylkäsi pelin passiivisuuden vuoksi",
+					"disconnect": "{{loser}} katkaisi yhteyden"
+				},
+				"unknown": "Peli päättyi",
+				"gameover": "Peli päättyi!"
+			}
+		},
+		"players": {
+			"left": "Vasen",
+			"right": "Oikea"
 		}
 	},
 	"navbar": {
