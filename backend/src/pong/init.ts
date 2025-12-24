@@ -948,22 +948,21 @@ const gameComponent = async ( server: FastifyInstance ) =>
 									winner: winnerPlayer.points,
 									loser: loserPlayer.points
 								},
-								message: "Game ended"
+								reason: "win"
 							};
 						}
 						else
-
 						{
 							endStateMessage = {
 								type: "end",
 								mode: "singleplayer",
+								winner: "none",
+								loser: "none",
 								score: {
 									left: leftPlayer.points,
 									right: rightPlayer.points
 								},
-								message: data.reason === "inactivity"
-									? "Game ended due to inactivity"
-									: "Game ended due to disconnect"
+								reason: data.reason
 							};
 						}
 
@@ -989,6 +988,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 							const endStateMessage = {
 								type: "end",
 								mode: "tournament",
+								reason: "unknown",
 								message: "Game ended unexpectedly"
 							};
 							playerConnection.socket.send( JSON.stringify( endStateMessage ) );
@@ -1041,7 +1041,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						select: { eloRating: true }
 					} );
 
-					// TODO: Create a route for fetching avatars based on username
 					const endStateMessage = {
 						type: "end",
 						mode: "tournament",
@@ -1059,11 +1058,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 							winner: data.winner.points,
 							loser: data.loser.points
 						},
-						message: data.reason === "inactivity"
-							? `Inactive player ${loserConnection.userName} forfeited the game`
-							: data.reason === "disconnect"
-								? `Disconnected player ${loserConnection.userName} forfeited the game`
-								: `${winnerConnection.userName} won!`
+						reason: data.reason
 					};
 
 					// Message the players
@@ -1075,7 +1070,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					server.log.error( { game: gameId, error }, "Elo update failed" );
 				}
 			}
-
 			else if ( game.mode === GameMode.Invite )
 			{
 				if ( !data.winner || !data.loser )
@@ -1090,6 +1084,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 							const endStateMessage = {
 								type: "end",
 								mode: "invite",
+								reason: "unknown",
 								message: "Game ended unexpectedly"
 							};
 							playerConnection.socket.send( JSON.stringify( endStateMessage ) );
@@ -1114,11 +1109,11 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					mode: "invite",
 					winner: winnerConnection.userName,
 					loser: loserConnection.userName,
-					message: data.reason === "inactivity"
-						? `Inactive player ${loserConnection.userName} forfeited the game`
-						: data.reason === "disconnect"
-							? `Disconnected player ${loserConnection.userName} forfeited the game`
-							: `${winnerConnection.userName} won!`
+					score: {
+						winner: data.winner.points,
+						loser: data.winner.points
+					},
+					reason: data.reason
 				};
 
 				// Message the players

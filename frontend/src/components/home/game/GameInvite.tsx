@@ -8,6 +8,8 @@ import { wsUrl } from "../../../api/api.js";
 import { forceLogout } from "../../../api/forceLogout.js";
 import { VisualGame } from "./VisualGame";
 import { useNavigate } from "react-router-dom";
+import { getGameEndMessage, getWaitingMessage } from "./GameTranslation";
+import { useTranslation } from "react-i18next";
 
 
 export const GameInvite = () =>
@@ -23,7 +25,7 @@ export const GameInvite = () =>
 	const location = useLocation();
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
-	const [waitingData, setWaitingData] = useState<{ opponent: string } | null>(null);
+	const [waitingData, setWaitingData] = useState<{ message: string } | null>(null);
 	const [gameEndData, setGameEndData] = useState<{ message: string } | null>(null);
 	const [screenIsPortrait, setScreenIsPortrait] = useState<boolean>(
 			window.matchMedia("(orientation: portrait)").matches
@@ -31,6 +33,7 @@ export const GameInvite = () =>
 	const [isTouchScreen, setIsTouchScreen] = useState<boolean>(false);
 
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 
 	//Touch screen button managers
 	const startHold = (key: string, o: number,dy: number) => {
@@ -155,7 +158,8 @@ export const GameInvite = () =>
 			console.error("Missing invite data", location.state);
 			return;
 		}
-		setWaitingData({ opponent: invitee});
+		setWaitingData({ message: getWaitingMessage("invite", invitee, t) });
+
         const ws = new WebSocket(wsUrl(`/game/chat?friendName=${invitee}&expiresAt=${expiresAt}`));
         wsRef.current = ws;
 
@@ -201,7 +205,7 @@ export const GameInvite = () =>
 			else if (data.type === "waiting")
 			{
 				console.log("Waiting in queue. Position: ", data.position);
-				setWaitingData({ opponent: invitee});
+				setWaitingData({ message: getWaitingMessage("invite", invitee, t) });
 			}
 			else if (data.type === "error")
 			{
@@ -221,7 +225,8 @@ export const GameInvite = () =>
 			else if (data.type === "end")
 			{
 				console.log( data.message );
-				setGameEndData({ message: data.message });
+				const message = getGameEndMessage(data, t)
+				setGameEndData({ message });
 			}
 			else if (data.type === "invite:expired") {
 				console.warn("Invite expired, leaving game");
@@ -274,7 +279,7 @@ export const GameInvite = () =>
 	return (
 		<>
 		{gameEndData && <GameEnd message={gameEndData.message} />}
-		{waitingData && <Waiting opponent={waitingData.opponent} />}
+		{waitingData && <Waiting message={waitingData.message} />}
 		{!gameEndData && !waitingData && (
 			<VisualGame
 				pointsRef={PointsRef}
