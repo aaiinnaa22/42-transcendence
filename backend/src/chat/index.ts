@@ -37,24 +37,28 @@ export default async function chatComponent( server: FastifyInstance )
 				{
 					// TODO: Validate the messages parsed from sockets
 					const data = JSON.parse( message.toString() );
-					if ( data.type === "dm" )
-					{
-						const blocked = await isBlocked( server, userId, data.to );
 
+					if (data.type === "dm" || data.type === "invite")
+					{
+						if (!data.to) return;
+
+						const blocked = await isBlocked( server, userId, data.to );
 						if ( blocked )
 						{
 							socket.send( JSON.stringify( {
 								type: "error",
 								reason: "blocked"
-							} ) );
+							}));
+							console.log("block detected");
 							return;
 						}
+					}
+					if ( data.type === "dm" )
+					{
 						sendDM( userId, data.to, data.message );
 					}
-
 					if ( data.type === "invite" )
 					{
-						//const isFriend
 						server.log.info( { user: pseudonym( userId ), to: pseudonym( data.to ) }, "message type: invite" );
 						const created = createInvite( userId, data.to );
 						if (!created) {

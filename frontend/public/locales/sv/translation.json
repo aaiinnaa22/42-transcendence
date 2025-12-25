@@ -85,6 +85,9 @@
 		"online": "online",
 		"offline": "offline",
 		"header": "chatta med spelare",
+		"friendsOnly": "Bli vän för att skicka inbjudningar",
+		"friendsOnlyTooltip": "Bara vänner kan skicka spelinbjudningar",
+		"inviteAlreadyActive": "Föregående inbjudan är aktiv",
 		"invite": {
 			"received": "Du blev inbjuden till ett spel",
 			"sent": "Du bjöd in dem till ett spel",

@@ -15,6 +15,7 @@ type DiscussionProps = {
   inviteDisabled: boolean;
 };
 
+
 export const Discussion = ({
   friend,
   messages,
@@ -32,6 +33,15 @@ export const Discussion = ({
 
   const {t} = useTranslation();
 
+  console.log("DISCUSSION FRIEND DEBUG", {
+    username: friend.username,
+    friendshipStatus: friend.friendshipStatus,
+    isFriend: friend.isFriend,
+    hasBlockedMe: friend.hasBlockedMe,
+    isBlockedByMe: friend.isBlockedByMe,
+    inviteDisabled,
+  });
+
   useEffect(() => {
     discussionEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -46,12 +56,29 @@ export const Discussion = ({
     return () => clearInterval(id);
   }, []);
 
+  const canInvite =
+    (friend.friendshipStatus === "accepted" &&
+      !friend.hasBlockedMe && !friend.isBlockedByMe);
+
   const hasActiveInvite = inviteDisabled ||
     messages.some(m =>
     m.type === "invite" &&
     m.invite?.status === "pending" &&
     m.invite.expiresAt > now
   );
+
+  const inviteLabel = !canInvite
+    ? t("chat.friendsOnly")
+    : hasActiveInvite
+      ? t("chat.pendingInvite")
+      : t("chat.inviteToGame", { username: friend.username });
+
+  const inviteTooltip = !canInvite
+    ? t("chat.friendsOnlyTooltip")
+    : hasActiveInvite
+    ? t("chat.inviteAlreadyActive")
+    : undefined;
+
 
   const sendMessage = () => {
     if (!message.trim()) return;
@@ -94,10 +121,10 @@ export const Discussion = ({
 		</div>
 
     	{/* Invite button */}
-		<div className="self-end p-2">
+		<div className="self-end p-2" title={inviteTooltip}>
 			<button 
         className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
-				disabled={hasActiveInvite} 
+				disabled={!canInvite || hasActiveInvite} 
         onClick={onSendInvite}
         // title={
         //   hasActiveInvite
@@ -105,9 +132,8 @@ export const Discussion = ({
         //     : undefined
         // }
       >
-			<p className="text-xs text-left">{!hasActiveInvite
-				? t("chat.inviteToGame", { username: friend.username })
-				: t("chat.pendingInvite")}
+			<p className="text-xs text-left">
+        {inviteLabel}
 			</p>
 			<div className="!text-xl lg:!text-3xl material-symbols-outlined">
 			sports_esports</div>
@@ -197,7 +223,7 @@ export const Discussion = ({
               value={message}
               onChange={handleMessageInput}
               onKeyDown={handleKeyDown}
-              placeholder={t("chat.placeholder", { username: friend.username })}
+              placeholder={t("chat.placeholder.textarea", { username: friend.username })}
               rows={1}
               className="focus:outline-none w-full resize-none p-2"
               disabled={!friend.online}
