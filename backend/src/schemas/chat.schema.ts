@@ -9,7 +9,7 @@ export const ChatUsersUsernameSchema = z.object( {
 export const ChatDirectMessageSchema = z.object( {
 	type: z.literal( "dm" ),
 	to: idField,
-	message: z.string.min( 1 ).max( 600 )
+	message: z.string().min( 1 ).max( 600 )
 } );
 
 export const ChatInviteMessageSchema = z.object( {
