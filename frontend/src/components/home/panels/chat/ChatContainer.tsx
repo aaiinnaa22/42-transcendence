@@ -11,13 +11,14 @@ import { useTranslation } from "react-i18next";
 
 export type Message = {
 	id: number;
- 	text: string;
+ 	text?: string;
 	sender: "me" | "friend";
 	type: "text" | "invite";
 	// invite-specific
 	invite?: {
 		startedAt: number;
 		expiresAt: number;
+		event: "received" | "sent" | "expired";
 		status: "pending" | "expired" | "joined";
   	};
 };
@@ -202,11 +203,11 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				const inviteMessage: Message = {
 					id: Date.now(),
 					sender: "friend",
-					text: t("chat.invite.received"),
 					type: "invite",
 					invite: {
 					startedAt: data.startedAt,
 					expiresAt: data.expiresAt,
+					event: "received",
 					status: "pending",
 					},
 				};
@@ -229,11 +230,11 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				const inviteMessage: Message = {
 					id: Date.now(),
 					sender: "me",
-					text: t("chat.invite.sent"),
 					type: "invite",
 					invite: {
 					startedAt: data.startedAt,
 					expiresAt: data.expiresAt,
+					event: "sent",
 					status: "pending",
 					},
 				};

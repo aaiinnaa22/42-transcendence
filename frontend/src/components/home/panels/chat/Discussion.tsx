@@ -33,15 +33,6 @@ export const Discussion = ({
 
   const {t} = useTranslation();
 
-  console.log("DISCUSSION FRIEND DEBUG", {
-    username: friend.username,
-    friendshipStatus: friend.friendshipStatus,
-    isFriend: friend.isFriend,
-    hasBlockedMe: friend.hasBlockedMe,
-    isBlockedByMe: friend.isBlockedByMe,
-    inviteDisabled,
-  });
-
   useEffect(() => {
     discussionEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -72,13 +63,6 @@ export const Discussion = ({
     : hasActiveInvite
       ? t("chat.pendingInvite")
       : t("chat.inviteToGame", { username: friend.username });
-
-  const inviteTooltip = !canInvite
-    ? t("chat.friendsOnlyTooltip")
-    : hasActiveInvite
-    ? t("chat.inviteAlreadyActive")
-    : undefined;
-
 
   const sendMessage = () => {
     if (!message.trim()) return;
@@ -121,16 +105,11 @@ export const Discussion = ({
 		</div>
 
     	{/* Invite button */}
-		<div className="self-end p-2" title={inviteTooltip}>
+		<div className="self-end p-2">
 			<button 
         className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
 				disabled={!canInvite || hasActiveInvite} 
         onClick={onSendInvite}
-        // title={
-        //   hasActiveInvite
-        //     ? "Invite already active" // TO DO: translate
-        //     : undefined
-        // }
       >
 			<p className="text-xs text-left">
         {inviteLabel}
@@ -179,7 +158,7 @@ export const Discussion = ({
               }
             >
               <p className="break-words text-transcendence-white">
-                {msg.text}
+                {t(`chat.invite.${invite.event}`)}
               </p>
 
               <div className="flex flex-row justify-center items-center border-2 border-transcendence-white rounded-lg p-1 gap-2">

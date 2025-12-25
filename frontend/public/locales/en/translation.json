@@ -86,8 +86,6 @@
 		"offline": "offline",
 		"header": "chat with players",
 		"friendsOnly": "Befriend to send invites",
-		"friendsOnlyTooltip": "You must be friends to send game invites",
-		"inviteAlreadyActive": "Previous invite is still active",
 		"invite": {
 			"received": "You were invited to a game",
 			"sent": "You invited them to a game",

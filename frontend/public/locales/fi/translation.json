@@ -86,8 +86,6 @@
 		"offline": "poissa",
 		"header": "keskustele pelaajien kanssa",
 		"friendsOnly": "Ystävysty lähettääksesi kutsuja",
-		"friendsOnlyTooltip": "Vain ystävät voivat lähettää pelikutsuja",
-		"inviteAlreadyActive": "Edellinen kutsu on voimassa",
 		"invite": {
 			"received": "Sinut kutsuttiin peliin",
 			"sent": "Kutsuit hänet peliin",
