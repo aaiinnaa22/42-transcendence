@@ -12,6 +12,7 @@ type DiscussionProps = {
   onSendInvite: () => void;
   onAcceptInvite: (inviteId: number) => void;
   onProfileClick: (user: ChatUser) => void;
+  inviteDisabled: boolean;
 };
 
 export const Discussion = ({
@@ -22,6 +23,7 @@ export const Discussion = ({
   onAcceptInvite,
   onSendInvite,
   onProfileClick,
+  inviteDisabled,
 }: DiscussionProps) => {
   const [message, setMessage] = useState("");
   const discussionEndRef = useRef<HTMLDivElement | null>(null);
@@ -44,7 +46,8 @@ export const Discussion = ({
     return () => clearInterval(id);
   }, []);
 
-  const hasActiveInvite = messages.some(m =>
+  const hasActiveInvite = inviteDisabled ||
+    messages.some(m =>
     m.type === "invite" &&
     m.invite?.status === "pending" &&
     m.invite.expiresAt > now
@@ -92,8 +95,16 @@ export const Discussion = ({
 
     	{/* Invite button */}
 		<div className="self-end p-2">
-			<button className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
-				disabled={hasActiveInvite} onClick={onSendInvite}>
+			<button 
+        className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
+				disabled={hasActiveInvite} 
+        onClick={onSendInvite}
+        // title={
+        //   hasActiveInvite
+        //     ? "Invite already active" // TO DO: translate
+        //     : undefined
+        // }
+      >
 			<p className="text-xs text-left">{!hasActiveInvite
 				? t("chat.inviteToGame", { username: friend.username })
 				: t("chat.pendingInvite")}

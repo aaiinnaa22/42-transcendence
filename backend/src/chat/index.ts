@@ -24,6 +24,7 @@ export default async function chatComponent( server: FastifyInstance )
 				type: "me",
 				userId,
 			} ) );
+
 			// initial presence list
 			socket.send( JSON.stringify( {
 				type: "presence:list",
@@ -53,8 +54,16 @@ export default async function chatComponent( server: FastifyInstance )
 
 					if ( data.type === "invite" )
 					{
-						server.log.info( { user: pseudonym( userId ), to: pseudonym( data.to ) }, "Game invite sent" );
-						createInvite( userId, data.to );
+						//const isFriend
+						server.log.info( { user: pseudonym( userId ), to: pseudonym( data.to ) }, "message type: invite" );
+						const created = createInvite( userId, data.to );
+						if (!created) {
+							socket.send(JSON.stringify({
+								type: "invite:rejected",
+								reason: "active",
+								retryAfterMs: 60_000
+							}));
+						}
 					}
 				}
 				catch

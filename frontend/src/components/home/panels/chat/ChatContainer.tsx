@@ -53,11 +53,16 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 	const myUserIdRef = useRef<string | null>(null);
  	const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
 	const [profileUser, setProfileUser] = useState<ChatUser | null>(null);
+	const [inviteDisabledUntil, setInviteDisabledUntil] = useState<number | null>(null);
+
 
   	const wsRef = useRef<WebSocket | null>(null);
 	const usersRef = useRef<ChatUser[]>([]);
 
 	const {t} = useTranslation();
+
+	const isInviteDisabled =
+	inviteDisabledUntil !== null && Date.now() < inviteDisabledUntil;
 
 	useEffect(() => {
 		fetchWithAuth( apiUrl('/chat/users') )
@@ -284,9 +289,36 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 							status: "expired",
 						},
 					} as Message;
-
+					setInviteDisabledUntil(null);
 					return { ...prev, [otherUserId]: updated };
 				});
+			}
+
+			if (data.type === "invite:rejected") {
+				// disable invite button for 1 minute (or server-provided value)
+				const retryAfter =
+					typeof data.retryAfterMs === "number"
+						? data.retryAfterMs
+						: 60_000;
+			
+				setInviteDisabledUntil(Date.now() + retryAfter);
+			
+				if (selectedUser) {
+					const systemMessage: Message = {
+						id: Date.now(),
+						text: "Chat invite unavailable. Try again later", // "TODO: translate
+						sender: "me",
+						type: "text",
+					};
+			
+					setMessagesByUser(prev => ({
+						...prev,
+						[selectedUser.id]: [
+							...(prev[selectedUser.id] ?? []),
+							systemMessage,
+						],
+					}));
+				}
 			}
 
 			if (data.type === "presence:list") {
@@ -377,6 +409,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 
 	const sendGameInvite = () => {
 		if (!selectedUser) return;
+		if (isInviteDisabled) return; 
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
 		wsRef.current.send(JSON.stringify({
@@ -440,6 +473,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				acceptAndJoinInvite(selectedUser.id, inviteId)
 				}
 				onProfileClick={setProfileUser}
+				inviteDisabled={isInviteDisabled}
 			/>
 			) : (
 			<Chat
