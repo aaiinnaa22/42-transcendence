@@ -30,6 +30,7 @@ backend/prisma/dev.db
 backend/prisma/.seeded
 
 # Database
+*.db.bak
 *.db
 *.db-journal
 
