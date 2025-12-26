@@ -1,7 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from './constants.js';
 import { wsUrl } from "../../../api/api.js";
-import { forceLogout } from "../../../api/forceLogout.js";
 import { VisualGame } from "./VisualGame";
 import { GameEnd } from "./GameEndInvite";
 import { getGameEndMessage } from "./GameTranslation";
@@ -163,12 +162,10 @@ export const Game = () =>
 		console.log("Game WS closed", e.code, e.reason);
 		if (!didOpenRef.current) {
 			console.warn("Game WS handshake failed, forcing logout");
-			forceLogout();
 			return;
 		}
 		if (e.code === 1008) {
 			console.warn("Unauthorized game socket, forcing logout");
-			forceLogout();
 			return;
 		}
 		wsRef.current = null;
@@ -192,7 +189,6 @@ export const Game = () =>
 			{
 				if (data.reason === "unauthorized") {
 					console.warn("WebSocket unauthorized, forcing logout");
-					forceLogout();
 					return;
 				}
 				console.error("Error from server: ", data.message);

@@ -5,7 +5,6 @@ import { useLocation } from "react-router-dom";
 import { Waiting } from "./Waiting";
 import { GameEnd } from "./GameEndInvite";
 import { wsUrl } from "../../../api/api.js";
-import { forceLogout } from "../../../api/forceLogout.js";
 import { VisualGame } from "./VisualGame";
 import { useNavigate } from "react-router-dom";
 import { getGameEndMessage, getWaitingMessage } from "./GameTranslation";
@@ -180,12 +179,10 @@ export const GameInvite = () =>
 		console.log("Game WS closed", e.code, e.reason);
 		if (!didOpenRef.current) {
 			console.warn("Game WS handshake failed, forcing logout");
-			forceLogout();
 			return;
 		}
 		if (e.code === 1008) {
 			console.warn("Unauthorized game socket, forcing logout");
-			forceLogout();
 			return;
 		}
 		wsRef.current = null;
@@ -211,7 +208,6 @@ export const GameInvite = () =>
 			{
 				if (data.reason === "unauthorized") {
 					console.warn("WebSocket unauthorized, forcing logout");
-					forceLogout();
 					return;
 				}
 				console.error("Error from server: ", data.message);
