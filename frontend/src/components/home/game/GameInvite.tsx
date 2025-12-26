@@ -11,7 +11,7 @@ import { getGameEndMessage, getWaitingMessage } from "./GameTranslation";
 import { useTranslation } from "react-i18next";
 
 
-export const GameInvite = () =>
+export const GameInvite = ({ gameEndData, setGameEndData }: { gameEndData: { message: string } | null; setGameEndData: (data: { message: string } | null) => void; }) =>
 {
     // I am using useRef instead of useState so things persist when components load again and things wont't rerender
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -25,7 +25,7 @@ export const GameInvite = () =>
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
 	const [waitingData, setWaitingData] = useState<{ message: string } | null>(null);
-	const [gameEndData, setGameEndData] = useState<{ message: string } | null>(null);
+	// const [gameEndData, setGameEndData] = useState<{ message: string } | null>(null);
 	const [screenIsPortrait, setScreenIsPortrait] = useState<boolean>(
 			window.matchMedia("(orientation: portrait)").matches
 		);
@@ -178,11 +178,11 @@ export const GameInvite = () =>
         ws.onclose = (e) => {
 		console.log("Game WS closed", e.code, e.reason);
 		if (!didOpenRef.current) {
-			console.warn("Game WS handshake failed, forcing logout");
+			console.warn("Game WS handshake failed");
 			return;
 		}
 		if (e.code === 1008) {
-			console.warn("Unauthorized game socket, forcing logout");
+			console.warn("Unauthorized game socket");
 			return;
 		}
 		wsRef.current = null;
@@ -203,11 +203,12 @@ export const GameInvite = () =>
 			{
 				console.log("Waiting in queue. Position: ", data.position);
 				setWaitingData({ message: getWaitingMessage("invite", invitee, t) });
+				setGameEndData(null);
 			}
 			else if (data.type === "error")
 			{
 				if (data.reason === "unauthorized") {
-					console.warn("WebSocket unauthorized, forcing logout");
+					console.warn("WebSocket unauthorized");
 					return;
 				}
 				console.error("Error from server: ", data.message);
@@ -223,6 +224,7 @@ export const GameInvite = () =>
 				console.log( data.message );
 				const message = getGameEndMessage(data, t)
 				setGameEndData({ message });
+				navigate("/home/play", { replace: true });
 			}
 			else if (data.type === "invite:expired") {
 				console.warn("Invite expired, leaving game");

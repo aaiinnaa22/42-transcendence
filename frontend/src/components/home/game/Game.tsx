@@ -161,11 +161,20 @@ export const Game = () =>
 		ws.onclose = (e) => {
 		console.log("Game WS closed", e.code, e.reason);
 		if (!didOpenRef.current) {
+<<<<<<< HEAD
 			console.warn("Game WS handshake failed, forcing logout");
+=======
+			console.warn("BBB Game WS handshake failed, forcing logout");
+			//forceLogout();
+>>>>>>> kickout
 			return;
 		}
 		if (e.code === 1008) {
 			console.warn("Unauthorized game socket, forcing logout");
+<<<<<<< HEAD
+=======
+			//forceLogout();
+>>>>>>> kickout
 			return;
 		}
 		wsRef.current = null;
@@ -189,6 +198,10 @@ export const Game = () =>
 			{
 				if (data.reason === "unauthorized") {
 					console.warn("WebSocket unauthorized, forcing logout");
+<<<<<<< HEAD
+=======
+					//forceLogout();
+>>>>>>> kickout
 					return;
 				}
 				console.error("Error from server: ", data.message);
