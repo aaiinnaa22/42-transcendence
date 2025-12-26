@@ -85,6 +85,7 @@
 		"online": "verkossa",
 		"offline": "poissa",
 		"header": "keskustele pelaajien kanssa",
+		"friendsOnly": "Ystävysty lähettääksesi kutsuja",
 		"invite": {
 			"received": "Sinut kutsuttiin peliin",
 			"sent": "Kutsuit hänet peliin",
@@ -92,6 +93,7 @@
 		},
 		"placeholder": {
 			"alert": "Et voi lähettää viestiä tälle käyttäjälle.",
+			"alertUnavailable": "Edellinen kutsu on edelleen aktiivinen. Yritä uudelleen hetken kuluttua.",
 			"textarea": "Keskustele {{username}} kanssa"
 		}
 	},
