@@ -206,6 +206,7 @@ export const GameInvite = () =>
 			{
 				console.log("Waiting in queue. Position: ", data.position);
 				setWaitingData({ message: getWaitingMessage("invite", invitee, t) });
+				setGameEndData(null);
 			}
 			else if (data.type === "error")
 			{
@@ -227,6 +228,7 @@ export const GameInvite = () =>
 				console.log( data.message );
 				const message = getGameEndMessage(data, t)
 				setGameEndData({ message });
+				navigate("/home/play", { replace: true });
 			}
 			else if (data.type === "invite:expired") {
 				console.warn("Invite expired, leaving game");

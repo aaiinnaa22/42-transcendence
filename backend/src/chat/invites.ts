@@ -47,3 +47,11 @@ export function createInvite( from: string, to: string )
 	sendInvitePayload( { from, to, startedAt, expiresAt } );
 	return true;
 }
+
+export function deleteInvite( from: string, to: string )
+{
+	console.log( "delete invite from game logic" );
+	const key = convoKey( from, to );
+	invites.delete( key );
+	sendInviteExpired( from, to );
+}

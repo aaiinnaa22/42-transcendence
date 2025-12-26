@@ -18,6 +18,7 @@ import type { WebSocket as WsWebSocket } from "ws";
 import { sendDM } from "../chat/directMessage.js";
 import { validateRequest } from "../shared/utility/validation.utility.js";
 import { pseudonym } from "../shared/utility/anonymize.utility..js";
+import { deleteInvite } from "../chat/invites.js";
 
 type UserId = string;
 type GameId = string;
@@ -1154,7 +1155,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					},
 					reason: data.reason
 				};
-
+				deleteInvite( data.winner.userId, data.loser.userId );
 				// Message the players
 				winnerConnection.socket.send( JSON.stringify( endStateMessage ) );
 				loserConnection.socket.send( JSON.stringify( endStateMessage ) );
