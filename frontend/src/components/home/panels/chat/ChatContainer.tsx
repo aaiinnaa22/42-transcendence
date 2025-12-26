@@ -444,6 +444,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				acceptAndJoinInvite(selectedUser.id, inviteId)
 				}
 				onProfileClick={setProfileUser}
+				inviteDisabled={isInviteDisabled}
 			/>
 			) : (
 			<Chat
