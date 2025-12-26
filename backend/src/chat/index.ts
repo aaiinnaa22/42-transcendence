@@ -49,9 +49,9 @@ export default async function chatComponent( server: FastifyInstance )
 					}
 
 					const data = parsed.data;
-					if (data.type === "dm" || data.type === "invite")
+					if ( data.type === "dm" || data.type === "invite" )
 					{
-						if (!data.to) return;
+						if ( !data.to ) return;
 
 						const blocked = await isBlocked( server, userId, data.to );
 						if ( blocked )
@@ -59,8 +59,8 @@ export default async function chatComponent( server: FastifyInstance )
 							socket.send( JSON.stringify( {
 								type: "error",
 								reason: "blocked"
-							}));
-							console.log("block detected");
+							} ) );
+							console.log( "block detected" );
 							return;
 						}
 					}
@@ -70,14 +70,18 @@ export default async function chatComponent( server: FastifyInstance )
 					}
 					if ( data.type === "invite" )
 					{
-						server.log.info( { user: pseudonym( userId ), to: pseudonym( data.to ) }, "message type: invite" );
+						server.log.info(
+							{ user: pseudonym( userId ), to: pseudonym( data.to ) },
+								 "message type: invite"
+						);
 						const created = createInvite( userId, data.to );
-						if (!created) {
-							socket.send(JSON.stringify({
+						if ( !created )
+						{
+							socket.send( JSON.stringify( {
 								type: "invite:rejected",
 								reason: "active",
 								retryAfterMs: 60_000
-							}));
+							} ) );
 						}
 					}
 				}
