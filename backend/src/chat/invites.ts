@@ -23,6 +23,7 @@ export function createInvite( from: string, to: string )
 	const existing = invites.get( key );
 	if ( existing && Date.now() < existing.expiresAt )
 	{
+		console.log( "invite aleady exists?" );
 		return false;
 	}
 

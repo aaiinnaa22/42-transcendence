@@ -12,7 +12,9 @@ type DiscussionProps = {
   onSendInvite: () => void;
   onAcceptInvite: (inviteId: number) => void;
   onProfileClick: (user: ChatUser) => void;
+  inviteDisabled: boolean;
 };
+
 
 export const Discussion = ({
   friend,
@@ -22,6 +24,7 @@ export const Discussion = ({
   onAcceptInvite,
   onSendInvite,
   onProfileClick,
+  inviteDisabled,
 }: DiscussionProps) => {
   const [message, setMessage] = useState("");
   const discussionEndRef = useRef<HTMLDivElement | null>(null);
@@ -44,11 +47,22 @@ export const Discussion = ({
     return () => clearInterval(id);
   }, []);
 
-  const hasActiveInvite = messages.some(m =>
+  const canInvite =
+    (friend.friendshipStatus === "accepted" &&
+      !friend.hasBlockedMe && !friend.isBlockedByMe);
+
+  const hasActiveInvite = inviteDisabled ||
+    messages.some(m =>
     m.type === "invite" &&
     m.invite?.status === "pending" &&
     m.invite.expiresAt > now
   );
+
+  const inviteLabel = !canInvite
+    ? t("chat.friendsOnly")
+    : hasActiveInvite
+      ? t("chat.pendingInvite")
+      : t("chat.inviteToGame", { username: friend.username });
 
   const sendMessage = () => {
     if (!message.trim()) return;
@@ -92,11 +106,13 @@ export const Discussion = ({
 
     	{/* Invite button */}
 		<div className="self-end p-2">
-			<button className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
-				disabled={hasActiveInvite} onClick={onSendInvite}>
-			<p className="text-xs text-left">{!hasActiveInvite
-				? t("chat.inviteToGame", { username: friend.username })
-				: t("chat.pendingInvite")}
+			<button 
+        className="px-3 flex flex-row items-center justify-between rounded-4xl gap-2 bg-transcendence-white border-2 cursor-pointer"
+				disabled={!canInvite || hasActiveInvite} 
+        onClick={onSendInvite}
+      >
+			<p className="text-xs text-left">
+        {inviteLabel}
 			</p>
 			<div className="!text-xl lg:!text-3xl material-symbols-outlined">
 			sports_esports</div>
@@ -142,7 +158,7 @@ export const Discussion = ({
               }
             >
               <p className="break-words text-transcendence-white">
-                {msg.text}
+                {t(`chat.invite.${invite.event}`)}
               </p>
 
               <div className="flex flex-row justify-center items-center border-2 border-transcendence-white rounded-lg p-1 gap-2">
@@ -186,7 +202,7 @@ export const Discussion = ({
               value={message}
               onChange={handleMessageInput}
               onKeyDown={handleKeyDown}
-              placeholder={t("chat.placeholder", { username: friend.username })}
+              placeholder={t("chat.placeholder.textarea", { username: friend.username })}
               rows={1}
               className="focus:outline-none w-full resize-none p-2"
               disabled={!friend.online}

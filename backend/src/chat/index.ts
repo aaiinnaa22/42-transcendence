@@ -25,6 +25,7 @@ export default async function chatComponent( server: FastifyInstance )
 				type: "me",
 				userId,
 			} ) );
+
 			// initial presence list
 			socket.send( JSON.stringify( {
 				type: "presence:list",
@@ -35,6 +36,7 @@ export default async function chatComponent( server: FastifyInstance )
 			{
 				try
 				{
+					// TODO: Validate the messages parsed from sockets
 					const raw = JSON.parse( message.toString() );
 					const parsed = ChatClientMessageSchema.safeParse( raw );
 					if ( !parsed.success )
@@ -47,28 +49,40 @@ export default async function chatComponent( server: FastifyInstance )
 					}
 
 					const data = parsed.data;
-					if ( data.type === "dm" )
+					if ( data.type === "dm" || data.type === "invite" )
 					{
-						const blocked = await isBlocked( server, userId, data.to );
+						if ( !data.to ) return;
 
+						const blocked = await isBlocked( server, userId, data.to );
 						if ( blocked )
 						{
 							socket.send( JSON.stringify( {
 								type: "error",
 								reason: "blocked"
 							} ) );
+							console.log( "block detected" );
 							return;
 						}
+					}
+					if ( data.type === "dm" )
+					{
 						sendDM( userId, data.to, data.message );
 					}
-
 					if ( data.type === "invite" )
 					{
-						server.log.info( {
-							user: pseudonym( userId ),
-							to: pseudonym( data.to )
-						}, "Game invite sent" );
-						createInvite( userId, data.to );
+						server.log.info(
+							{ user: pseudonym( userId ), to: pseudonym( data.to ) },
+								 "message type: invite"
+						);
+						const created = createInvite( userId, data.to );
+						if ( !created )
+						{
+							socket.send( JSON.stringify( {
+								type: "invite:rejected",
+								reason: "active",
+								retryAfterMs: 60_000
+							} ) );
+						}
 					}
 				}
 				catch

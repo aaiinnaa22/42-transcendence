@@ -11,13 +11,14 @@ import { useTranslation } from "react-i18next";
 
 export type Message = {
 	id: number;
- 	text: string;
+ 	text?: string;
 	sender: "me" | "friend";
 	type: "text" | "invite";
 	// invite-specific
 	invite?: {
 		startedAt: number;
 		expiresAt: number;
+		event: "received" | "sent" | "expired";
 		status: "pending" | "expired" | "joined";
   	};
 };
@@ -53,11 +54,16 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 	const myUserIdRef = useRef<string | null>(null);
  	const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
 	const [profileUser, setProfileUser] = useState<ChatUser | null>(null);
+	const [inviteDisabledUntil, setInviteDisabledUntil] = useState<number | null>(null);
+
 
   	const wsRef = useRef<WebSocket | null>(null);
 	const usersRef = useRef<ChatUser[]>([]);
 
 	const {t} = useTranslation();
+
+	const isInviteDisabled =
+	inviteDisabledUntil !== null && Date.now() < inviteDisabledUntil;
 
 	useEffect(() => {
 		fetchWithAuth( apiUrl('/chat/users') )
@@ -120,7 +126,6 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 			{
 				return;
 			}
-
 			// attempt to auth socket requests
 			if (data.type === "error" && data.reason === "unauthorized")
 			{
@@ -197,11 +202,11 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				const inviteMessage: Message = {
 					id: Date.now(),
 					sender: "friend",
-					text: t("chat.invite.received"),
 					type: "invite",
 					invite: {
 					startedAt: data.startedAt,
 					expiresAt: data.expiresAt,
+					event: "received",
 					status: "pending",
 					},
 				};
@@ -224,11 +229,11 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				const inviteMessage: Message = {
 					id: Date.now(),
 					sender: "me",
-					text: t("chat.invite.sent"),
 					type: "invite",
 					invite: {
 					startedAt: data.startedAt,
 					expiresAt: data.expiresAt,
+					event: "sent",
 					status: "pending",
 					},
 				};
@@ -284,9 +289,37 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 							status: "expired",
 						},
 					} as Message;
-
+					setInviteDisabledUntil(null);
 					return { ...prev, [otherUserId]: updated };
 				});
+			}
+
+			if (data.type === "invite:rejected") {
+				// disable invite button for 1 minute (or server-provided value)
+				const retryAfter =
+					typeof data.retryAfterMs === "number"
+						? data.retryAfterMs
+						: 60_000;
+			
+				setInviteDisabledUntil(Date.now() + retryAfter);
+				alert(t("chat.placeholder.alertUnavailable"));
+			
+				if (selectedUser) {
+					const systemMessage: Message = {
+						id: Date.now(),
+						text: "Chat invite unavailable. Try again later", // "TODO: translate
+						sender: "me",
+						type: "text",
+					};
+			
+					setMessagesByUser(prev => ({
+						...prev,
+						[selectedUser.id]: [
+							...(prev[selectedUser.id] ?? []),
+							systemMessage,
+						],
+					}));
+				}
 			}
 
 			if (data.type === "presence:list") {
@@ -377,6 +410,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 
 	const sendGameInvite = () => {
 		if (!selectedUser) return;
+		if (isInviteDisabled) return; 
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
 		wsRef.current.send(JSON.stringify({
@@ -410,6 +444,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				acceptAndJoinInvite(selectedUser.id, inviteId)
 				}
 				onProfileClick={setProfileUser}
+				inviteDisabled={isInviteDisabled}
 			/>
 			) : (
 			<Chat
@@ -440,6 +475,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				acceptAndJoinInvite(selectedUser.id, inviteId)
 				}
 				onProfileClick={setProfileUser}
+				inviteDisabled={isInviteDisabled}
 			/>
 			) : (
 			<Chat

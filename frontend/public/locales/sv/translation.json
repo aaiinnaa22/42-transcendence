@@ -85,6 +85,7 @@
 		"online": "online",
 		"offline": "offline",
 		"header": "chatta med spelare",
+		"friendsOnly": "Bli vän för att skicka inbjudningar",
 		"invite": {
 			"received": "Du blev inbjuden till ett spel",
 			"sent": "Du bjöd in dem till ett spel",
@@ -92,6 +93,7 @@
 		},
 		"placeholder": {
 			"alert": "Du kan inte skicka meddelanden till den här användaren.",
+			"alertUnavailable": "Föregående inbjudan är fortfarande aktiv. Försök igen om en minut.",
 			"textarea": "Chatta med {{username}}"
 		}
 	},
