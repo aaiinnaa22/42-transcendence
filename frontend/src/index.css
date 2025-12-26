@@ -40,7 +40,7 @@
 
 	@media (width >= 64rem /* Large screen*/) {
 		.leaderboard-grid {
-			grid-template-columns: 3rem minmax(0, 1fr) 4rem 3.5rem 3.5rem 3.5rem;
+			grid-template-columns: 3rem minmax(0, 1fr) 4rem 3.5rem 3.5rem 4rem;
 			border-radius: 0.5rem;
 		}
 	}
