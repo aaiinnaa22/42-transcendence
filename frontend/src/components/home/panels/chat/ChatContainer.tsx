@@ -300,18 +300,18 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 					typeof data.retryAfterMs === "number"
 						? data.retryAfterMs
 						: 60_000;
-			
+
 				setInviteDisabledUntil(Date.now() + retryAfter);
 				alert(t("chat.placeholder.alertUnavailable"));
-			
+
 				if (selectedUser) {
 					const systemMessage: Message = {
 						id: Date.now(),
-						text: "Chat invite unavailable. Try again later", // "TODO: translate
+						text: "Chat invite unavailable. Try again later",
 						sender: "me",
 						type: "text",
 					};
-			
+
 					setMessagesByUser(prev => ({
 						...prev,
 						[selectedUser.id]: [
@@ -410,7 +410,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 
 	const sendGameInvite = () => {
 		if (!selectedUser) return;
-		if (isInviteDisabled) return; 
+		if (isInviteDisabled) return;
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
 		wsRef.current.send(JSON.stringify({
