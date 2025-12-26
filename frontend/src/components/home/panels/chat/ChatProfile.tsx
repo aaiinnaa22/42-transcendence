@@ -1,5 +1,5 @@
 import type { ChatUser } from "./ChatContainer";
-import { useBefriendUser, useBlockUser, fetchUserFromBackend } from "../../../../BackendFetch";
+import { useBefriendUser, useBlockUser, fetchUserFromBackend, fetchMatchHistory } from "../../../../BackendFetch";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -13,6 +13,7 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 	const {unfriendUser, befriendUser} = useBefriendUser();
 	const {unblockUser, blockUser} = useBlockUser();
 	const [currentUser, setCurrentUser] = useState(user);
+	const [matchHistory, setMatchHistory] = useState<any[]>([]);
 
 	const {t} = useTranslation();
 
@@ -24,6 +25,10 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 			...freshUser,
 			online: prev.online,
 		}));
+
+		// Fetch match history for the current chat profile
+		const history = await fetchMatchHistory(currentUser.username);
+		if (history) setMatchHistory(history);
 	}
 
 	useEffect(() => {
@@ -54,12 +59,10 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 					arrow_back_ios_new
 				</button>
 			</div>
-			<div className="overflow-y-auto flex flex-col h-full justify-between gap-5
-				portrait:items-center portrait:px-[10%] portrait:gap-10
+			<div className="overflow-y-auto flex flex-col h-full justify-between gap-3
+				portrait:items-center portrait:px-[10%]
 				lg:portrait:items-start lg:portrait:px-5
-				landscape:grid grid-cols-[auto_auto] grid-rows-[20%_auto_15%] landscape:justify-center
-				lg:landscape:flex lg:landscape:justify-between
-				landscape:max-h-100 lg:landscape:max-h-none">
+				landscape:justify-center lg:landscape:justify-between">
 				<div className="flex flex-col items-center justify-center lg:gap-5 w-full flex-grow
 					landscape:contents lg:landscape:flex">
 					<div className="flex flex-col items-center justify-between w-full gap-2
@@ -79,14 +82,10 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 								+ (currentUser.online ? "bg-transcendence-green" : "bg-transcendence-red")}></span>
 						</div>
 					</div>
-					<img className="rounded-full object-cover border-2 w-full max-w-40 aspect-square
-						row-span-2 landscape:max-w-40 lg:landscape:max-w-40" src={currentUser.profile}></img>
+					<img className="rounded-full object-cover border-2 w-full max-w-36 aspect-square mb-2" src={currentUser.profile}></img>
 				</div>
-				<div className="grid grid-cols-[auto_auto] grid-rows-[auto_auto_auto] gap-5 w-full flex-grow
-					landscape:flex flex-row lg:landscape:grid
-					landscape:gap-3 lg:landscape:gap-5
-					landscape:mb-8 landscape:py-5 lg:landscape:mb-0 lg:landscape:py-0
-					landscape:max-h-40">
+				<div className="grid grid-cols-[auto_auto] grid-rows-[auto_auto_auto] gap-3 w-full flex-none
+					landscape:flex flex-row lg:landscape:grid landscape:gap-3 lg:landscape:gap-5">
 					<div className="col-span-2 w-full portrait:flex justify-center items-center
 						landscape:hidden lg:landscape:flex">
 						<h3 className="text-sm md:text-lg font-bold border-b-1 col-span-2 max-h-6
@@ -126,6 +125,43 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 						</h4>
 					</div>
 				</div>
+				{/* Match history section */}
+				{matchHistory.length > 0 && (
+					<div className="flex flex-col gap-2 w-full flex-none">
+						<h3 className="text-sm md:text-lg font-bold border-b pb-1">
+							{t("profile.history.recent")}
+						</h3>
+						<ul className="flex flex-col gap-2">
+							{matchHistory.map((match, idx) => {
+								const date = new Date(match.playedAt);
+								const timestamp = date.toLocaleDateString(undefined, {
+									month: "short",
+									day: "numeric"
+								});
+
+								return (
+								<li key={idx} className="flex flex-col gap-1 text-xs p-1 bg-transcendence-beige rounded">
+									<div className="flex justify-between items-start gap-2">
+										<span className="font-semibold break-words max-w-[65%]">
+											{match.result === "win"
+												? t("profile.history.win", { opponent: match.opponent })
+												: t("profile.history.loss", { opponent: match.opponent })}
+										</span>
+										<span className={match.result === "win" ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
+											{match.result === "win" ? "+" : ""}{match.eloChange}
+										</span>
+									</div>
+									<span className="text-xs text-gray-500">
+										{timestamp}
+									</span>
+								</li>
+								);
+							})}
+						</ul>
+					</div>
+				)}
+
+				{/* Settings section */}
 				<div className="flex flex-col gap-5 w-full flex-grow justify-center
 					portrait:items-center lg:portrait:items-start
 					portrait:text-center lg:portrait:text-left

@@ -121,6 +121,11 @@
 		"totalGames": "peliä pelattu",
 		"placeholder": {
 			"newUsername": "Uusi käyttäjänimi"
+		},
+		"history": {
+			"recent": "viimeisimmät ottelut",
+			"win": "Voitti {{opponent}} vastaan",
+			"loss": "Hävittyi {{opponent}} vastaan"
 		}
 	},
 	"error": {
