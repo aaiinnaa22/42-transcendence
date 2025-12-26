@@ -15,7 +15,7 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 	const [currentUser, setCurrentUser] = useState(user);
 	const [matchHistory, setMatchHistory] = useState<any[]>([]);
 
-	const {t} = useTranslation();
+	const { t, i18n } = useTranslation();
 
 	const refreshUser = async () => {
 		const freshUser = await fetchUserFromBackend(currentUser.username);
@@ -134,7 +134,8 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 						<ul className="flex flex-col gap-2">
 							{matchHistory.map((match, idx) => {
 								const date = new Date(match.playedAt);
-								const timestamp = date.toLocaleDateString(undefined, {
+								const locale = i18n.language ?? "en";
+								const timestamp = date.toLocaleDateString( locale, {
 									month: "short",
 									day: "numeric"
 								});
