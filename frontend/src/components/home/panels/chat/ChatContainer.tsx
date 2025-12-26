@@ -314,7 +314,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				if (selectedUser) {
 					const systemMessage: Message = {
 						id: Date.now(),
-						text: "Chat invite unavailable. Try again later", // "TODO: translate
+						text: "Chat invite unavailable. Try again later",
 						sender: "me",
 						type: "text",
 					};
