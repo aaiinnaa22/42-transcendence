@@ -13,6 +13,7 @@ import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
 import { ExitTopLeft } from '../components/home/utils/ExitTopLeft';
 import { ChatContainer } from '../components/home/panels/chat/ChatContainer';
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
+import NotFound from './NotFound';
 
 export const Home = () => {
 	const navigate = useNavigate();
@@ -35,9 +36,10 @@ export const Home = () => {
 				<Route path="play/tournament" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}>
 						<GameTournament/></ExitTopLeft>}/>
 				<Route path="stats" element={<PersonalStats/>}/>
-				<Route path="stats/leaderboard" element={<Leaderboard/>}/>
+				<Route path="leaderboard" element={<Leaderboard/>}/>
 				<Route path="profile" element={<Profile/>}/>
 				<Route path="play/invite" element={<GameInvite/> } />
+				<Route path="*" element={<NotFound />} />
 			</Routes>
 			<ChatContainer chatIsOpen={currentPanel === "chat"}/>
 			<PopUp isOpen={currentPanel === "menu"}>

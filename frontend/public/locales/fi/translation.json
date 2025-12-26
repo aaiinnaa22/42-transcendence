@@ -1,0 +1,221 @@
+{
+	"languages": {
+		"en": "English",
+		"fi": "Suomi",
+		"sv": "Svenska"
+	},
+	"welcome": {
+		"title": "PONG",
+		"button": {
+			"login": "KIRJAUDU",
+			"register": "REKISTERÖIDY"
+		},
+		"placeholder": {
+			"email": "sähköposti",
+			"username": "käyttäjänimi",
+			"password": "salasana"
+		},
+		"login": "Kirjaudu",
+		"register": "Rekisteröidy",
+		"or": "tai",
+		"submit": "LÄHETÄ"
+	},
+	"home": {
+		"button": {
+			"play": "PELAA"
+		},
+		"menu": "Valikko"
+	},
+	"settings": {
+		"language": "Kieli",
+		"avatar": "Profiilikuva",
+		"logout": "Kirjaudu ulos",
+		"deleteAccount": "Poista tili"
+	},
+	"twoFA": {
+		"enable": "Ota kaksivaiheinen tunnistautuminen käyttöön",
+		"disable": "Poista kaksivaiheinen tunnistautuminen käytöstä",
+		"scanToEnable": "Skannaa QR-koodi todennussovelluksella ja anna sen jälkeen koodi.",
+		"codeToDisable": "Anna koodi todennussovelluksestasi poistaaksesi 2FA:n käytöstä.",
+		"enterCode": "Anna 6-numeroinen koodi todennussovelluksestasi.",
+		"verifyMessage": "Vahvistetaan…",
+		"verifyToEnable": "Vahvista ja ota 2FA käyttöön",
+		"verifyToDisable": "Vahvista ja poista 2FA käytöstä",
+		"enableSuccess": "2FA otettu käyttöön onnistuneesti!",
+		"disableSuccess": "2FA poistettu käytöstä onnistuneesti!",
+		"modalClosing": "Ikkuna sulkeutuu {{countdown}} sekunnissa",
+		"login": "Kaksivaiheinen kirjautuminen",
+		"placeholder": "Syötä 6-numeroinen koodi",
+		"loginSuccess": "Kirjautuminen onnistui!",
+		"verifyAndLogin": "Vahvista & kirjaudu"
+	},
+	"leaderboard": {
+		"myStats": "Tilastoni",
+		"loading": "Ladataan tulostaulua...",
+		"retry": "Yritä uudelleen",
+		"yourRank": "Sijasi",
+		"yourUnranked": "Et ole sijoittunut. Pelaa lisää saadaksesi sijoituksen.",
+		"rank": "Sija",
+		"name": "Nimi",
+		"rating": "Arvo",
+		"ratio": "Suhde",
+		"wins": "Voitot",
+		"losses": "Tappiot",
+		"you": "Sinä",
+		"loadingMore": "Ladataan lisää pelaajia...",
+		"scrollMore": "Selaa nähdäksesi lisää",
+		"noPlayers": "Ei sijoitettuja pelaajia vielä",
+		"end": "Tulostaulun loppu"
+	},
+	"stats": {
+		"leaderboard": "Tulostaulu",
+		"wins": "voitot",
+		"losses": "tappiot",
+		"total": "Yhteensä olet pelannut {{amount}} peliä",
+		"rating": "ARVO"
+	},
+	"chat": {
+		"inviteToGame": "Kutsu {{username}} peliin",
+		"pendingInvite": "Sinulla on odottava pelikutsu",
+		"joinGame": "liity peliin",
+		"inviteExpired": "kutsu vanhentui",
+		"inviteAccepted": "kutsu hyväksytty",
+		"send": "lähetä",
+		"status": "tällä hetkellä {{status}}",
+		"online": "verkossa",
+		"offline": "poissa",
+		"header": "keskustele pelaajien kanssa",
+		"friendsOnly": "Ystävysty lähettääksesi kutsuja",
+		"invite": {
+			"received": "Sinut kutsuttiin peliin",
+			"sent": "Kutsuit hänet peliin",
+			"expired": "Pelikutsu vanhentui"
+		},
+		"placeholder": {
+			"alert": "Et voi lähettää viestiä tälle käyttäjälle.",
+			"alertUnavailable": "Edellinen kutsu on edelleen aktiivinen. Yritä uudelleen hetken kuluttua.",
+			"textarea": "Keskustele {{username}} kanssa"
+		}
+	},
+	"utils": {
+		"close": "sulje",
+		"loading": "Ladataan..."
+	},
+	"profile": {
+		"greeting": "Hei {{username}}!",
+		"defaultUsername": "Käyttäjä",
+		"cancel": "Peruuta",
+		"save": "Tallenna",
+		"userNotEmpty": "Käyttäjänimi ei voi olla tyhjä",
+		"updateFailed": "Päivitys epäonnistui",
+		"wins": "pelivoittoa",
+		"losses": "pelitappiota",
+		"rating": "ARVO: {{value}}",
+		"stats": "tilastot",
+		"settings": "asetukset",
+		"pending": "kaveripyyntö odottaa",
+		"unfriend": "poista kaveri",
+		"befriend": "lisää kaveriksi",
+		"unblock": "poista esto",
+		"block": "estä",
+		"editUsername": "Muokkaa käyttäjänimeä",
+		"promptUsername": "Anna uusi käyttäjänimi.",
+		"totalGames": "peliä pelattu",
+		"placeholder": {
+			"newUsername": "Uusi käyttäjänimi"
+		},
+		"history": {
+			"recent": "viimeisimmät ottelut",
+			"win": "Voitti {{opponent}} vastaan",
+			"loss": "Hävittyi {{opponent}} vastaan"
+		}
+	},
+	"error": {
+		"loginRetry": "Kirjautuminen epäonnistui. Yritä uudelleen.",
+		"registerRetry": "Rekisteröinti epäonnistui. Yritä uudelleen.",
+		"tryAgain": "Jokin meni pieleen. Yritä hetken päästä uudelleen.",
+		"logoutFailure": "Ulos kirjautuminen epäonnistui.",
+		"picUploadFailure": "Profiilikuvan tallennus epäonnistui",
+		"fetchUserInfo": "Käyttäjätietojen haku epäonnistui",
+		"twoFALoginInfo": "Syötä 6-numeroinen koodi todennussovelluksestasi.",
+		"QRLoadFailure": "QR-koodin lataus epäonnistui",
+		"invalidCodeFailure": "Virheellinen 2FA-koodi",
+		"accountDeletionFailure": "Tilin poisto epäonnistui"
+	},
+	"game": {
+		"button": {
+			"singleplayer": "pelaa yhdessä",
+			"multiplayer": "turnaus"
+		},
+		"description": {
+			"singleplayer": "pelaa yhdessä ystäväsi kanssa samalla näytöllä",
+			"multiplayer": "pelaa muiden kanssa ympäri maailmaa"
+		},
+		"choice": "Valitse pelimuoto",
+		"horizontal": "käännä laite vaakatasoon pelataksesi peliä!",
+		"aria": {
+			"playerOneUp": "Pelaaja 1 ylös",
+			"playerOneDown": "Pelaaja 1 alas",
+			"playerTwoUp": "Pelaaja 2 ylös",
+			"playerTwoDown": "Pelaaja 2 alas"
+		},
+		"state": {
+			"waiting": {
+				"tournament": "Odotetaan vastustajaa...",
+				"invite": "Odotetaan pelaajaa {{opponent}}..."
+			},
+			"end": {
+				"singleplayer": {
+					"win": "{{winner}} voitti!",
+					"inactivity": "Peli päättyi passiivisuuden vuoksi",
+					"disconnect": "Peli päättyi yhteyden katkaisun vuoksi"
+				},
+				"tournament": {
+					"win": "{{winner}} voitti!",
+					"inactivity": "{{loser}} hylkäsi pelin passiivisuuden vuoksi",
+					"disconnect": "{{loser}} katkaisi yhteyden"
+				},
+				"invite": {
+					"win": "{{winner}} voitti!",
+					"inactivity": "{{loser}} hylkäsi pelin passiivisuuden vuoksi",
+					"disconnect": "{{loser}} katkaisi yhteyden"
+				},
+				"unknown": "Peli päättyi",
+				"gameover": "Peli päättyi!"
+			}
+		},
+		"players": {
+			"left": "Vasen",
+			"right": "Oikea"
+		}
+	},
+	"navbar": {
+		"play": "peli",
+		"stats": "tilasto",
+		"leaderboard": "tulostaulu",
+		"profile": "profiili"
+	},
+	"friend": {
+		"requests": "kaveripyynnöt",
+		"noPending": "Sinulla ei ole odottavia kaveripyyntöjä",
+		"accept": "Hyväksy pyyntö",
+		"reject": "Hylkää pyyntö",
+		"cancel": "Peruuta pyyntö"
+	},
+	"account": {
+		"button": {
+			"cancel": "Peruuta",
+			"deleting": "Poistetaan…",
+			"deleteAccount": "Poista tili"
+		},
+		"deletion": {
+			"title": "Tilin poisto",
+			"warning": "Tämä toimenpide on pysyvä. Tilisi ja tietosi poistetaan."
+		}
+	},
+	"404": {
+		"notFound": "Sivua ei löytynyt",
+		"description": "Etsimääsi sivua ei ole olemassa tai se on siirretty.",
+		"toHome": "Takaisin etusivulle"
+	}
+}

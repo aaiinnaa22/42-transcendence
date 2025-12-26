@@ -7,7 +7,8 @@ import {
 	MAX_ELO_RANGE,
 	RANGE_INCREASE_INTERVAL,
 	INACTIVITY_TIMEOUT,
-	ELO_K_FACTOR
+	ELO_K_FACTOR,
+	MATCH_HISTORY_ENTRIES_MAX
 } from "./constants.js";
 import type { GameState } from "../schemas/game.states.schema.js";
 import type Player from "./player.js";
@@ -948,22 +949,21 @@ const gameComponent = async ( server: FastifyInstance ) =>
 									winner: winnerPlayer.points,
 									loser: loserPlayer.points
 								},
-								message: "Game ended"
+								reason: "win"
 							};
 						}
 						else
-
 						{
 							endStateMessage = {
 								type: "end",
 								mode: "singleplayer",
+								winner: "none",
+								loser: "none",
 								score: {
 									left: leftPlayer.points,
 									right: rightPlayer.points
 								},
-								message: data.reason === "inactivity"
-									? "Game ended due to inactivity"
-									: "Game ended due to disconnect"
+								reason: data.reason
 							};
 						}
 
@@ -989,6 +989,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 							const endStateMessage = {
 								type: "end",
 								mode: "tournament",
+								reason: "unknown",
 								message: "Game ended unexpectedly"
 							};
 							playerConnection.socket.send( JSON.stringify( endStateMessage ) );
@@ -1041,7 +1042,44 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						select: { eloRating: true }
 					} );
 
-					// TODO: Create a route for fetching avatars based on username
+					// Async function for storing the match history on the current game
+					const saveMatchHistory = async (
+						userId: string,
+						opponent: string,
+						result: "win" | "loss",
+						eloChange: number
+					) =>
+					{
+						const existing = await server.prisma.matchHistory.findMany( {
+							where: { userId },
+							orderBy: { playedAt: "desc" },
+							select: { id: true }
+						} );
+
+						if ( existing.length >= MATCH_HISTORY_ENTRIES_MAX )
+						{
+							await server.prisma.matchHistory.delete( {
+								where: { id: existing[existing.length - 1]!.id }
+							} );
+						}
+
+						await server.prisma.matchHistory.create( {
+							data: {
+								userId,
+								opponent,
+								result,
+								eloChange,
+								playedAt: new Date()
+							}
+						} );
+					};
+
+					// Save match history in database
+					await Promise.all( [
+						saveMatchHistory( data.winner.userId, loserConnection.userName, "win", eloChange ),
+						saveMatchHistory( data.loser.userId, winnerConnection.userName, "loss", eloChange )
+					] );
+
 					const endStateMessage = {
 						type: "end",
 						mode: "tournament",
@@ -1059,11 +1097,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 							winner: data.winner.points,
 							loser: data.loser.points
 						},
-						message: data.reason === "inactivity"
-							? `Inactive player ${loserConnection.userName} forfeited the game`
-							: data.reason === "disconnect"
-								? `Disconnected player ${loserConnection.userName} forfeited the game`
-								: `${winnerConnection.userName} won!`
+						reason: data.reason
 					};
 
 					// Message the players
@@ -1075,7 +1109,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					server.log.error( { game: gameId, error }, "Elo update failed" );
 				}
 			}
-
 			else if ( game.mode === GameMode.Invite )
 			{
 				if ( !data.winner || !data.loser )
@@ -1090,6 +1123,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 							const endStateMessage = {
 								type: "end",
 								mode: "invite",
+								reason: "unknown",
 								message: "Game ended unexpectedly"
 							};
 							playerConnection.socket.send( JSON.stringify( endStateMessage ) );
@@ -1114,11 +1148,11 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					mode: "invite",
 					winner: winnerConnection.userName,
 					loser: loserConnection.userName,
-					message: data.reason === "inactivity"
-						? `Inactive player ${loserConnection.userName} forfeited the game`
-						: data.reason === "disconnect"
-							? `Disconnected player ${loserConnection.userName} forfeited the game`
-							: `${winnerConnection.userName} won!`
+					score: {
+						winner: data.winner.points,
+						loser: data.winner.points
+					},
+					reason: data.reason
 				};
 
 				// Message the players

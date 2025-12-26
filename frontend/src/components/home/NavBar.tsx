@@ -1,5 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
-const navItems = ["play", "stats", "profile"] as const;
+const navItems = ["play", "stats", "leaderboard", "profile"] as const;
 
 type NavBarProps =
 {
@@ -11,11 +12,16 @@ export const NavBar = ({onTogglePanel, currentPanel} :NavBarProps) =>
 {
 	const navigate = useNavigate();
 	const location = useLocation();
+	const {t} = useTranslation();
+
 	const isActive = (path:string) => location.pathname.startsWith(`/home/${path}`);
+
 	return (
 		<div className="z-10 border-b-4 border-transcendence-black flex flex-row items-center justify-between h-18 lg:h-32 bg-transcendence-beige px-5 lg:px-10">
-			<button className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]"
-				onClick={() => navigate("/home/play")}>PONG</button>
+			<button	className="font-transcendence-one font-extrabold text-5xl text-transcendence-black tracking-[0.8rem]"
+					onClick={() => navigate("/home/play")}>
+					{t("welcome.title")}
+			</button>
 			<div className="hidden h-full lg:flex flex-row sm:gap-5 md:gap-10 lg:gap-20 2xl:gap-30 font-transcendence-two text-2xl">
 				{navItems.map((item) => {
 					return (
@@ -25,7 +31,7 @@ export const NavBar = ({onTogglePanel, currentPanel} :NavBarProps) =>
 							className={"mt-16 rounded-tl-xl rounded-tr-xl px-2 py-2 cursor-pointer border-2 "
 							+ (isActive(item) ? "bg-white border-b-0 border-black" : "hover:pt-3 border-transcendence-beige")}>
 							<h2 className="text-black font-normal text-center">
-								{item}
+								{t(`navbar.${item}`)}
 							</h2>
 						</button>
 					);

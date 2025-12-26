@@ -9,6 +9,7 @@ import {
 	UnauthorizedError
 } from "../shared/utility/error.utility.js";
 import { getAvatarUrl } from "../shared/utility/avatar.utility.js";
+import { MATCH_HISTORY_ENTRIES_MAX } from "../pong/constants.js";
 
 export default async function chatUsersComponent( server: FastifyInstance )
 {
@@ -106,61 +107,97 @@ export default async function chatUsersComponent( server: FastifyInstance )
 			const { userId } = req.user as { userId: string };
 
 			const users = await server.prisma.user.findMany( {
-				where: {
-					id: { not: userId }, // everyone except me
-			  },
+				where: { id: { not: userId } },
 				select: {
-					id: true, // remove id maybe?
-					username: true,
-					avatar: true,
-					avatarType: true,
-					playerStats: true,
-					friendships: {
-						where: { userId },
-						select: { status: true },
-					},
-					friendOf: {
-						where: { friendId: userId },
-						select: { status: true },
-					},
-					blockedUsers: {
+					id: true,
+				  	username: true,
+				  	avatar: true,
+				  	avatarType: true,
+				  	playerStats: true,
+				  	blockedUsers: {
 						where: { blockerId: userId },
 						select: { id: true },
-					},
-					blockedBy: {
+					  },
+				  	blockedBy: {
 						where: { blockedId: userId },
 						select: { id: true },
-					},
+				  	},
 				},
-				orderBy: { username: "asc" },
 			} );
 
-			return users.map( ( u: any ) =>
+
+			return await Promise.all( users.map( async ( u ) =>
 			{
-				const friendship =
-					u.friendships[0] ?? u.friendOf[0] ?? null;
+				  	const friendship = await server.prisma.friendship.findFirst( {
+					where: {
+						OR: [
+							{ userId, friendId: u.id },
+							{ userId: u.id, friendId: userId },
+						],
+					},
+					select: { status: true },
+				  	} );
 
-				const isFriend = friendship?.status === "accepted";
 				const friendshipStatus = friendship?.status ?? null;
+				const isFriend = friendshipStatus === "accepted";
 
-				const isBlockedByMe = u.blockedUsers.length > 0;
-				const hasBlockedMe = u.blockedBy.length > 0;
 				return {
 					id: u.id,
 					username: u.username ?? "(no name)",
 					profile: getAvatarUrl( u.avatar, u.avatarType ),
 					stats: u.playerStats ?? null,
-
 					isFriend,
 					friendshipStatus,
-					isBlockedByMe,
-					hasBlockedMe,
-				};
-			} );
+					isBlockedByMe: u.blockedUsers.length > 0,
+					hasBlockedMe: u.blockedBy.length > 0,
+				 	};
+			} ) );
 		}
 		catch ( error )
 		{
 			sendErrorReply( reply, error, "An error occurred in chat" );
 		}
 	} );
+
+	server.get(
+		"/chat/users/history/:username",
+		{ preHandler: authenticate },
+		async ( req: FastifyRequest, reply: FastifyReply ) =>
+		{
+			try
+			{
+				if ( !req.user )
+				{
+					throw UnauthorizedError();
+				}
+
+				const query = validateRequest( ChatUsersUsernameSchema , req.params );
+
+				const targetUser = await server.prisma.user.findUnique( {
+					where: { username: query.username },
+					select: { id: true }
+				} );
+
+				if ( !targetUser ) throw NotFoundError( "User not found" );
+
+				const history = await server.prisma.matchHistory.findMany( {
+					where: { userId: targetUser.id },
+					orderBy: { playedAt: "desc" },
+					take: MATCH_HISTORY_ENTRIES_MAX,
+					select: {
+						opponent: true,
+						result: true,
+						eloChange: true,
+						playedAt: true
+					}
+				} );
+
+				return history;
+			}
+			catch ( error )
+			{
+				sendErrorReply( reply, error, "Failed to fetch match history" );
+			}
+		}
+	);
 }

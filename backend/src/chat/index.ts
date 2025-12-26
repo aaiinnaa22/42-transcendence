@@ -7,6 +7,7 @@ import { isBlocked /* , blockUser, unblockUser */ } from "./blocking.js";
 import { authenticate } from "../shared/middleware/auth.middleware.js";
 import { pseudonym } from "../shared/utility/anonymize.utility..js";
 import { createInvite } from "./invites.js";
+import { ChatClientMessageSchema } from "../schemas/chat.schema.js";
 
 export default async function chatComponent( server: FastifyInstance )
 {
@@ -24,6 +25,7 @@ export default async function chatComponent( server: FastifyInstance )
 				type: "me",
 				userId,
 			} ) );
+
 			// initial presence list
 			socket.send( JSON.stringify( {
 				type: "presence:list",
@@ -35,30 +37,60 @@ export default async function chatComponent( server: FastifyInstance )
 				try
 				{
 					// TODO: Validate the messages parsed from sockets
-					const data = JSON.parse( message.toString() );
-					if ( data.type === "dm" )
+					const raw = JSON.parse( message.toString() );
+					const parsed = ChatClientMessageSchema.safeParse( raw );
+					if ( !parsed.success )
 					{
-						const blocked = await isBlocked( server, userId, data.to );
+						socket.send( JSON.stringify( {
+							type: "error",
+							message: "Invalid message format"
+						} ) );
+						return;
+					}
 
+					const data = parsed.data;
+					if ( data.type === "dm" || data.type === "invite" )
+					{
+						if ( !data.to ) return;
+
+						const blocked = await isBlocked( server, userId, data.to );
 						if ( blocked )
 						{
 							socket.send( JSON.stringify( {
 								type: "error",
 								reason: "blocked"
 							} ) );
+							console.log( "block detected" );
 							return;
 						}
+					}
+					if ( data.type === "dm" )
+					{
 						sendDM( userId, data.to, data.message );
 					}
-
 					if ( data.type === "invite" )
 					{
-						server.log.info( { user: pseudonym( userId ), to: pseudonym( data.to ) }, "Game invite sent" );
-						createInvite( userId, data.to );
+						server.log.info(
+							{ user: pseudonym( userId ), to: pseudonym( data.to ) },
+								 "message type: invite"
+						);
+						const created = createInvite( userId, data.to );
+						if ( !created )
+						{
+							socket.send( JSON.stringify( {
+								type: "invite:rejected",
+								reason: "active",
+								retryAfterMs: 60_000
+							} ) );
+						}
 					}
 				}
 				catch
 				{
+					socket.send( JSON.stringify( {
+						type: "error",
+						message: "Malformed message"
+					} ) );
 					return;
 				}
 			} );
@@ -66,7 +98,7 @@ export default async function chatComponent( server: FastifyInstance )
 			// 3. ON DISCONNECT
 			socket.on( "close", () =>
 			{
-				console.log( `User ${userId} disconnected.` );
+				server.log.info( { user: pseudonym( userId ) }, "User disconnected" );
 				removeUser( userId, socket );
 			} );
 		}

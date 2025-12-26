@@ -3,6 +3,9 @@ import { WIDTH, HEIGHT, BALL_SIZE, PADDLE_LEN, PADDLE_WIDTH } from './constants.
 import { wsUrl } from "../../../api/api.js";
 import { forceLogout } from "../../../api/forceLogout.js";
 import { VisualGame } from "./VisualGame";
+import { GameEnd } from "./GameEndInvite";
+import { getGameEndMessage } from "./GameTranslation";
+import { useTranslation } from "react-i18next";
 
 export const Game = () =>
 {
@@ -19,7 +22,10 @@ export const Game = () =>
 	);
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
+	const [gameEndData, setGameEndData] = useState<{ message: string } | null>(null);
 	const [isTouchScreen, setIsTouchScreen] = useState<boolean>(false);
+
+	const { t } = useTranslation();
 
 	//Touch screen button managers
 	const startHold = (key: string, id: number, dy: number) => {
@@ -192,18 +198,10 @@ export const Game = () =>
 				console.error("Error from server: ", data.message);
 				if (data.error) console.error("Validation errors: ", data.error);
 			}
-			else if (data.type === "inactivity")
-			{
-				console.log("Game ended due to inactivity.");
-				console.log("Winner is player " + data.winner);
-			}
 			else if (data.type === "end")
 			{
-				console.log( data.message );
-				if ( data.winner )
-				{
-					console.log( "The winner was the " + data.winner + " player with " + data.score.winner + " points!" );
-				}
+				const message = getGameEndMessage(data, t);
+				setGameEndData({ message });
 			}
 			/* ADD ADDITIONAL STATES HERE */
 		};
@@ -211,7 +209,7 @@ export const Game = () =>
         // Main game loop that keeps calling different update functions
         const gameLoop = () => {
             updateGame(); //register key presses and move players
-            drawGame(); // draws the game canvas TEST IF NEEDED BECAUSE THE GAME IS ALREADY DRAWN AFTER EACH MESSAGE
+            drawGame();
             animationFrameId = requestAnimationFrame(gameLoop); // syncs the game to the browser refress rate to make animation smooth
         };
         gameLoop();
@@ -245,12 +243,20 @@ export const Game = () =>
         };
     },[]);
 
-	return (<VisualGame
-		pointsRef={PointsRef}
-		pointsRef2={PointsRef2}
-		canvasRef={canvasRef}
-		screenIsPortrait={screenIsPortrait}
-		startHold={startHold}
-		stopHold={stopHold}
-		isTouchScreen={isTouchScreen}/>)
+	return (
+		<>
+		{gameEndData && <GameEnd message={gameEndData.message} />}
+		{!gameEndData && (
+			<VisualGame
+				pointsRef={PointsRef}
+				pointsRef2={PointsRef2}
+				canvasRef={canvasRef}
+				screenIsPortrait={screenIsPortrait}
+				startHold={startHold}
+				stopHold={stopHold}
+				isTouchScreen={isTouchScreen}
+			/>
+		)}
+		</>
+	);
 };

@@ -28,4 +28,7 @@ export const RATE_LIMIT_MS = 20;				// 20 ms
 export const INACTIVITY_TIMEOUT = 60000;		// 1 minute
 
 // Win conditions
-export const TOURNAMENT_WIN_CONDITION = 20;
+export const TOURNAMENT_WIN_CONDITION = 1;
+
+// How many history entries to store
+export const MATCH_HISTORY_ENTRIES_MAX = 5;

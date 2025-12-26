@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiUrl } from "../../../api/api";
 import { BaseModal } from "./BaseModal";
 import { fetchWithAuth } from "../../../api/fetchWithAuth";
+import { useTranslation } from "react-i18next";
 
 type TwoFAMode = "enable" | "disable";
 
@@ -20,6 +21,8 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
     const [verifying, setVerifying] = useState(false);
     const [success, setSuccess] = useState(false);
     const [countdown, setCountdown] = useState(5);
+
+	const { t } = useTranslation();
 
     // Reset when closed / reopen
     useEffect(() => {
@@ -81,7 +84,7 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
         e.preventDefault();
 
         if (!code.trim()) {
-            setError("Please enter the 6-digit code from your authenticator app.");
+            setError(t("twoFA.enterCode"));
             return;
         }
 
@@ -125,13 +128,13 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
     return (
         <BaseModal
             isOpen={isOpen}
-            title={mode === "enable" ? "Enable Two-Factor Authentication" : "Disable Two-Factor Authentication"}
+            title={mode === "enable" ? t("twoFA.enable") : t("twoFA.disable")}
             onClose={onClose}
         >
             <p className="text-xs text-transcendence-white/80">
                 {mode === "enable"
-                    ? "Scan the QR code with your authenticator app, then enter the code."
-                    : "Enter a code from your authenticator app to disable 2FA."}
+                    ? t("twoFA.scanToEnable")
+                    : t("twoFA.codeToDisable") }
             </p>
 
             {mode === "enable" && (
@@ -153,7 +156,7 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
                     type="text"
                     inputMode="numeric"
                     maxLength={6}
-                    placeholder="Enter 6-digit code"
+                    placeholder={t("twoFA.placeholder")}
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     className="border border-transcendence-beige bg-transparent rounded-lg px-3 py-2 text-sm tracking-widest text-center placeholder:text-xs"
@@ -169,18 +172,18 @@ export const TwoFAModal = ({ isOpen, mode, onClose, onStatusChange, }: TwoFAModa
                     className="bg-transcendence-beige text-transcendence-black rounded-xl py-2 text-sm font-semibold"
                 >
                     {verifying
-                        ? "Verifying…"
+                        ? t("twoFA.verifyMessage")
                         : mode === "enable"
-                            ? "Verify & Enable 2FA"
-                            : "Verify & Disable 2FA"}
+                            ? t("twoFA.verifyToEnable")
+                            : t("twoFA.verifyToDisable")}
                 </button>
 
                 {success && (
                     <div className="text-green-400 text-xs text-center">
                         {mode === "enable"
-                            ? "2FA enabled successfully!"
-                            : "2FA disabled successfully!"}
-                        {` Closing modal in ${countdown} second`}
+                            ? t("twoFA.enableSuccess")
+                            : t("twoFA.disableSuccess")}
+                        {t("twoFA.modalClosing", {countdown})}
                     </div>
                 )}
             </form>

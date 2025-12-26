@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { WIDTH, HEIGHT} from "./constants.js";
 
 type VisualGameProps =
@@ -19,12 +20,15 @@ const BUTTON_KEYS = {
 } as const;
 
 export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait, startHold, stopHold, isTouchScreen}: VisualGameProps) => {
+	const {t} = useTranslation();
 	return (
 		<div className="w-full h-[calc(100svh-4.5rem)] lg:h-[calc(100svh-8rem)] p-[2.5rem] xl:p-[8rem] portrait:p-[2.5rem]">
 		{screenIsPortrait && (
 			<div className="h-full w-full flex items-center justify-center">
 				<div className="bg-transcendence-red text-center p-8 rounded-xl">
-					<h2 className="text-transcendence-white font-bold font-transcendence-two">switch your device to horizontal mode to play the game!</h2>
+					<h2 className="text-transcendence-white font-bold font-transcendence-two">
+						{t("game.horizontal")}
+					</h2>
 				</div>
 			</div>)}
 		{!screenIsPortrait && (<div className="w-full h-full relative grid grid-cols-[1fr_auto_1fr] grid-rows-[auto]
@@ -37,7 +41,7 @@ export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait, 
 						onPointerUp={() => stopHold(BUTTON_KEYS.P1_UP)}
 						onPointerLeave={() => stopHold(BUTTON_KEYS.P1_UP)}
 						className="text-transcendence-white text-5xl flex items-center justify-center rounded-full active:scale-90 transition select-none"
-						aria-label="Player 1 Up">
+						aria-label={t("game.aria.playerOneUp")}>
 						<span className="material-symbols-outlined rotate-270">play_circle</span>
 					</button>
 					<button
@@ -45,7 +49,7 @@ export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait, 
 						onPointerUp={() => stopHold(BUTTON_KEYS.P1_DOWN)}
 						onPointerLeave={() => stopHold(BUTTON_KEYS.P1_DOWN)}
 						className="text-transcendence-white text-5xl flex items-center justify-center rounded-full active:scale-90 transition select-none"
-						aria-label="Player 1 Up">
+						aria-label={t("game.aria.playerOneDown")}>
 						<span className="material-symbols-outlined rotate-90">play_circle</span>
 					</button>
 				</span>
@@ -66,7 +70,7 @@ export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait, 
 						onPointerUp={() => stopHold(BUTTON_KEYS.P2_UP)}
 						onPointerLeave={() => stopHold(BUTTON_KEYS.P2_UP)}
 						className="text-transcendence-white text-5xl flex items-center justify-center rounded-full active:scale-90 transition select-none"
-						aria-label="Player 2 Up">
+						aria-label={t("game.aria.playerTwoUp")}>
 						<span className="material-symbols-outlined rotate-270">play_circle</span>
 					</button>
 					<button
@@ -74,7 +78,7 @@ export const VisualGame = ({pointsRef, pointsRef2, canvasRef, screenIsPortrait, 
 						onPointerUp={() => stopHold(BUTTON_KEYS.P2_DOWN)}
 						onPointerLeave={() => stopHold(BUTTON_KEYS.P2_DOWN)}
 						className=" text-transcendence-white text-5xl flex items-center justify-center rounded-full active:scale-90 transition select-none"
-						aria-label="Player 2 Up">
+						aria-label={t("game.aria.playerTwoDown")}>
 						<span className="material-symbols-outlined rotate-90">play_circle</span>
 					</button>
 				</span>

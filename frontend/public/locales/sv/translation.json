@@ -1,0 +1,221 @@
+{
+	"languages": {
+		"en": "English",
+		"fi": "Suomi",
+		"sv": "Svenska"
+	},
+	"welcome": {
+		"title": "PONG",
+		"button": {
+			"login": "LOGGA IN",
+			"register": "REGISTRERA DIG"
+		},
+		"placeholder": {
+			"email": "e-post",
+			"username": "användarnamn",
+			"password": "lösenord"
+		},
+		"login": "Logga in",
+		"register": "Registrera dig",
+		"or": "eller",
+		"submit": "SKICKA"
+	},
+	"home": {
+		"button": {
+			"play": "SPELA"
+		},
+		"menu": "Meny"
+	},
+	"settings": {
+		"language": "Språk",
+		"avatar": "Profilbild",
+		"logout": "Logga ut",
+		"deleteAccount": "Radera konto"
+	},
+	"twoFA": {
+		"enable": "Aktivera tvåfaktorsautentisering",
+		"disable": "Avaktivera tvåfaktorsautentisering",
+		"scanToEnable": "Skanna QR-koden med din autentiseringsapp och ange sedan koden.",
+		"codeToDisable": "Ange en kod från din autentiseringsapp för att avaktivera 2FA.",
+		"enterCode": "Ange den 6-siffriga koden från din autentiseringsapp.",
+		"verifyMessage": "Verifierar…",
+		"verifyToEnable": "Verifiera & Aktivera 2FA",
+		"verifyToDisable": "Verifiera & Avaktivera 2FA",
+		"enableSuccess": "2FA aktiverat!",
+		"disableSuccess": "2FA avaktiverat!",
+		"modalClosing": "Stänger modalen om {{countdown}} sekunder",
+		"login": "Tvåfaktorsinloggning",
+		"placeholder": "Ange 6-siffrig kod",
+		"loginSuccess": "Inloggningen lyckades!",
+		"verifyAndLogin": "Verifiera & logga in"
+	},
+	"leaderboard": {
+		"myStats": "Min statistik",
+		"loading": "Laddar topplistan...",
+		"retry": "Försök igen",
+		"yourRank": "Din placering är",
+		"yourUnranked": "Du är oplacerad. Spela mer för att få en placering.",
+		"rank": "Rank",
+		"name": "Namn",
+		"rating": "Rating",
+		"ratio": "Kvot",
+		"wins": "Vinster",
+		"losses": "Förluster",
+		"you": "Du",
+		"loadingMore": "Laddar fler spelare...",
+		"scrollMore": "Skrolla för mer",
+		"noPlayers": "Inga rankade spelare ännu",
+		"end": "Slutet av topplistan"
+	},
+	"stats": {
+		"leaderboard": "Topplista",
+		"wins": "vinster",
+		"losses": "förluster",
+		"total": "Du har totalt spelat {{amount}} spel",
+		"rating": "RATING"
+	},
+	"chat": {
+		"inviteToGame": "Bjud in {{username}} till ett spel",
+		"pendingInvite": "Du har en väntande spelinbjudan",
+		"joinGame": "anslut till spelet",
+		"inviteExpired": "inbjudan har gått ut",
+		"inviteAccepted": "inbjudan accepterad",
+		"send": "skicka",
+		"status": "{{status}}",
+		"online": "online",
+		"offline": "offline",
+		"header": "chatta med spelare",
+		"friendsOnly": "Bli vän för att skicka inbjudningar",
+		"invite": {
+			"received": "Du blev inbjuden till ett spel",
+			"sent": "Du bjöd in dem till ett spel",
+			"expired": "Spelinbjudan har upphört att gälla"
+		},
+		"placeholder": {
+			"alert": "Du kan inte skicka meddelanden till den här användaren.",
+			"alertUnavailable": "Föregående inbjudan är fortfarande aktiv. Försök igen om en minut.",
+			"textarea": "Chatta med {{username}}"
+		}
+	},
+	"utils": {
+		"close": "stäng",
+		"loading": "Laddar..."
+	},
+	"profile": {
+		"greeting": "Hej {{username}}!",
+		"defaultUsername": "Användare",
+		"cancel": "Avbryt",
+		"save": "Spara",
+		"userNotEmpty": "Användarnamn får inte vara tomt",
+		"updateFailed": "Uppdatering misslyckades",
+		"wins": "vunna spel",
+		"losses": "förlorade spel",
+		"rating": "RATING: {{value}}",
+		"stats": "statistik",
+		"settings": "inställningar",
+		"pending": "vänförfrågan väntar",
+		"unfriend": "ta bort vän",
+		"befriend": "lägg till vän",
+		"unblock": "avblockera",
+		"block": "blockera",
+		"editUsername": "Redigera användarnamn",
+		"promptUsername": "Ange ett nytt användarnamn.",
+		"totalGames": "spelade matcher",
+		"placeholder": {
+			"newUsername": "Nytt användarnamn"
+		},
+		"history": {
+			"recent": "senaste matcher",
+			"win": "Vann mot {{opponent}}",
+			"loss": "Förlorade mot {{opponent}}"
+		}
+	},
+	"error": {
+		"loginRetry": "Inloggning misslyckades. Försök igen.",
+		"registerRetry": "Registrering misslyckades. Försök igen.",
+		"tryAgain": "Något gick fel. Försök igen senare.",
+		"logoutFailure": "Utloggning misslyckades.",
+		"picUploadFailure": "Misslyckades att spara profilbild",
+		"fetchUserInfo": "Misslyckades att hämta användarinfo",
+		"twoFALoginInfo": "Ange den 6-siffriga koden från din autentiseringsapp.",
+		"QRLoadFailure": "Kunde inte ladda QR-kod",
+		"invalidCodeFailure": "Ogiltig 2FA-kod",
+		"accountDeletionFailure": "Borttagning av konto misslyckades"
+	},
+	"game": {
+		"button": {
+			"singleplayer": "spela tillsammans",
+			"multiplayer": "turnering"
+		},
+		"description": {
+			"singleplayer": "spela tillsammans med din vän på samma skärm",
+			"multiplayer": "spela med andra"
+		},
+		"choice": "Välj spelläge",
+		"horizontal": "vänd din enhet till horisontellt läge för att spela spelet!",
+		"aria": {
+			"playerOneUp": "Spelare 1 Upp",
+			"playerOneDown": "Spelare 1 Ner",
+			"playerTwoUp": "Spelare 2 Upp",
+			"playerTwoDown": "Spelare 2 Ner"
+		},
+		"state": {
+			"waiting": {
+				"tournament": "Väntar på motståndare...",
+				"invite": "Väntar på {{opponent}}..."
+			},
+			"end": {
+				"singleplayer": {
+					"win": "{{winner}} vann!",
+					"inactivity": "Spelet avslutades på grund av inaktivitet",
+					"disconnect": "Spelet avslutades på grund av frånkoppling"
+				},
+				"tournament": {
+					"win": "{{winner}} vann!",
+					"inactivity": "{{loser}} förlorade på grund av inaktivitet",
+					"disconnect": "{{loser}} kopplade från"
+				},
+				"invite": {
+					"win": "{{winner}} vann!",
+					"inactivity": "{{loser}} förlorade på grund av inaktivitet",
+					"disconnect": "{{loser}} kopplade från"
+				},
+				"unknown": "Spelet avslutades",
+				"gameover": "Spelet är slut!"
+			}
+		},
+		"players": {
+			"left": "Vänster",
+			"right": "Höger"
+		}
+	},
+	"navbar": {
+		"play": "spela",
+		"stats": "statistik",
+		"leaderboard": "topplista",
+		"profile": "profil"
+	},
+	"friend": {
+		"requests": "vänförfrågningar",
+		"noPending": "Du har inga väntande vänförfrågningar",
+		"accept": "Acceptera förfrågan",
+		"reject": "Avvisa förfrågan",
+		"cancel": "Avbryt förfrågan"
+	},
+	"account": {
+		"button": {
+			"cancel": "Avbryt",
+			"deleting": "Tar bort…",
+			"deleteAccount": "Radera konto"
+		},
+		"deletion": {
+			"title": "Radera konto",
+			"warning": "Denna åtgärd är permanent. Ditt konto och data kommer att raderas."
+		}
+	},
+	"404": {
+		"notFound": "Sidan hittades inte",
+		"description": "Sidan du söker finns inte eller har flyttats.",
+		"toHome": "Tillbaka till startsidan"
+	}
+}

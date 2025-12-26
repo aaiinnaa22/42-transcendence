@@ -3,6 +3,7 @@ import { BaseModal } from "./BaseModal";
 import { forceLogout } from "../../../api/forceLogout";
 import { fetchWithAuth } from "../../../api/fetchWithAuth";
 import { apiUrl } from "../../../api/api";
+import { useTranslation } from "react-i18next";
 
 type DeleteAccountModalProps = {
   isOpen: boolean;
@@ -12,6 +13,8 @@ type DeleteAccountModalProps = {
 export const DeleteAccountModal = ({ isOpen, onClose }: DeleteAccountModalProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const {t} = useTranslation();
 
   if (!isOpen) return null;
 
@@ -28,24 +31,14 @@ export const DeleteAccountModal = ({ isOpen, onClose }: DeleteAccountModalProps)
       	  	keepalive: true,
       	});
 
-  	    let message = "Account deletion failed";
   	    if (!res.ok) {
-  	    	try
-			{
-  	    	  	const data = await res.json();
-  	    	  	if (data?.error) message = data.error;
-  	    	}
-			catch
-			{
-				// Do nothing
-			}
-  	    	throw new Error(message);
+  	    	throw new Error(t("error.accountDeletionFailure"));
   	    }
 
  	     // Ensure httpOnly auth cookies are cleared server-side and redirect
  	     await forceLogout();
  	   } catch (err: unknown) {
- 	     	const msg = err instanceof Error ? err.message : "Something went wrong. Please try again later.";
+ 	     	const msg = err instanceof Error ? err.message : t("error.tryAgain");
  	     	setError(msg);
  	     	setLoading(false);
  	   }
@@ -54,10 +47,10 @@ export const DeleteAccountModal = ({ isOpen, onClose }: DeleteAccountModalProps)
   return (
     	<BaseModal
 			isOpen={isOpen}
-			title="Delete Account"
+			title={t("account.deletion.title")}
 			onClose={onClose}>
     		<p className="text-xs text-transcendence-white/80">
-    	    	This action is permanent. Your account and data will be deleted.
+    	    	{t("account.deletion.warning")}
     	  	</p>
 
     	  	{error && <div className="text-red-500 text-xs mt-2">{error}</div>}
@@ -68,7 +61,7 @@ export const DeleteAccountModal = ({ isOpen, onClose }: DeleteAccountModalProps)
     	    	  disabled={loading}
     	    	  className="bg-transcendence-red text-transcendence-white rounded-xl py-2 text-sm font-semibold disabled:opacity-60"
     	    	>
-    	    	  	{loading ? "Deleting…" : "Delete account"}
+    	    	  	{loading ? t("account.button.deleting") : t("account.button.deleteAccount")}
     	    	</button>
     	    	<button
     	    	  	type="button"
@@ -76,7 +69,7 @@ export const DeleteAccountModal = ({ isOpen, onClose }: DeleteAccountModalProps)
     	    	  	disabled={loading}
     	    	  	className="border border-transcendence-beige text-transcendence-white rounded-xl py-2 text-sm"
     	    	>
-    	      		Cancel
+    	      		{t("account.button.cancel")}
     	    	</button>
     	  	</form>
     	</BaseModal>
