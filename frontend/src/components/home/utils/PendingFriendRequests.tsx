@@ -23,19 +23,19 @@ export const PendingFriendRequests = () =>
 	};
 
 	const handleRejectClick = async (fromUserId: string) => {
-		const ok = await rejectFriendRequest(fromUserId); //fromUserId
-		if (ok)
-			await getPendingRequests();
+		await rejectFriendRequest(fromUserId); //fromUserId
+		await getPendingRequests();
 	}
 
 	const handleAcceptClick = async (fromUserId: string) => {
-		const ok = await acceptFriendRequest(fromUserId); //fromUserId
-		if (ok)
-			await getPendingRequests();
+		await acceptFriendRequest(fromUserId);
+		await getPendingRequests();
 	}
 
 	useEffect(() => {
 		getPendingRequests();
+		const fetchPendingRequestsInterval = setInterval(getPendingRequests, 15000);
+		return () => clearInterval(fetchPendingRequestsInterval); {/*fetch list every 15 sec*/}
 	}, []);
 
 	return (
