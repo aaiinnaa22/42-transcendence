@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../api/api";
 import { useTranslation } from "react-i18next";
+import { parseJsonSafely } from "../../utils/parseJsonSafely";
 
 export const SignUp = () => {
 	const [email, setEmail] = useState("");
@@ -26,7 +27,8 @@ export const SignUp = () => {
 				},
 				body: JSON.stringify({email, password, username,}),
 			});
-			const data = await response.json();
+
+			const data = await parseJsonSafely(response);
 			if (!response.ok || data.error)
 			{
 				if ( response.status === 409 && data.message === "Already logged in" )
