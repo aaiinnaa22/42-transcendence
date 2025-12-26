@@ -31,7 +31,7 @@ model User {
   // Friends relationships
   friendships     Friendship[] @relation("UserFriendships")
   friendOf        Friendship[] @relation("FriendFriendships")
-  
+
   // 2FA
   twoFAEnabled    Boolean    @default(false)
   twoFASecret     String?    // null until user activates 2FA
@@ -40,12 +40,15 @@ model User {
   blockedUsers Block[] @relation("BlockerRelation")
   blockedBy    Block[] @relation("BlockedRelation")
 
-  // Game invites  
+  // Game invites
   invitesSent     GameInvite[] @relation("InvitesSent")
   invitesReceived GameInvite[] @relation("InvitesReceived")
 
   // Tournament notifications
   notifications Notification[]
+
+  // Match history
+  matchHistory  MatchHistory[]
 }
 
 // Authentication providers table (Google, GitHub, Facebook, etc)
@@ -147,4 +150,16 @@ enum NotificationType {
   MATCH
   SYSTEM
   CHAT
+}
+
+model MatchHistory {
+  id        String    @id @default(uuid())
+  userId    String
+
+  opponent  String
+  result    String  // "win" or "loss"
+  eloChange Int
+  playedAt  DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

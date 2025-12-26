@@ -121,6 +121,11 @@
 		"totalGames": "spelade matcher",
 		"placeholder": {
 			"newUsername": "Nytt användarnamn"
+		},
+		"history": {
+			"recent": "senaste matcher",
+			"win": "Vann mot {{opponent}}",
+			"loss": "Förlorade mot {{opponent}}"
 		}
 	},
 	"error": {

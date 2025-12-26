@@ -177,3 +177,18 @@ export function useAcceptFriendRequest() {
 		rejectFriendRequest
 	};
 }
+
+export async function fetchMatchHistory(username: string)
+{
+	try {
+		const response = await fetchWithAuth( apiUrl(`/chat/users/history/${username}`), {
+			method: "GET",
+			credentials: "include",
+		});
+		const data = await response.json();
+		if (!response.ok || data.error ) return null;
+		return data;
+	} catch {
+		return null;
+	}
+}

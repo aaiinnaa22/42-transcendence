@@ -7,7 +7,8 @@ import {
 	MAX_ELO_RANGE,
 	RANGE_INCREASE_INTERVAL,
 	INACTIVITY_TIMEOUT,
-	ELO_K_FACTOR
+	ELO_K_FACTOR,
+	MATCH_HISTORY_ENTRIES_MAX
 } from "./constants.js";
 import type { GameState } from "../schemas/game.states.schema.js";
 import type Player from "./player.js";
@@ -1040,6 +1041,44 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						},
 						select: { eloRating: true }
 					} );
+
+					// Async function for storing the match history on the current game
+					const saveMatchHistory = async (
+						userId: string,
+						opponent: string,
+						result: "win" | "loss",
+						eloChange: number
+					) =>
+					{
+						const existing = await server.prisma.matchHistory.findMany( {
+							where: { userId },
+							orderBy: { playedAt: "desc" },
+							select: { id: true }
+						} );
+
+						if ( existing.length >= MATCH_HISTORY_ENTRIES_MAX )
+						{
+							await server.prisma.matchHistory.delete( {
+								where: { id: existing[existing.length - 1]!.id }
+							} );
+						}
+
+						await server.prisma.matchHistory.create( {
+							data: {
+								userId,
+								opponent,
+								result,
+								eloChange,
+								playedAt: new Date()
+							}
+						} );
+					};
+
+					// Save match history in database
+					await Promise.all( [
+						saveMatchHistory( data.winner.userId, loserConnection.userName, "win", eloChange ),
+						saveMatchHistory( data.loser.userId, winnerConnection.userName, "loss", eloChange )
+					] );
 
 					const endStateMessage = {
 						type: "end",
