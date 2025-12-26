@@ -18,6 +18,7 @@ import NotFound from './NotFound';
 
 export const Home = () => {
 	const navigate = useNavigate();
+	const [gameEndData, setGameEndData] = useState<{ message: string } | null>(null);
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "chat" | null>(null);
 
 	const togglePanel = (panel: "chat" | "menu") => {
@@ -29,7 +30,7 @@ export const Home = () => {
 			<NavBar currentPanel={currentPanel} onTogglePanel={togglePanel}/>
 			<Routes>
 				<Route index element={<Navigate to="play" replace/>}/>
-				<Route path="play" element={<PlayButton/>}/>
+				<Route path="play" element={<PlayButton gameEndData={gameEndData} setGameEndData={setGameEndData}/>}/>
 				<Route path="play/choose" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}>
 					<ChooseGameMode/></ExitTopLeft>}/>
 				<Route path="play/single" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}>
@@ -39,7 +40,7 @@ export const Home = () => {
 				<Route path="stats" element={<PersonalStats/>}/>
 				<Route path="leaderboard" element={<Leaderboard/>}/>
 				<Route path="profile" element={<Profile/>}/>
-				<Route path="play/invite" element={<GameInvite/> } />
+				<Route path="play/invite" element={<GameInvite gameEndData={gameEndData} setGameEndData={setGameEndData} /> } />
 				<Route path="*" element={<NotFound />} />
 				<Route path="end" element={<GameEnd/>}/>
 			</Routes>

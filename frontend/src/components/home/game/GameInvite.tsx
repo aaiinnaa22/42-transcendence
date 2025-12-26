@@ -12,7 +12,7 @@ import { getGameEndMessage, getWaitingMessage } from "./GameTranslation";
 import { useTranslation } from "react-i18next";
 
 
-export const GameInvite = () =>
+export const GameInvite = ({ gameEndData, setGameEndData }: { gameEndData: { message: string } | null; setGameEndData: (data: { message: string } | null) => void; }) =>
 {
     // I am using useRef instead of useState so things persist when components load again and things wont't rerender
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -26,7 +26,7 @@ export const GameInvite = () =>
 	const holdIntervals = useRef<Record<string, number | null>>({});
 	const didOpenRef = useRef(false);
 	const [waitingData, setWaitingData] = useState<{ message: string } | null>(null);
-	const [gameEndData, setGameEndData] = useState<{ message: string } | null>(null);
+	// const [gameEndData, setGameEndData] = useState<{ message: string } | null>(null);
 	const [screenIsPortrait, setScreenIsPortrait] = useState<boolean>(
 			window.matchMedia("(orientation: portrait)").matches
 		);
