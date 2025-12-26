@@ -17,12 +17,19 @@ export const ChatInviteMessageSchema = z.object( {
 	to: idField
 } );
 
+export const ChatInviteJoinedSchema = z.object( {
+	type: z.literal( "invite:joined" ),
+	to: idField
+} );
+
 export const ChatClientMessageSchema = z.discriminatedUnion( "type", [
 	ChatDirectMessageSchema,
-	ChatInviteMessageSchema
+	ChatInviteMessageSchema,
+	ChatInviteJoinedSchema,
 ] );
 
 export type ChatUsersUsernameQuery = z.infer<typeof ChatUsersUsernameSchema>;
 export type ChatDirectMessageInput = z.infer<typeof ChatDirectMessageSchema>;
 export type ChatInviteMessageInput = z.infer<typeof ChatInviteMessageSchema>;
 export type ChatClientessageInput = z.infer<typeof ChatClientMessageSchema>;
+export type ChatInviteJoinedInput = z.infer<typeof ChatInviteJoinedSchema>;
