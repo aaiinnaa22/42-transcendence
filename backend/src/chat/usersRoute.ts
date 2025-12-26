@@ -9,6 +9,7 @@ import {
 	UnauthorizedError
 } from "../shared/utility/error.utility.js";
 import { getAvatarUrl } from "../shared/utility/avatar.utility.js";
+import { MATCH_HISTORY_ENTRIES_MAX } from "../pong/constants.js";
 
 export default async function chatUsersComponent( server: FastifyInstance )
 {
@@ -157,5 +158,47 @@ export default async function chatUsersComponent( server: FastifyInstance )
 		{
 			sendErrorReply( reply, error, "An error occurred in chat" );
 		}
-	});
+	} );
+
+	server.get(
+		"/chat/users/history/:username",
+		{ preHandler: authenticate },
+		async ( req: FastifyRequest, reply: FastifyReply ) =>
+		{
+			try
+			{
+				if ( !req.user )
+				{
+					throw UnauthorizedError();
+				}
+
+				const query = validateRequest( ChatUsersUsernameSchema , req.params );
+
+				const targetUser = await server.prisma.user.findUnique( {
+					where: { username: query.username },
+					select: { id: true }
+				} );
+
+				if ( !targetUser ) throw NotFoundError( "User not found" );
+
+				const history = await server.prisma.matchHistory.findMany( {
+					where: { userId: targetUser.id },
+					orderBy: { playedAt: "desc" },
+					take: MATCH_HISTORY_ENTRIES_MAX,
+					select: {
+						opponent: true,
+						result: true,
+						eloChange: true,
+						playedAt: true
+					}
+				} );
+
+				return history;
+			}
+			catch ( error )
+			{
+				sendErrorReply( reply, error, "Failed to fetch match history" );
+			}
+		}
+	);
 }

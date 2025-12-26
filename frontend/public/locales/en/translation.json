@@ -122,6 +122,11 @@
 		"totalGames": "games played in total",
 		"placeholder": {
 			"newUsername": "New username"
+		},
+		"history": {
+			"recent": "recent matches",
+			"win": "Won against {{opponent}}",
+			"loss": "Lost against {{opponent}}"
 		}
 	},
 	"error": {

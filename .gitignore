@@ -25,7 +25,7 @@ coverage
 *.sw?
 
 # Development database
-backend/prisma/migrations
+!backend/prisma/migrations
 backend/prisma/dev.db
 backend/prisma/.seeded
 
