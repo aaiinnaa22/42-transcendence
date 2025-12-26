@@ -93,7 +93,7 @@
 		},
 		"placeholder": {
 			"alert": "You cannot message this user.",
-			"alertUnavailable": "Previous invite is still active. Try again a minute.",
+			"alertUnavailable": "Previous invite is still active. Try again in a minute.",
 			"textarea": "Chat with {{username}}"
 		}
 	},
