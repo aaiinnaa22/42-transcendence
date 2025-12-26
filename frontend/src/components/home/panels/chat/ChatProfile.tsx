@@ -62,7 +62,9 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 			<div className="overflow-y-auto flex flex-col h-full justify-between gap-3
 				portrait:items-center portrait:px-[10%]
 				lg:portrait:items-start lg:portrait:px-5
-				landscape:justify-center lg:landscape:justify-between">
+				landscape:grid grid-cols-[auto_auto] grid-rows-[20%_auto_15%] landscape:justify-center
+				lg:landscape:flex lg:landscape:justify-between
+				landscape:max-h-100 lg:landscape:max-h-none">
 				<div className="flex flex-col items-center justify-center lg:gap-5 w-full flex-grow
 					landscape:contents lg:landscape:flex">
 					<div className="flex flex-col items-center justify-between w-full gap-2
@@ -82,10 +84,14 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 								+ (currentUser.online ? "bg-transcendence-green" : "bg-transcendence-red")}></span>
 						</div>
 					</div>
-					<img className="rounded-full object-cover border-2 w-full max-w-36 aspect-square mb-2" src={currentUser.profile}></img>
+					<img className="rounded-full object-cover border-2 w-full max-w-36 aspect-square mb-2 row-span-2 landscape:max-w-38 lg:landscape:max-w-38" src={currentUser.profile}></img>
 				</div>
-				<div className="grid grid-cols-[auto_auto] grid-rows-[auto_auto_auto] gap-3 w-full flex-none
-					landscape:flex flex-row lg:landscape:grid landscape:gap-3 lg:landscape:gap-5">
+				{/* Stats section - keep margin-bottom at 10 for lg:landscape otherwise overlap occurrs */}
+				<div className="grid grid-cols-[auto_auto] grid-rows-[auto_auto_auto] gap-3 w-full flex-grow
+					landscape:flex flex-row lg:landscape:grid
+					landscape:gap-3 lg:landscape:gap-5
+					landscape:mb-2 landscape:py-0 landscape:max-h-38
+					lg:landscape:mb-10 lg:landscape:py-0">
 					<div className="col-span-2 w-full portrait:flex justify-center items-center
 						landscape:hidden lg:landscape:flex">
 						<h3 className="text-sm md:text-lg font-bold border-b-1 col-span-2 max-h-6
@@ -127,7 +133,7 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 				</div>
 				{/* Match history section */}
 				{matchHistory.length > 0 && (
-					<div className="flex flex-col gap-2 w-full flex-none">
+					<div className="flex flex-col gap-2 w-full">
 						<h3 className="text-sm md:text-lg font-bold border-b pb-1">
 							{t("profile.history.recent")}
 						</h3>
