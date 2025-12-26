@@ -69,7 +69,16 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		const fetchUsers = () => {
 		fetchWithAuth( apiUrl('/chat/users') )
 			.then(res => res.json())
-			.then(setUsers)
+			.then((fetchedUsers: ChatUser[]) => {
+				setUsers(prev =>
+					fetchedUsers.map(u => ({
+					...u,
+					...(prev.find(p => p.id === u.id)?.lastMessage && {
+						lastMessage: prev.find(p => p.id === u.id)!.lastMessage,
+					}),
+					}))
+				);
+			})
 			.catch(err => console.error("Failed to load users", err));
 		};
 
