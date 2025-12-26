@@ -11,7 +11,7 @@
 # make reb-logs - force rebuild of all serbives + logs
 # make reb-logs-backend - force rebuild backend (no cache) + logs
 
-COMPOSE_FILE=docker-compose.dev.yml
+COMPOSE_FILE=docker-compose.prod.yml
 
 SERVICES = backend frontend
 
