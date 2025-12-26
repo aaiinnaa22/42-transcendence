@@ -3,7 +3,7 @@ import { Chat } from "./Chat";
 import { Discussion } from "./Discussion";
 import { apiUrl, wsUrl } from "../../../../api/api";
 import { ChatProfile } from "./ChatProfile";
-import { forceLogout } from "../../../../api/forceLogout";
+//import { forceLogout } from "../../../../api/forceLogout";
 import { fetchWithAuth } from "../../../../api/fetchWithAuth";
 import { SideTab } from "../../utils/SideTab";
 import { PopUp } from "../../utils/PopUp";
@@ -130,7 +130,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 			if (data.type === "error" && data.reason === "unauthorized")
 			{
 				console.warn("WebSocket unauthorized, forcing logout");
-				forceLogout();
+				//forceLogout();
 				return;
 			}
 
@@ -347,7 +347,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		ws.onclose = e => {
 			console.log("Chat WS disconnected");
 			if (e.code === 1008)
-				forceLogout();
+				//forceLogout();
 			wsRef.current = null;
 		};
 
