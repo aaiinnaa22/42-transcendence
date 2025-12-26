@@ -93,6 +93,7 @@
 		},
 		"placeholder": {
 			"alert": "Du kan inte skicka meddelanden till den här användaren.",
+			"alertUnavailable": "Föregående inbjudan är fortfarande aktiv. Försök igen om en minut.",
 			"textarea": "Chatta med {{username}}"
 		}
 	},

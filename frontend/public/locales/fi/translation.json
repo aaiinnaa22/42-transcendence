@@ -93,6 +93,7 @@
 		},
 		"placeholder": {
 			"alert": "Et voi lähettää viestiä tälle käyttäjälle.",
+			"alertUnavailable": "Edellinen kutsu on edelleen aktiivinen. Yritä hetken kuluttua uudelleen.",
 			"textarea": "Keskustele {{username}} kanssa"
 		}
 	},

@@ -126,7 +126,6 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 			{
 				return;
 			}
-
 			// attempt to auth socket requests
 			if (data.type === "error" && data.reason === "unauthorized")
 			{
@@ -303,6 +302,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 						: 60_000;
 			
 				setInviteDisabledUntil(Date.now() + retryAfter);
+				alert(t("chat.placeholder.alertUnavailable"));
 			
 				if (selectedUser) {
 					const systemMessage: Message = {
