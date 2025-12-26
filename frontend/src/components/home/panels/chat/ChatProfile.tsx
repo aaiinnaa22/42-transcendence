@@ -33,7 +33,10 @@ export const ChatProfile = ({onExitClick, user}: ChatProfileProps) => {
 
 	useEffect(() => {
 		refreshUser();
-	}, []);
+		const fetchUserInterval = setInterval(refreshUser, 15000);
+
+		return () => clearInterval(fetchUserInterval); {/*fetch users every 15 sec*/}
+	}, [user]);
 
 	const handleFriendClick = async () => {
 		const ok = currentUser.isFriend

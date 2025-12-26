@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { TwoFALoginModal } from "./TwoFALoginModal";
 import { apiUrl } from "../../api/api";
 import { useTranslation } from "react-i18next";
+import { parseJsonSafely } from "../../utils/parseJsonSafely";
 
 export const Login = () => {
 	const [email, setEmail] = useState("");
@@ -45,7 +46,8 @@ export const Login = () => {
 				},
 				body: JSON.stringify({email, password,}),
 			});
-			const data = await response.json();
+
+			const data = await parseJsonSafely(response);
 
 			// Check for actual errors first (4xx, 5xx with error field)
 			if (!response.ok && data.error)

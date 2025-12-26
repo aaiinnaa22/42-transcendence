@@ -66,10 +66,26 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 	inviteDisabledUntil !== null && Date.now() < inviteDisabledUntil;
 
 	useEffect(() => {
+		const fetchUsers = () => {
 		fetchWithAuth( apiUrl('/chat/users') )
 			.then(res => res.json())
-			.then(setUsers)
+			.then((fetchedUsers: ChatUser[]) => {
+				setUsers(prev =>
+					fetchedUsers.map(u => ({
+					...u,
+					...(prev.find(p => p.id === u.id)?.lastMessage && {
+						lastMessage: prev.find(p => p.id === u.id)!.lastMessage,
+					}),
+					}))
+				);
+			})
 			.catch(err => console.error("Failed to load users", err));
+		};
+
+		fetchUsers();
+		const fetchUsersInterval = setInterval(fetchUsers, 15000);
+
+		return () => clearInterval(fetchUsersInterval); {/*fetch users every 15 sec*/}
   	}, []);
 
 	useEffect(() => {
@@ -423,6 +439,17 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		...u,
 		online: onlineUserIds.has(u.id),
   	}));
+
+	// update online statuses on change
+	useEffect(() => {
+		setUsers(prev =>
+			prev.map(u => ({
+			...u,
+			online: onlineUserIds.has(u.id),
+			}))
+		);
+	}, [onlineUserIds]);
+
 
 	return (
 	<div className="fixed inset-0 z-50 pointer-events-none">
