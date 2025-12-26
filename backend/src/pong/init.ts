@@ -1099,7 +1099,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						},
 						reason: data.reason
 					};
-					deleteInvite( data.winner.userId, data.loser.userId );
 					// Message the players
 					winnerConnection.socket.send( JSON.stringify( endStateMessage ) );
 					loserConnection.socket.send( JSON.stringify( endStateMessage ) );
