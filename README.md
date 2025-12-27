@@ -69,3 +69,22 @@ As part of the ft_transcendence project of the 42 curriculum, we defined the sco
 - The entire application runs inside Docker containers, launched with a single command, as required by the subject.
 
 This project scope emphasizes full-stack development, real-time communication and security, while strictly respecting the technical constraints and module requirements defined in the ft_transcendence subject.
+
+## How to launch
+
+1. Clone the repository
+2. Go to backend directory and create .env file
+3. Add three below secrets and the credentials for Google Authentication:
+```
+JWT_SECRET=supersecret
+COOKIE_SECRET=cookiesecret
+LOG_SECRET=logsecret
+
+GOOGLE_CLIENT_ID=yourgoogleclientid
+GOOGLE_CLIENT_SECRET=yourgoogleclientsecret
+```
+4. Go back to the root directory
+5. If you want to enable remote player connections from other computers, replace "localhost" in docker-compose.prod.yml with your address
+6. Build and run the project using command ```make eval```
+7. Go to the website, for example ```https://localhost:8443``` or ```https://your-domain:8443```
+8. Enjoy a game of PONG!
