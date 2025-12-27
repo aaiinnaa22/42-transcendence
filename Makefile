@@ -49,6 +49,12 @@ fclean: clean
 
 re: fclean all
 
+keygen:
+	@echo "Generating self-certificates..."
+	@sh generate-selfcert.sh
+
+eval: keygen build up
+
 $(SERVICES):
 	@echo "Rebuilding and restarting service: $@"
 	@docker compose -f $(COMPOSE_FILE) build $@
@@ -104,4 +110,4 @@ docker-prune-all:
 	@docker system prune -a --volumes -f
 	@echo "Docker prune complete."
 
-.PHONY: all clean fclean re up down build rebuild rebuild-% logs logs-% reb-logs reb-logs-% db-push db-reset docker-prune-all $(SERVICES)
+.PHONY: all clean fclean re up down build rebuild keygen eval rebuild-% logs logs-% reb-logs reb-logs-% db-push db-reset docker-prune-all $(SERVICES)
