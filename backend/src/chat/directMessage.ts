@@ -95,7 +95,6 @@ export function sendInviteExpired( a: string, b: string )
 			if ( socket.readyState === WebSocket.OPEN )
 			{
 				socket.send( payload );
-				console.log( "invite expired mes from backend" ); // TO DO: delete?
 			}
 		}
 	}
