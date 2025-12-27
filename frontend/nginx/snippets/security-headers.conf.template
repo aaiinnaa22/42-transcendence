@@ -6,7 +6,7 @@ add_header X-Frame-Options "SAMEORIGIN" always;
 add_header X-Content-Type-Options "nosniff" always;
 
 # Prevent Cross-Site-Scripting
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss://${DOMAIN_NAME}/ws https://${DOMAIN_NAME}/api;" always;
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss://${DOMAIN_NAME}:${NGINX_PORT}/ws https://${DOMAIN_NAME}:${NGINX_PORT}/api;" always;
 
 # Prevent credential/cookie hijacking
 add_header Strict-Transport-Security "max-age=31536000; includeSubdomains; preload";
