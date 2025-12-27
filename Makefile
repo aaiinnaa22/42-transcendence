@@ -40,6 +40,12 @@ fclean: clean
 
 re: fclean all
 
+keygen:
+	@echo "Generating self-certificates..."
+	@sh generate-selfcert.sh
+
+eval: keygen build up
+
 $(SERVICES):
 	@echo "Rebuilding and restarting service: $@"
 	@docker compose -f $(COMPOSE_FILE) build $@
@@ -80,4 +86,4 @@ reb-logs-%:
 	docker compose -f $(COMPOSE_FILE) build --no-cache $*
 	docker compose -f $(COMPOSE_FILE) up --force-recreate $* 2>&1 | cat || true
 
-.PHONY: all clean fclean re up down build rebuild rebuild-% logs logs-% reb-logs reb-logs-% $(SERVICES)
+.PHONY: all clean fclean re up down build rebuild keygen eval rebuild-% logs logs-% reb-logs reb-logs-% $(SERVICES)
