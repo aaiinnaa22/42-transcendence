@@ -40,7 +40,7 @@ export const Leaderboard = () => {
 					credentials: "include"
 				});
 
-				if (response.ok)
+				if (response.ok && response.status !== 204)
 				{
 					const data = await response.json();
 					setMyRank(data);
@@ -71,7 +71,7 @@ export const Leaderboard = () => {
 				});
 
 				// No eligible users on leaderboard
-				if (response.status === 404)
+				if (response.status === 204)
 				{
 					setUsers([]);
 					setHasMore(false);
@@ -110,7 +110,7 @@ export const Leaderboard = () => {
 				credentials: "include"
 			});
 
-			if (response.status === 404)
+			if (response.status === 204)
 			{
 				setHasMore(false);
 				return;

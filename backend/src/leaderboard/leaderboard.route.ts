@@ -1,7 +1,7 @@
 import { type FastifyInstance, type FastifyRequest, type FastifyReply } from "fastify";
 import LeaderboardService from "./leaderboard.class.js";
 import { authenticate } from "../shared/middleware/auth.middleware.js";
-import { NotFoundError, sendErrorReply, ServiceUnavailableError } from "../shared/utility/error.utility.js";
+import { sendErrorReply } from "../shared/utility/error.utility.js";
 import { validateRequest } from "../shared/utility/validation.utility.js";
 import { GetLeaderboardPageSchema } from "../schemas/leaderboard.schema.js";
 
@@ -23,7 +23,7 @@ const leaderboardComponent = async ( server: FastifyInstance ) =>
 			{
 				const entries = leaderboard.getCache( 0 );
 
-				if ( !entries ) throw ServiceUnavailableError( "Leaderboard unavailable" );
+				if ( !entries ) return reply.code( 204 ).send( [] );
 
 				return reply.send( entries );
 			}
@@ -45,7 +45,7 @@ const leaderboardComponent = async ( server: FastifyInstance ) =>
 				const { page } = validateRequest( GetLeaderboardPageSchema, request.params );
 				const entries = leaderboard.getCache( page );
 
-				if ( !entries ) throw NotFoundError( `Page ${page} not found` );
+				if ( !entries ) return reply.code( 204 ).send( [] );
 
 				return reply.send( entries );
 			}
@@ -67,7 +67,8 @@ const leaderboardComponent = async ( server: FastifyInstance ) =>
 				const { userId } = request.user as { userId: string };
 
 				const entry = await leaderboard.getUserRank( userId );
-				if ( !entry ) throw NotFoundError( "User not yet ranked" );
+
+				if ( !entry ) return reply.code( 204 ).send();
 
 				return reply.send( entry );
 			}
