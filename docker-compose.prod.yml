@@ -44,6 +44,7 @@ services:
       - backend
     environment:
       NODE_ENV: "production"
+      NGINX_PORT: "8443"
     volumes:
       - upload-data:/app/data/upload:ro
     networks:
