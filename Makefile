@@ -10,6 +10,9 @@
 # make logs-backend - run backend in the foreground (live logs)
 # make reb-logs - force rebuild of all serbives + logs
 # make reb-logs-backend - force rebuild backend (no cache) + logs
+# make db-push - apply current Prisma schema to the DB
+# make db-reset - drop and recreate DB using Prisma migrate reset
+# make docker-prune-all - remove all Docker data (containers, images, cache, volumes)
 
 COMPOSE_FILE=docker-compose.prod.yml
 
@@ -36,7 +39,13 @@ clean:
 	@docker system prune -f --volumes
 
 fclean: clean
-	@echo "Removing everything (same as clean for now)..."
+	@echo "Removing project build artifacts and dependencies..."
+	@rm -rf backend/node_modules frontend/node_modules
+	@rm -rf backend/.turbo frontend/.turbo backend/dist frontend/dist
+	@rm -rf backend/.cache frontend/.cache
+	@docker system prune -a --volumes -f
+	@echo "Pruning all Docker data (containers, images, cache, volumes)..."
+	@echo "fclean done."
 
 re: fclean all
 
@@ -86,4 +95,19 @@ reb-logs-%:
 	docker compose -f $(COMPOSE_FILE) build --no-cache $*
 	docker compose -f $(COMPOSE_FILE) up --force-recreate $* 2>&1 | cat || true
 
-.PHONY: all clean fclean re up down build rebuild keygen eval rebuild-% logs logs-% reb-logs reb-logs-% $(SERVICES)
+# database helpers
+db-push:
+	@echo "Pushing Prisma schema to the database (no migrations)."
+	docker compose -f $(COMPOSE_FILE) exec backend npx prisma db push
+
+db-reset:
+	@echo "Dropping and recreating database using Prisma migrations (will erase data)."
+	@docker compose -f $(COMPOSE_FILE) exec backend npx prisma migrate reset --force
+	@echo "Database reset complete."
+
+docker-prune-all:
+	@echo "WARNING: removing all Docker data (containers, images, networks, cache, volumes)."
+	@docker system prune -a --volumes -f
+	@echo "Docker prune complete."
+
+.PHONY: all clean fclean re up down build rebuild keygen eval rebuild-% logs logs-% reb-logs reb-logs-% db-push db-reset docker-prune-all $(SERVICES)
