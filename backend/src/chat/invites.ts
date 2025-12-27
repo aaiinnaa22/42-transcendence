@@ -23,7 +23,6 @@ export function createInvite( from: string, to: string )
 	const existing = invites.get( key );
 	if ( existing && Date.now() < existing.expiresAt )
 	{
-		console.log( "invite aleady exists?" );
 		return false;
 	}
 
@@ -46,4 +45,11 @@ export function createInvite( from: string, to: string )
 
 	sendInvitePayload( { from, to, startedAt, expiresAt } );
 	return true;
+}
+
+export function deleteInvite( from: string, to: string )
+{
+	const key = convoKey( from, to );
+	invites.delete( key );
+	sendInviteExpired( from, to );
 }

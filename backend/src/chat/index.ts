@@ -16,21 +16,42 @@ export default async function chatComponent( server: FastifyInstance )
 		{ websocket: true, preHandler: authenticate },
 		( socket: WsWebSocket, req: FastifyRequest ) =>
 		{
-			const { userId } = req.user as { userId: string };
+			let userId: string;
+			try
+			{
+				const user = req.user as { userId: string } | undefined;
+				if ( !user )
+				{
+					socket.close( 1008, "Unauthorized" );
+					return;
+				}
 
-			server.log.info( { user: pseudonym( userId ) }, "New chat connection" );
-			addUser( userId, socket );
+				userId = user.userId;
 
-			socket.send( JSON.stringify( {
-				type: "me",
-				userId,
-			} ) );
+				server.log.info( { user: pseudonym( userId ) }, "New chat connection" );
+				addUser( userId, socket );
 
-			// initial presence list
-			socket.send( JSON.stringify( {
-				type: "presence:list",
-				users: [...onlineUsers.keys()]
-			} ) );
+				socket.send( JSON.stringify( {
+					type: "me",
+					userId,
+				} ) );
+
+				// initial presence list
+				socket.send( JSON.stringify( {
+					type: "presence:list",
+					users: [...onlineUsers.keys()]
+				} ) );
+			}
+			catch ( err )
+			{
+				server.log.error( { err }, "from chat socket" );
+				try
+				{
+					socket.close( 1011, "Internal server error" );
+				}
+				catch {}
+				return;
+			}
 
 			socket.on( "message", async ( message: any ) =>
 			{

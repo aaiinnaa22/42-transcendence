@@ -18,6 +18,7 @@ import type { WebSocket as WsWebSocket } from "ws";
 import { sendDM } from "../chat/directMessage.js";
 import { validateRequest } from "../shared/utility/validation.utility.js";
 import { pseudonym } from "../shared/utility/anonymize.utility..js";
+import { deleteInvite } from "../chat/invites.js";
 
 type UserId = string;
 type GameId = string;
@@ -155,7 +156,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						{
 							const playerNameFirst = friendQueue[i]?.userName;
 							const playerNameSecond = friendQueue[j]?.userName;
-
 							if ( playerNameFirst && playerNameSecond )
 							{
 								server.log.info(
@@ -203,18 +203,25 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			{
 				server.log.info( { user: pseudonym( waiting.userName ) }, "Invite expired removing from friend queue" );
 
-				friendQueue.splice( i, 1 );
-
-				const connection = activePlayers.get( waiting.userId );
-				if ( connection )
+				try
 				{
-					connection.socket.send( JSON.stringify( {
-						type: "invite:expired",
-						message: "Invite expired"
-					} ) );
+					friendQueue.splice( i, 1 );
 
-					connection.socket.close( 1000, "Invite expired" );
-					activePlayers.delete( waiting.userId );
+					const connection = activePlayers.get( waiting.userId );
+					if ( connection )
+					{
+						connection.socket.send( JSON.stringify( {
+							type: "invite:expired",
+							message: "Invite expired"
+						} ) );
+
+						connection.socket.close( 1000, "Invite expired" );
+						activePlayers.delete( waiting.userId );
+					}
+				}
+				catch ( err )
+				{
+					console.error( "Failed to clean friend invite", err );
 				}
 			}
 		}
@@ -1099,7 +1106,6 @@ const gameComponent = async ( server: FastifyInstance ) =>
 						},
 						reason: data.reason
 					};
-
 					// Message the players
 					winnerConnection.socket.send( JSON.stringify( endStateMessage ) );
 					loserConnection.socket.send( JSON.stringify( endStateMessage ) );
@@ -1154,7 +1160,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 					},
 					reason: data.reason
 				};
-
+				deleteInvite( data.winner.userId, data.loser.userId );
 				// Message the players
 				winnerConnection.socket.send( JSON.stringify( endStateMessage ) );
 				loserConnection.socket.send( JSON.stringify( endStateMessage ) );

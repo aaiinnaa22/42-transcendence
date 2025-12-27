@@ -12,11 +12,13 @@ import { PersonalStats } from '../components/home/stats/PersonalStats';
 import { ChooseGameMode } from '../components/home/game/ChooseGameMode';
 import { ExitTopLeft } from '../components/home/utils/ExitTopLeft';
 import { ChatContainer } from '../components/home/panels/chat/ChatContainer';
+import { GameEnd } from "../components/home/GameEndInvite";
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import NotFound from './NotFound';
 
 export const Home = () => {
 	const navigate = useNavigate();
+	const [gameEndData, setGameEndData] = useState<{ message: string } | null>(null);
 	const [currentPanel, setCurrentPanel] = useState<"menu" | "chat" | null>(null);
 
 	const togglePanel = (panel: "chat" | "menu") => {
@@ -28,7 +30,7 @@ export const Home = () => {
 			<NavBar currentPanel={currentPanel} onTogglePanel={togglePanel}/>
 			<Routes>
 				<Route index element={<Navigate to="play" replace/>}/>
-				<Route path="play" element={<PlayButton/>}/>
+				<Route path="play" element={<PlayButton gameEndData={gameEndData} setGameEndData={setGameEndData}/>}/>
 				<Route path="play/choose" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}>
 					<ChooseGameMode/></ExitTopLeft>}/>
 				<Route path="play/single" element={<ExitTopLeft onExitClick={() => navigate("/home/play")}>
@@ -38,8 +40,9 @@ export const Home = () => {
 				<Route path="stats" element={<PersonalStats/>}/>
 				<Route path="leaderboard" element={<Leaderboard/>}/>
 				<Route path="profile" element={<Profile/>}/>
-				<Route path="play/invite" element={<GameInvite/> } />
+				<Route path="play/invite" element={<GameInvite gameEndData={gameEndData} setGameEndData={setGameEndData} /> } />
 				<Route path="*" element={<NotFound />} />
+				<Route path="end" element={<GameEnd/>}/>
 			</Routes>
 			<ChatContainer chatIsOpen={currentPanel === "chat"}/>
 			<PopUp isOpen={currentPanel === "menu"}>
