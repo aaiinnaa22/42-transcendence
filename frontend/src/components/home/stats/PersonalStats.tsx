@@ -110,7 +110,7 @@ export const PersonalStats = () =>
 						{t("profile.history.recent")}
 					</h3>
 					{matchHistory.length > 0
-						? <ul className="flex flex-col gap-2 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+						&& <ul className="flex flex-col gap-2 overflow-y-auto [&::-webkit-scrollbar]:hidden">
 							{matchHistory.map((match, idx) => {
 								const date = new Date(match.playedAt);
 								const locale = i18n.language ?? "en";
@@ -138,7 +138,6 @@ export const PersonalStats = () =>
 								);
 							})}
 						</ul>
-						: <p className="text-xs text-gray-500 self-center">you have no recent matches</p>
 					}
 				</div>
 				<div className="flex items-center justify-center bg-transcendence-white rounded-2xl w-25 h-22 lg:w-50 lg:h-20 text-center">
