@@ -50,6 +50,8 @@ fclean: clean
 	@docker system prune -a --volumes -f
 	@echo "Pruning all Docker data (containers, images, cache, volumes)..."
 	@echo "fclean done."
+	@echo "Removing everything including Docker build cache..."
+	@docker builder prune -af
 
 re: fclean all
 
