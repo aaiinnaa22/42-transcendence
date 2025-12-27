@@ -13,8 +13,12 @@
 # make db-push - apply current Prisma schema to the DB
 # make db-reset - drop and recreate DB using Prisma migrate reset
 # make docker-prune-all - remove all Docker data (containers, images, cache, volumes)
+# make studio - run Prisma Studio on localhost
 
 COMPOSE_FILE=docker-compose.prod.yml
+
+# Prisma Studio configuration
+STUDIO_PORT ?= 5555
 
 SERVICES = backend frontend
 
@@ -104,4 +108,8 @@ docker-prune-all:
 	@docker system prune -a --volumes -f
 	@echo "Docker prune complete."
 
-.PHONY: all clean fclean re up down build rebuild rebuild-% logs logs-% reb-logs reb-logs-% db-push db-reset docker-prune-all $(SERVICES)
+# Prisma Studio
+studio:
+	@docker compose -f $(COMPOSE_FILE) run --rm --entrypoint "" -p $(STUDIO_PORT):$(STUDIO_PORT) backend npx prisma studio --port $(STUDIO_PORT) --hostname 0.0.0.0
+
+.PHONY: all clean fclean re up down build rebuild rebuild-% logs logs-% reb-logs reb-logs-% db-push db-reset docker-prune-all studio $(SERVICES)

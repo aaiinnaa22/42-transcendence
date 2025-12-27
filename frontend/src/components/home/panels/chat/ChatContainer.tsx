@@ -356,6 +356,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 			}
 
 			if (data.type === "error") {
+				console.error("data obj: ", data);
 				console.error("Error received from server:", data.reason);
 			}
    	 	};
