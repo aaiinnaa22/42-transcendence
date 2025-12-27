@@ -201,7 +201,7 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			if ( !waiting ) continue;
 			if ( waiting.expiresAt <= now )
 			{
-				console.log( `Game: Invite expired for ${waiting.userName}, removing from friend queue` );
+				server.log.info( { user: pseudonym( waiting.userName ) }, "Invite expired removing from friend queue" );
 
 				try
 				{
