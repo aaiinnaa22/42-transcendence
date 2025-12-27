@@ -65,10 +65,26 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 	inviteDisabledUntil !== null && Date.now() < inviteDisabledUntil;
 
 	useEffect(() => {
+		const fetchUsers = () => {
 		fetchWithAuth( apiUrl('/chat/users') )
 			.then(res => res.json())
-			.then(setUsers)
+			.then((fetchedUsers: ChatUser[]) => {
+				setUsers(prev =>
+					fetchedUsers.map(u => ({
+					...u,
+					...(prev.find(p => p.id === u.id)?.lastMessage && {
+						lastMessage: prev.find(p => p.id === u.id)!.lastMessage,
+					}),
+					}))
+				);
+			})
 			.catch(err => console.error("Failed to load users", err));
+		};
+
+		fetchUsers();
+		const fetchUsersInterval = setInterval(fetchUsers, 15000);
+
+		return () => clearInterval(fetchUsersInterval); {/*fetch users every 15 sec*/}
   	}, []);
 
 	useEffect(() => {
@@ -298,18 +314,18 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 					typeof data.retryAfterMs === "number"
 						? data.retryAfterMs
 						: 60_000;
-			
+
 				setInviteDisabledUntil(Date.now() + retryAfter);
 				alert(t("chat.placeholder.alertUnavailable"));
-			
+
 				if (selectedUser) {
 					const systemMessage: Message = {
 						id: Date.now(),
-						text: "Chat invite unavailable. Try again later", // "TODO: translate
+						text: "Chat invite unavailable. Try again later",
 						sender: "me",
 						type: "text",
 					};
-			
+
 					setMessagesByUser(prev => ({
 						...prev,
 						[selectedUser.id]: [
@@ -445,7 +461,7 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 
 	const sendGameInvite = () => {
 		if (!selectedUser) return;
-		if (isInviteDisabled) return; 
+		if (isInviteDisabled) return;
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
 		let payload: string;
@@ -475,6 +491,17 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		...u,
 		online: onlineUserIds.has(u.id),
   	}));
+
+	// update online statuses on change
+	useEffect(() => {
+		setUsers(prev =>
+			prev.map(u => ({
+			...u,
+			online: onlineUserIds.has(u.id),
+			}))
+		);
+	}, [onlineUserIds]);
+
 
 	return (
 	<div className="fixed inset-0 z-50 pointer-events-none">

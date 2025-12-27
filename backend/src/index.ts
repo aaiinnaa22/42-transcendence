@@ -18,7 +18,7 @@ const server : FastifyInstance = Fastify( {
 					"req.headers.authorization",
 					"req.headers.cookie",
 					"req.body.password",
-					"req.headers[\"set-cookie\"]",
+					"req.headers['set-cookie']",
 				],
 				censor: "[REDACTED]"
 			}
@@ -62,9 +62,9 @@ const start = async () =>
 		await server.register( import( "@fastify/cors" ), {
 			origin: [
 				`${env.HTTP_PROTO}${env.FRONTEND_HOST}:${env.FRONTEND_PORT}`,
-				`${env.HTTP_PROTO}${env.PUBLIC_URL}`,
 				`${env.HTTP_PROTO}localhost:${env.FRONTEND_PORT}`,
 				`${env.HTTP_PROTO}127.0.0.1:${env.FRONTEND_PORT}`,
+				env.PUBLIC_URL,
 			],
 			credentials: true,
 			methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

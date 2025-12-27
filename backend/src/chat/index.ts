@@ -57,11 +57,12 @@ export default async function chatComponent( server: FastifyInstance )
 			{
 				try
 				{
-					// TODO: Validate the messages parsed from sockets
 					const raw = JSON.parse( message.toString() );
 					const parsed = ChatClientMessageSchema.safeParse( raw );
+					// invite:joined is unused yet caused the invalid message format message to be returned
 					if ( !parsed.success )
 					{
+						server.log.info( { user: pseudonym( userId ) }, "Received invalid message format in chat" );
 						socket.send( JSON.stringify( {
 							type: "error",
 							message: "Invalid message format"
@@ -81,7 +82,7 @@ export default async function chatComponent( server: FastifyInstance )
 								type: "error",
 								reason: "blocked"
 							} ) );
-							console.log( "block detected" );
+							server.log.info( "Attempted to message a blocked user" );
 							return;
 						}
 					}
@@ -108,6 +109,8 @@ export default async function chatComponent( server: FastifyInstance )
 				}
 				catch
 				{
+					server.log.info( { user: pseudonym( userId ) }, "Received malformed message format in chat" );
+
 					socket.send( JSON.stringify( {
 						type: "error",
 						message: "Malformed message"

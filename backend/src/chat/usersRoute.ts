@@ -10,6 +10,7 @@ import {
 } from "../shared/utility/error.utility.js";
 import { getAvatarUrl } from "../shared/utility/avatar.utility.js";
 import { MATCH_HISTORY_ENTRIES_MAX } from "../pong/constants.js";
+import { pseudonym } from "../shared/utility/anonymize.utility..js";
 
 export default async function chatUsersComponent( server: FastifyInstance )
 {
@@ -23,6 +24,8 @@ export default async function chatUsersComponent( server: FastifyInstance )
 			{
 				if ( !req.user )
 				{
+					server.log.info( "Unauthorized user in chat/users/username" );
+
 					throw UnauthorizedError();
 				}
 
@@ -32,6 +35,8 @@ export default async function chatUsersComponent( server: FastifyInstance )
 				const currentUser = await server.prisma.user.findUnique( { where: { id: userId } } );
 				if ( currentUser?.username === query.username )
 				{
+					server.log.info( { user: pseudonym( userId ) }, "Bad request in chat/users/username" );
+
 					throw BadRequestError( "Cannot fetch your own profile here" );
 				}
 
@@ -48,11 +53,15 @@ export default async function chatUsersComponent( server: FastifyInstance )
 
 				if ( !targetUser )
 				{
+					server.log.info( "Target user not found in chat/users/username" );
+
 					throw NotFoundError( "User not found" );
 				}
 
 				if ( targetUser.id === userId )
 				{
+					server.log.info( { user: pseudonym( userId ) }, "Bad request in chat/users/username" );
+
 					throw BadRequestError( "Cannot fetch your own profile here" );
 				}
 
@@ -64,7 +73,7 @@ export default async function chatUsersComponent( server: FastifyInstance )
 					where: { blockerId: targetUser.id, blockedId: userId },
 				} );
 
-			  const friendship = await server.prisma.friendship.findFirst( {
+				const friendship = await server.prisma.friendship.findFirst( {
 					where: {
 						OR: [
 							{ userId, friendId: targetUser.id },
@@ -110,25 +119,25 @@ export default async function chatUsersComponent( server: FastifyInstance )
 				where: { id: { not: userId } },
 				select: {
 					id: true,
-				  	username: true,
-				  	avatar: true,
-				  	avatarType: true,
-				  	playerStats: true,
-				  	blockedUsers: {
+					username: true,
+					avatar: true,
+					avatarType: true,
+					playerStats: true,
+					blockedUsers: {
 						where: { blockerId: userId },
 						select: { id: true },
 					  },
-				  	blockedBy: {
+					blockedBy: {
 						where: { blockedId: userId },
 						select: { id: true },
-				  	},
+					},
 				},
 			} );
 
 
 			return await Promise.all( users.map( async ( u ) =>
 			{
-				  	const friendship = await server.prisma.friendship.findFirst( {
+				const friendship = await server.prisma.friendship.findFirst( {
 					where: {
 						OR: [
 							{ userId, friendId: u.id },
@@ -136,7 +145,7 @@ export default async function chatUsersComponent( server: FastifyInstance )
 						],
 					},
 					select: { status: true },
-				  	} );
+				} );
 
 				const friendshipStatus = friendship?.status ?? null;
 				const isFriend = friendshipStatus === "accepted";
@@ -150,7 +159,7 @@ export default async function chatUsersComponent( server: FastifyInstance )
 					friendshipStatus,
 					isBlockedByMe: u.blockedUsers.length > 0,
 					hasBlockedMe: u.blockedBy.length > 0,
-				 	};
+				};
 			} ) );
 		}
 		catch ( error )
@@ -168,6 +177,8 @@ export default async function chatUsersComponent( server: FastifyInstance )
 			{
 				if ( !req.user )
 				{
+					server.log.info( "Unauthorized user in chat/users/history" );
+
 					throw UnauthorizedError();
 				}
 

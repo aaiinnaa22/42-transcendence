@@ -44,6 +44,8 @@ services:
       - backend
     environment:
       NODE_ENV: "production"
+      DOMAIN_NAME: localhost
+      NGINX_PORT: 8443
     volumes:
       - upload-data:/app/data/upload:ro
     networks:

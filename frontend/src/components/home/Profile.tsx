@@ -7,7 +7,7 @@ import { BaseModal } from "./settings/BaseModal";
 import { useTranslation } from 'react-i18next';
 
 export const Profile = () => {
-	const [profilePic, setProfilePic] = useState<string | null>(null);
+	const [profilePic, setProfilePic] = useState<string>("/avatars/00000000-0000-0000-0000-000000000000.webp");
 	const [username, setUsername] = useState("User");
 	const [isEditOpen, setIsEditOpen] = useState(false);
 	const [newUsername, setNewUsername] = useState("");
@@ -104,10 +104,8 @@ export const Profile = () => {
 					landscape:col-start-1 landscape:row-start-2 lg:landscape:col-start-2 lg:landscape:row-start-2
 					portrait:col-start-2 portrait:row-start-2
 					justify-center items-center gap-4">
-					<div className="relative">
-						{profilePic
-						? <img className="h-40 w-40 xl:h-60 xl:w-60 rounded-full object-cover" src={profilePic}></img>
-						: <span className="material-symbols-outlined text-transcendence-white !text-9xl">account_circle</span>}
+						<div className="relative">
+						<img className="h-40 w-40 xl:h-60 xl:w-60 rounded-full object-cover" src={profilePic}></img>
 						<button
 							className="absolute top-1 right-2 bg-transcendence-white w-8 h-8 rounded-full border-2 border-transcendence-black flex flex-col justify-center items-center cursor-pointer"
 							onClick={() => profilePicInputRef.current?.click()}>

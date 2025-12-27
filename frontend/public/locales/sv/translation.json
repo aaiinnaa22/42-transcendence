@@ -8,7 +8,7 @@
 		"title": "PONG",
 		"button": {
 			"login": "LOGGA IN",
-			"register": "REGISTRERA"
+			"register": "REGISTRERA DIG"
 		},
 		"placeholder": {
 			"email": "e-post",
@@ -16,7 +16,7 @@
 			"password": "lösenord"
 		},
 		"login": "Logga in",
-		"register": "Registrera",
+		"register": "Registrera dig",
 		"or": "eller",
 		"submit": "SKICKA"
 	},
@@ -46,21 +46,21 @@
 		"modalClosing": "Stänger modalen om {{countdown}} sekunder",
 		"login": "Tvåfaktorsinloggning",
 		"placeholder": "Ange 6-siffrig kod",
-		"loginSuccess": "Inloggning lyckades!",
+		"loginSuccess": "Inloggningen lyckades!",
 		"verifyAndLogin": "Verifiera & logga in"
 	},
 	"leaderboard": {
-		"myStats": "Mina statistik",
+		"myStats": "Min statistik",
 		"loading": "Laddar topplistan...",
 		"retry": "Försök igen",
-		"yourRank": "Din placering",
+		"yourRank": "Din placering är",
 		"yourUnranked": "Du är oplacerad. Spela mer för att få en placering.",
-		"rank": "Rang",
+		"rank": "Rank",
 		"name": "Namn",
 		"rating": "Rating",
 		"ratio": "Kvot",
-		"wins": "Vinna",
-		"losses": "Förlust",
+		"wins": "Vinster",
+		"losses": "Förluster",
 		"you": "Du",
 		"loadingMore": "Laddar fler spelare...",
 		"scrollMore": "Skrolla för mer",
@@ -81,7 +81,7 @@
 		"inviteExpired": "inbjudan har gått ut",
 		"inviteAccepted": "inbjudan accepterad",
 		"send": "skicka",
-		"status": "just nu {{status}}",
+		"status": "{{status}}",
 		"online": "online",
 		"offline": "offline",
 		"header": "chatta med spelare",
@@ -140,7 +140,7 @@
 		"twoFALoginInfo": "Ange den 6-siffriga koden från din autentiseringsapp.",
 		"QRLoadFailure": "Kunde inte ladda QR-kod",
 		"invalidCodeFailure": "Ogiltig 2FA-kod",
-		"accountDeletionFailure": "Konto borttagning misslyckades"
+		"accountDeletionFailure": "Borttagning av konto misslyckades"
 	},
 	"game": {
 		"button": {
@@ -190,7 +190,7 @@
 		}
 	},
 	"navbar": {
-		"play": "spel",
+		"play": "spela",
 		"stats": "statistik",
 		"leaderboard": "topplista",
 		"profile": "profil"
