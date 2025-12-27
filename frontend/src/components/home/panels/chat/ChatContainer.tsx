@@ -337,9 +337,9 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 				alert(t("chat.placeholder.alert"));
 			}
 
-			if (data.type === "error") {
-				console.error("Error received from server:", data.reason);
-			}
+			// if (data.type === "error") {
+			// 	console.error("Error registered by the chat");
+			// }
    	 	};
 
 		ws.onclose = e => {
@@ -357,13 +357,30 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		if (!selectedUser) return;
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
-		wsRef.current.send(
-		JSON.stringify({
-			type: "dm",
-			to: selectedUser.id,
-			message: text,
-		})
-		);
+		let payload: string;
+		try
+		{
+			payload = JSON.stringify({
+				type: "dm",
+				to: selectedUser.id,
+				message: text,
+			})
+		}
+		catch ( err )
+		{
+			console.error("Failed to stringify DM payload", err);
+			return;
+		}
+
+		try
+		{
+			wsRef.current.send(payload);
+		}
+		catch (err)
+		{
+			console.error("Failed to send DM over WebSocket", err);
+			return;
+		}
 
 		const myMessage: Message = {
 			id: Date.now(),
@@ -384,7 +401,9 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 
 	const acceptAndJoinInvite = (userId: string, inviteId: number) => {
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+
 		const msg = messagesByUser[userId]?.find(m => m.id === inviteId);
+		
 		if (msg?.invite?.status !== "pending") return;
 
 		setMessagesByUser(prev => ({
@@ -398,12 +417,30 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		 		: m
 		 	),
 		}));
-		if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-			wsRef.current.send(JSON.stringify({
+
+		let payload: string;
+		try
+		{
+			payload = JSON.stringify({
 				type: "invite:joined",
 				to: userId,
-			}));
+			});
 		}
+		catch (err)
+		{
+			console.error("Failed to stringify invite:joined payload", err);
+			return;
+		}
+		
+		try
+		{
+			wsRef.current.send(payload);
+		}
+  		catch (err)
+		{
+    		console.error("Failed to send invite:joined", err);
+    		return;
+  		}
 	};
 
 	const sendGameInvite = () => {
@@ -411,10 +448,27 @@ export const ChatContainer = ({ chatIsOpen }: ChatContainerProps) => {
 		if (isInviteDisabled) return; 
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
-		wsRef.current.send(JSON.stringify({
-			type: "invite",
-			to: selectedUser.id,
-		}));
+		let payload: string;
+		try 
+		{
+   			payload = JSON.stringify({
+    		type: "invite",
+    		to: selectedUser.id,
+    		});
+		}
+		catch (err)
+		{
+    		console.error("Failed to stringify invite payload", err);
+    		return;
+  		}
+		try
+		{
+			wsRef.current.send(payload);
+		}
+		catch ( err )
+		{
+    		console.error("Failed to send invite", err);
+  		}
 	};
 
   	const usersWithPresence = users.map(u => ({

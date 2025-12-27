@@ -203,18 +203,25 @@ const gameComponent = async ( server: FastifyInstance ) =>
 			{
 				console.log( `Game: Invite expired for ${waiting.userName}, removing from friend queue` );
 
-				friendQueue.splice( i, 1 );
-
-				const connection = activePlayers.get( waiting.userId );
-				if ( connection )
+				try
 				{
-					connection.socket.send( JSON.stringify( {
-						type: "invite:expired",
-						message: "Invite expired"
-					} ) );
+					friendQueue.splice( i, 1 );
 
-					connection.socket.close( 1000, "Invite expired" );
-					activePlayers.delete( waiting.userId );
+					const connection = activePlayers.get( waiting.userId );
+					if ( connection )
+					{
+						connection.socket.send( JSON.stringify( {
+							type: "invite:expired",
+							message: "Invite expired"
+						} ) );
+
+						connection.socket.close( 1000, "Invite expired" );
+						activePlayers.delete( waiting.userId );
+					}
+				}
+				catch ( err )
+				{
+					console.error( "Failed to clean friend invite", err );
 				}
 			}
 		}

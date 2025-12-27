@@ -10,17 +10,32 @@ export function sendDM(
 	const targets = onlineUsers.get( to );
 	if ( !targets ) return false;
 
-	const payload = JSON.stringify( {
-		type: "dm",
-		from,
-		message
-	} );
-
+	let payload: string;
+	try
+	{
+		payload = JSON.stringify( {
+			type: "dm",
+			from,
+			message
+		} );
+	}
+	catch ( err )
+	{
+		console.error( "Failed to stringify DM payload", err );
+		return false;
+	}
 	for ( const socket of targets )
 	{
 		if ( socket.readyState === WebSocket.OPEN )
 		{
-			socket.send( payload );
+			try
+			{
+				socket.send( payload );
+			}
+			catch ( err )
+			{
+				console.error( "Failed to send DM", err );
+			}
 		}
 	}
 
@@ -33,23 +48,32 @@ export function sendInvitePayload( invite: {
 	startedAt: number;
 	expiresAt: number; } )
 {
-	// payload for invitee
 	if ( invite.from === invite.to ) return;
-	const receivedPayload = JSON.stringify( {
-		type: "invite:received",
-		from: invite.from,
-		startedAt: invite.startedAt,
-		expiresAt: invite.expiresAt,
-	} );
 
-	// payload for inviter
-	const sentPayload = JSON.stringify( {
-		type: "invite:sent",
-		to: invite.to,
-		startedAt: invite.startedAt,
-		expiresAt: invite.expiresAt,
-	} );
+	let receivedPayload: string;
+	let sentPayload: string;
 
+	try
+	{
+		receivedPayload = JSON.stringify( {
+			type: "invite:received",
+			from: invite.from,
+			startedAt: invite.startedAt,
+			expiresAt: invite.expiresAt,
+		} );
+
+		sentPayload = JSON.stringify( {
+			type: "invite:sent",
+			to: invite.to,
+			startedAt: invite.startedAt,
+			expiresAt: invite.expiresAt,
+		} );
+	}
+	catch ( err )
+	{
+		console.error( "Failed to stringify invite payload", err, invite );
+		return ;
+	}
 	// send to invitee
 	const inviteeSockets = onlineUsers.get( invite.to );
 	if ( inviteeSockets )
@@ -58,7 +82,14 @@ export function sendInvitePayload( invite: {
 		{
 			if ( socket.readyState === WebSocket.OPEN )
 			{
-				socket.send( receivedPayload );
+				try
+				{
+					socket.send( receivedPayload );
+				}
+				catch ( err )
+				{
+					console.error( "Failed to send invite:received", err );
+				}
 			}
 		}
 	}
@@ -71,7 +102,14 @@ export function sendInvitePayload( invite: {
 		{
 			if ( socket.readyState === WebSocket.OPEN )
 			{
-				socket.send( sentPayload );
+				try
+				{
+					socket.send( sentPayload );
+				}
+				catch ( err )
+				{
+					console.error( "Failed to send invite:sent", err );
+				}
 			}
 		}
 	}
@@ -80,10 +118,19 @@ export function sendInvitePayload( invite: {
 
 export function sendInviteExpired( a: string, b: string )
 {
-	const payload = JSON.stringify( {
-		type: "invite:expired",
-		users: [a, b],
-	} );
+	let payload: string;
+	try
+	{
+		payload = JSON.stringify( {
+			type: "invite:expired",
+			users: [a, b],
+		} );
+	}
+	catch ( err )
+	{
+		console.error( "Failed to stringify invite:expired payload", err );
+		return;
+	}
 
 	for ( const userId of [a, b] )
 	{
@@ -94,8 +141,14 @@ export function sendInviteExpired( a: string, b: string )
 		{
 			if ( socket.readyState === WebSocket.OPEN )
 			{
-				socket.send( payload );
-				console.log( "invite expired mes from backend" ); // TO DO: delete?
+				try
+				{
+					socket.send( payload );
+				}
+				catch
+				{
+					console.error( "Failed to send invite:expired" );
+				}
 			}
 		}
 	}

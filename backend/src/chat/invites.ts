@@ -23,7 +23,6 @@ export function createInvite( from: string, to: string )
 	const existing = invites.get( key );
 	if ( existing && Date.now() < existing.expiresAt )
 	{
-		console.log( "invite aleady exists?" );
 		return false;
 	}
 
@@ -50,7 +49,6 @@ export function createInvite( from: string, to: string )
 
 export function deleteInvite( from: string, to: string )
 {
-	console.log( "delete invite from game logic" );
 	const key = convoKey( from, to );
 	invites.delete( key );
 	sendInviteExpired( from, to );

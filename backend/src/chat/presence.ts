@@ -31,11 +31,20 @@ export function removeUser( userId: string, socket: WebSocket )
 
 export function broadcastPresence( userId: string, online: boolean )
 {
-	const payload = JSON.stringify( {
-		type: "presence",
-		userId,
-		online
-	} );
+	let payload: string;
+	try
+	{
+		payload = JSON.stringify( {
+			type: "presence",
+			userId,
+			online
+		} );
+	}
+	catch ( err )
+	{
+		console.error( "Failed to stringify presence payload", err );
+		return;
+	}
 
 	for ( const sockets of onlineUsers.values() )
 	{
@@ -43,7 +52,14 @@ export function broadcastPresence( userId: string, online: boolean )
 		{
 			if ( socket.readyState === socket.OPEN )
 			{
-				socket.send( payload );
+				try
+				{
+					socket.send( payload );
+				}
+				catch ( err )
+				{
+					console.error( "Failed to send presence update", err );
+				}
 			}
 		}
 	}
