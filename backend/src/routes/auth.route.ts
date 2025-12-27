@@ -203,7 +203,7 @@ const authRoutes = async ( server: FastifyInstance ) =>
 					{ expiresIn: "5m" }
 				);
 
-				return reply.redirect( `/login?twoFA=1&token=${tempToken}` );
+				return reply.redirect( `/welcome/login?twoFA=1&token=${tempToken}` );
 			}
 
 			// Step 5: Signing app JWT with JWT plugin
